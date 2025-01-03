@@ -2,6 +2,10 @@
 
 Discordでbot経由で送信できるアプリ
 
+## Environment
+- Xcode16.1
+- Swift5
+
 <table>
     <tr>
         <td>ダウンロードリンク</td>
