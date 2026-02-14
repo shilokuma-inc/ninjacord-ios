@@ -15,6 +15,7 @@ struct NativeAdView: UIViewRepresentable {
         let nativeAdView: GADNativeAdView = Bundle.main.loadNibNamed(
             "NativeAdView", owner: nil, options: nil
         )?.first as! GADNativeAdView
+        // swiftlint:enable force_cast
 
         (nativeAdView.bodyView as? UILabel)?.text = nativeAd.body
         nativeAdView.bodyView?.isHidden = nativeAd.body == nil

@@ -3,7 +3,7 @@
 Discordでbot経由で送信できるアプリ
 
 ## Environment
-- Xcode16.1
+- Xcode26.3
 - Swift5
 
 <table>
