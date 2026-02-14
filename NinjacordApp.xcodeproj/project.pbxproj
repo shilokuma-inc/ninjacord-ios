@@ -31,7 +31,6 @@
 		4F7248F32BE825D2004FD3DC /* BannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7248F22BE825D2004FD3DC /* BannerViewController.swift */; };
 		4F7248F62BE827DF004FD3DC /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7248F52BE827DF004FD3DC /* BannerView.swift */; };
 		4F8F72372BF99E0D00EB1869 /* ComingSoonModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8F72362BF99E0D00EB1869 /* ComingSoonModifier.swift */; };
-		4F8F723D2BF9A96800EB1869 /* LicenseList in Frameworks */ = {isa = PBXBuildFile; productRef = 4F8F723C2BF9A96800EB1869 /* LicenseList */; };
 		4F8F723F2BF9ABE100EB1869 /* LicenseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8F723E2BF9ABE100EB1869 /* LicenseView.swift */; };
 		4FAB6FF22BE1923F00B2F33A /* swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 4FAB6FF12BE1923F00B2F33A /* swiftlint.yml */; };
 		4FAB6FFB2BE1C53B00B2F33A /* WebhookURLSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FAB6FFA2BE1C53B00B2F33A /* WebhookURLSettingView.swift */; };
@@ -83,7 +82,6 @@
 			files = (
 				4F6755502BE0074A00F2629B /* FirebaseCrashlytics in Frameworks */,
 				4F6755522BE0074A00F2629B /* FirebaseFirestore in Frameworks */,
-				4F8F723D2BF9A96800EB1869 /* LicenseList in Frameworks */,
 				4F0758202BE81F2D0064A30F /* GoogleMobileAds in Frameworks */,
 				4F67554E2BE0074A00F2629B /* FirebaseAnalytics in Frameworks */,
 				4F0EC95A2BD1A2C3009A5CB6 /* Alamofire in Frameworks */,
@@ -217,7 +215,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				4F87258C2BE8623D007D0F09 /* PBXTargetDependency */,
 			);
 			name = NinjacordApp;
 			packageProductDependencies = (
@@ -226,7 +223,6 @@
 				4F67554F2BE0074A00F2629B /* FirebaseCrashlytics */,
 				4F6755512BE0074A00F2629B /* FirebaseFirestore */,
 				4F07581F2BE81F2D0064A30F /* GoogleMobileAds */,
-				4F8F723C2BF9A96800EB1869 /* LicenseList */,
 			);
 			productName = NinjacordApp;
 			productReference = 4F5072B42BCF901E0005D352 /* NinjacordApp.app */;
@@ -240,7 +236,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1520;
-				LastUpgradeCheck = 1530;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					4F5072B32BCF901E0005D352 = {
 						CreatedOnToolsVersion = 15.2;
@@ -269,9 +265,7 @@
 			packageReferences = (
 				4F0EC9582BD1A2C3009A5CB6 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				4FAB6FF32BE1957000B2F33A /* XCRemoteSwiftPackageReference "SwiftLint" */,
 				4F07581E2BE81F2D0064A30F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
-				4F8F723B2BF9A96800EB1869 /* XCRemoteSwiftPackageReference "LicenseList" */,
 			);
 			productRefGroup = 4F5072B52BCF901E0005D352 /* Products */;
 			projectDirPath = "";
@@ -350,19 +344,13 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		4F87258C2BE8623D007D0F09 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = 4F87258B2BE8623D007D0F09 /* SwiftLintPlugin */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
 		4F5072C12BCF901F0005D352 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -394,6 +382,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = XU74X3434S;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -415,6 +404,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -425,6 +415,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -456,6 +447,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = XU74X3434S;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -470,6 +462,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -484,10 +477,11 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"NinjacordApp/Preview Content\"";
-				DEVELOPMENT_TEAM = XU74X3434S;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NinjacordApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Ninja Cord";
@@ -528,10 +522,11 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"NinjacordApp/Preview Content\"";
-				DEVELOPMENT_TEAM = XU74X3434S;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NinjacordApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Ninja Cord";
@@ -610,22 +605,6 @@
 				minimumVersion = 10.24.0;
 			};
 		};
-		4F8F723B2BF9A96800EB1869 /* XCRemoteSwiftPackageReference "LicenseList" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cybozu/LicenseList.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.7.0;
-			};
-		};
-		4FAB6FF32BE1957000B2F33A /* XCRemoteSwiftPackageReference "SwiftLint" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/realm/SwiftLint";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.54.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -653,16 +632,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
-		};
-		4F87258B2BE8623D007D0F09 /* SwiftLintPlugin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4FAB6FF32BE1957000B2F33A /* XCRemoteSwiftPackageReference "SwiftLint" */;
-			productName = "plugin:SwiftLintPlugin";
-		};
-		4F8F723C2BF9A96800EB1869 /* LicenseList */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4F8F723B2BF9A96800EB1869 /* XCRemoteSwiftPackageReference "LicenseList" */;
-			productName = LicenseList;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

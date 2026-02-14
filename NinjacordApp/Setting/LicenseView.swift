@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import LicenseList
+//import LicenseList
 
 struct LicenseView: View {
     var body: some View {
@@ -15,11 +15,11 @@ struct LicenseView: View {
                 .ignoresSafeArea(edges: [.top])
             List {
                 Section(content: {
-                    ForEach(Library.libraries, id: \.name) { library in
-                        Text(library.name)
-                            .listRowBackground(Color.discordGray)
-                            .foregroundStyle(.white)
-                    }
+//                    ForEach(Library.libraries, id: \.name) { library in
+//                        Text(library.name)
+//                            .listRowBackground(Color.discordGray)
+//                            .foregroundStyle(.white)
+//                    }
                 }, header: {
                     Text("ライセンス一覧")
                         .foregroundStyle(.white)
