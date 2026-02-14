@@ -11,7 +11,6 @@
 		4F0EC95A2BD1A2C3009A5CB6 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 4F0EC9592BD1A2C3009A5CB6 /* Alamofire */; };
 		4F31E3B62BECEE1E00F299EE /* NativeAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F31E3B52BECEE1E00F299EE /* NativeAdView.swift */; };
 		4F31E3B82BECEED700F299EE /* NativeAdModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F31E3B72BECEED700F299EE /* NativeAdModel.swift */; };
-		4F31E3BA2BECF70C00F299EE /* NativeAdView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4F31E3B92BECF70B00F299EE /* NativeAdView.xib */; };
 		4F3A7B552BE836BF0046765E /* Extension+View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3A7B542BE836BF0046765E /* Extension+View.swift */; };
 		4F435C8E2BE115650087CEE3 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F435C8D2BE115650087CEE3 /* MainView.swift */; };
 		4F435C902BE117840087CEE3 /* SettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F435C8F2BE117840087CEE3 /* SettingView.swift */; };
@@ -46,7 +45,6 @@
 		4F2CDC502BD31B4A000DF626 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4F31E3B52BECEE1E00F299EE /* NativeAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdView.swift; sourceTree = "<group>"; };
 		4F31E3B72BECEED700F299EE /* NativeAdModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdModel.swift; sourceTree = "<group>"; };
-		4F31E3B92BECF70B00F299EE /* NativeAdView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NativeAdView.xib; sourceTree = "<group>"; };
 		4F3A7B542BE836BF0046765E /* Extension+View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extension+View.swift"; sourceTree = "<group>"; };
 		4F435C8D2BE115650087CEE3 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		4F435C8F2BE117840087CEE3 /* SettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingView.swift; sourceTree = "<group>"; };
@@ -161,7 +159,6 @@
 				4F7248F52BE827DF004FD3DC /* BannerView.swift */,
 				4F31E3B52BECEE1E00F299EE /* NativeAdView.swift */,
 				4F31E3B72BECEED700F299EE /* NativeAdModel.swift */,
-				4F31E3B92BECF70B00F299EE /* NativeAdView.xib */,
 			);
 			path = AdMob;
 			sourceTree = "<group>";
@@ -290,7 +287,6 @@
 				4F6F9FB22BEBDEE40033AFB7 /* Localizable.xcstrings in Resources */,
 				4F5072BC2BCF901F0005D352 /* Assets.xcassets in Resources */,
 				4FD55D4D2BE6FCB800581F34 /* PrivacyInfo.xcprivacy in Resources */,
-				4F31E3BA2BECF70C00F299EE /* NativeAdView.xib in Resources */,
 				4F6755562BE0123900F2629B /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
