@@ -39,6 +39,7 @@
 		4FD55D4D2BE6FCB800581F34 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FD55D4C2BE6FCB800581F34 /* PrivacyInfo.xcprivacy */; };
 		4FD55D502BE701FE00581F34 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD55D4F2BE701FE00581F34 /* PrivacyPolicyView.swift */; };
 		4FF2FEA52BDFAF4F00973FDA /* Extension+TextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF2FEA42BDFAF4F00973FDA /* Extension+TextFieldStyle.swift */; };
+		C6F67B0A2F40C6A100372625 /* LicenseList in Frameworks */ = {isa = PBXBuildFile; productRef = C6F67B092F40C6A100372625 /* LicenseList */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,6 +83,7 @@
 			files = (
 				4F6755502BE0074A00F2629B /* FirebaseCrashlytics in Frameworks */,
 				4F6755522BE0074A00F2629B /* FirebaseFirestore in Frameworks */,
+				C6F67B0A2F40C6A100372625 /* LicenseList in Frameworks */,
 				4F0758202BE81F2D0064A30F /* GoogleMobileAds in Frameworks */,
 				4F67554E2BE0074A00F2629B /* FirebaseAnalytics in Frameworks */,
 				4F0EC95A2BD1A2C3009A5CB6 /* Alamofire in Frameworks */,
@@ -223,6 +225,7 @@
 				4F67554F2BE0074A00F2629B /* FirebaseCrashlytics */,
 				4F6755512BE0074A00F2629B /* FirebaseFirestore */,
 				4F07581F2BE81F2D0064A30F /* GoogleMobileAds */,
+				C6F67B092F40C6A100372625 /* LicenseList */,
 			);
 			productName = NinjacordApp;
 			productReference = 4F5072B42BCF901E0005D352 /* NinjacordApp.app */;
@@ -266,6 +269,7 @@
 				4F0EC9582BD1A2C3009A5CB6 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				4F07581E2BE81F2D0064A30F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				C6F67B082F40C6A100372625 /* XCRemoteSwiftPackageReference "LicenseList" */,
 			);
 			productRefGroup = 4F5072B52BCF901E0005D352 /* Products */;
 			projectDirPath = "";
@@ -605,6 +609,14 @@
 				minimumVersion = 10.24.0;
 			};
 		};
+		C6F67B082F40C6A100372625 /* XCRemoteSwiftPackageReference "LicenseList" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/cybozu/LicenseList";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -632,6 +644,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		C6F67B092F40C6A100372625 /* LicenseList */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C6F67B082F40C6A100372625 /* XCRemoteSwiftPackageReference "LicenseList" */;
+			productName = LicenseList;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
