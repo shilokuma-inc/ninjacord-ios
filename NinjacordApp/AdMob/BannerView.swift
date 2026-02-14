@@ -12,7 +12,7 @@ struct BannerView: UIViewControllerRepresentable {
     @State private var viewWidth: CGFloat = .zero
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     private let bannerView = GADBannerView()
-    private let adUnitID = "ca-app-pub-7683522872696760/4620024755"
+    private let adUnitID = AdUnitIdProvider.banner
 
     func makeUIViewController(context: Context) -> some UIViewController {
         let bannerViewController = BannerViewController()
@@ -66,8 +66,8 @@ struct BannerView: UIViewControllerRepresentable {
             print("\(#function) called")
         }
 
-        func bannerView(_: GADBannerView, didFailToReceiveAdWithError _: Error) {
-            print("\(#function) called")
+        func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
+            print("AdMob banner ad failed: \(error)")
         }
 
         func bannerViewDidRecordImpression(_: GADBannerView) {
