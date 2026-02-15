@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>AdMobBannerAdUnitID</key>
+	<string>$(ADMOB_BANNER_AD_UNIT_ID)</string>
+	<key>AdMobNativeAdUnitID</key>
+	<string>$(ADMOB_NATIVE_AD_UNIT_ID)</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-7683522872696760~1123417271</string>
 	<key>ITSAppUsesNonExemptEncryption</key>

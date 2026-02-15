@@ -7,6 +7,17 @@
 
 import GoogleMobileAds
 
+enum AdUnitIdProvider {
+    static var native: String {
+        Bundle.main.object(forInfoDictionaryKey: "AdMobNativeAdUnitID") as? String ?? ""
+    }
+    
+    static var banner: String {
+        // Info.plist の AdMobBannerAdUnitID を参照（Scheme/Build Configurationごとに値を差し替える）
+        Bundle.main.object(forInfoDictionaryKey: "AdMobBannerAdUnitID") as? String ?? ""
+    }
+}
+
 class NativeAdModel: NSObject, ObservableObject, GADNativeAdLoaderDelegate {
     @Published var nativeAd: GADNativeAd?
     private var adLoader: GADAdLoader?
@@ -14,7 +25,7 @@ class NativeAdModel: NSObject, ObservableObject, GADNativeAdLoaderDelegate {
     func load(windowScene: UIWindowScene?,
               rootViewController: UIViewController?) {
         let adLoader = GADAdLoader(
-            adUnitID: "ca-app-pub-7683522872696760/1379062983",
+            adUnitID: AdUnitIdProvider.native,
             rootViewController: rootViewController,
             adTypes: [.native],
             options: nil
@@ -31,5 +42,6 @@ class NativeAdModel: NSObject, ObservableObject, GADNativeAdLoaderDelegate {
     }
 
     func adLoader(_ adLoader: GADAdLoader, didFailToReceiveAdWithError error: Error) {
+        print("AdMob native ad failed: \(error)")
     }
 }
