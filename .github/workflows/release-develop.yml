@@ -23,41 +23,38 @@ jobs:
           defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
           defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 
-      - name: Set Default Scheme
-        run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
-          echo $default | cat >default
-          echo Using default scheme: $default
-
-      - name: Archive Project
-        run: |                        
-          xcodebuild archive -project NinjacordApp.xcodeproj \
-                             -scheme NinjacordApp \
-                             -sdk iphoneos \
-                             -configuration Release \
-                             -archivePath NinjacordApp.xcarchive \
-                             CODE_SIGNING_ALLOWED=NO
-
-      - name: Create ExportOptions.plist
-        run: |
-          echo '${{ secrets.EXPORT_OPTIONS }}' > ExportOptions.plist
-
       - name: Create Private Key
         run: |
           mkdir private_keys
           echo -n '${{ secrets.APPLE_API_KEY_BASE64 }}' | base64 --decode > ./private_keys/AuthKey_${{ secrets.APPLE_API_ISSUER_ID }}.p8
 
+      - name: Archive Project
+        run: |
+          xcodebuild archive \
+            -project NinjacordApp.xcodeproj \
+            -scheme NinjacordApp \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath NinjacordApp.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$PWD/private_keys/AuthKey_${{ secrets.APPLE_API_ISSUER_ID }}.p8" \
+            -authenticationKeyID "${{ secrets.APPLE_API_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.APPLE_API_ISSUER_ID }}"
+
+      - name: Create ExportOptions.plist
+        run: |
+          echo '${{ secrets.EXPORT_OPTIONS }}' > ExportOptions.plist
+
       - name: Export IPA
-        run: |   
+        run: |
           xcodebuild -exportArchive \
-                     -archivePath NinjacordApp.xcarchive \
-                     -exportOptionsPlist ExportOptions.plist \
-                     -exportPath app.ipa \
-                     -allowProvisioningUpdates \
-                     -authenticationKeyPath `pwd`/private_keys/AuthKey_${{ secrets.APPLE_API_ISSUER_ID }}.p8 \
-                     -authenticationKeyID ${{ secrets.APPLE_API_KEY_ID }} \
-                     -authenticationKeyIssuerID ${{ secrets.APPLE_API_ISSUER_ID }}
+            -archivePath NinjacordApp.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath app.ipa \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$PWD/private_keys/AuthKey_${{ secrets.APPLE_API_ISSUER_ID }}.p8" \
+            -authenticationKeyID "${{ secrets.APPLE_API_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.APPLE_API_ISSUER_ID }}"
 
       - name: Upload IPA to App Store Connect
         run: |
@@ -65,3 +62,9 @@ jobs:
                        -u ${{ secrets.APPLE_ID }} \
                        -p ${{ secrets.APP_SPECIFIC_PASSWORD }} \
                        --type ios
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NinjacordApp-ipa
+          path: app.ipa/NinjacordApp.ipa
