@@ -1,4 +1,4 @@
-name: NinjacordApp
+name: Upload/master
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:          
   build:
-    name: Release | master
+    name: Upload/master
     runs-on: macos-latest
 
     steps:
