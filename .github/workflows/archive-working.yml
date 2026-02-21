@@ -1,4 +1,4 @@
-name: NinjacordApp
+name: Archive
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:          
   build:
-    name: Archive | working
+    name: Archive
     runs-on: macos-latest
 
     steps:
