@@ -26,41 +26,38 @@ Discordでbot経由で送信できるアプリ
         <td style="border:2px double #000080;">branch \ workflow</td>
         <td style="border:2px double #000080;">Build</td>
         <td style="border:2px double #000080;">Archive</td>
-        <td style="border:2px double #000080;">Release</td>
+        <td style="border:2px double #000080;">Upload</td>
       </tr>
       <tr>
         <td style="border:2px double #000080;text-align:left;">master</td>
         <td style="border:2px double #000080;text-align:center;">
           <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/build-master.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/build-master.yml/badge.svg" alt="IOSTemplateApp">
+            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/build-master.yml/badge.svg" alt="Build/master">
           </a>
         </td>
         <td style="border:2px double #000080;text-align:center;">
           <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-master.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-master.yml/badge.svg" alt="IOSTemplateApp">
+            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-master.yml/badge.svg" alt="Archive/master">
           </a>
         </td>
         <td style="border:2px double #000080;text-align:center;">
-          <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/release-develop.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/release-master.yml/badge.svg" alt="IOSTemplateApp">
-          </a>
         </td>
       </tr>
       <tr>
         <td style="border:2px double #000080;text-align:left;">develop</td>
         <td style="border:2px double #000080;text-align:center;">
           <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/build-develop.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/build-develop.yml/badge.svg" alt="IOSTemplateApp">
+            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/build-develop.yml/badge.svg" alt="Build/develop">
           </a>
         </td>
         <td style="border:2px double #000080;text-align:center;">
           <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-develop.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-develop.yml/badge.svg" alt="IOSTemplateApp">
+            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-develop.yml/badge.svg" alt="Archive/develop">
           </a>
         </td>
         <td style="border:2px double #000080;text-align:center;">
           <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/release-develop.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/release-develop.yml/badge.svg" alt="IOSTemplateApp">
+            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/upload-develop.yml/badge.svg" alt="Upload/develop">
           </a>
         </td>
       </tr>
