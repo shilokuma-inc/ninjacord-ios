@@ -59,31 +59,64 @@ struct SendMessageView: View {
                         }
                     }
 
-                    withIconTextFieldView(
-                        icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
-                        placeholder: "名前を入れてください",
-                        text: $inputUsername
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
+                    HStack {
+                        withIconTextFieldView(
+                            icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
+                            placeholder: "名前を入れてください",
+                            text: $inputUsername
+                        )
+                        .onTapGesture {
+                            self.isEditing = true
+                        }
+
+                        if !inputUsername.isEmpty {
+                            Button(action: {
+                                inputUsername = ""
+                            }, label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.gray)
+                            })
+                        }
                     }
 
-                    withIconTextFieldView(
-                        icon: Image(systemName: "person.crop.square"),
-                        placeholder: "プロフィール画像のURLを入れてください",
-                        text: $inputAvatarURL
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
+                    HStack {
+                        withIconTextFieldView(
+                            icon: Image(systemName: "person.crop.square"),
+                            placeholder: "プロフィール画像のURLを入れてください",
+                            text: $inputAvatarURL
+                        )
+                        .onTapGesture {
+                            self.isEditing = true
+                        }
+
+                        if !inputAvatarURL.isEmpty {
+                            Button(action: {
+                                inputAvatarURL = ""
+                            }, label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.gray)
+                            })
+                        }
                     }
 
-                    withIconTextFieldView(
-                        icon: Image(systemName: "square.and.pencil"),
-                        placeholder: "メッセージを入れてください",
-                        text: $inputContext
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
+                    HStack {
+                        withIconTextFieldView(
+                            icon: Image(systemName: "square.and.pencil"),
+                            placeholder: "メッセージを入れてください",
+                            text: $inputContext
+                        )
+                        .onTapGesture {
+                            self.isEditing = true
+                        }
+
+                        if !inputContext.isEmpty {
+                            Button(action: {
+                                inputContext = ""
+                            }, label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.gray)
+                            })
+                        }
                     }
                 }
                 .padding(.horizontal)
@@ -91,15 +124,26 @@ struct SendMessageView: View {
                 Spacer()
                     .frame(height: 24.0)
 
-                withIconTextFieldView(
-                    icon: Image(systemName: "list.clipboard"),
-                    placeholder: "埋め込みタイトルを入れてください",
-                    text: $inputEmbedTitle
-                )
-                .padding(.horizontal)
-                .onTapGesture {
-                    self.isEditing = true
+                HStack {
+                    withIconTextFieldView(
+                        icon: Image(systemName: "list.clipboard"),
+                        placeholder: "埋め込みタイトルを入れてください",
+                        text: $inputEmbedTitle
+                    )
+                    .onTapGesture {
+                        self.isEditing = true
+                    }
+
+                    if !inputEmbedTitle.isEmpty {
+                        Button(action: {
+                            inputEmbedTitle = ""
+                        }, label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.gray)
+                        })
+                    }
                 }
+                .padding(.horizontal)
 
                 Spacer()
                     .frame(height: 48.0)
