@@ -9,211 +9,105 @@ import SwiftUI
 
 struct SendMessageView: View {
 
-    @State var inputURL = ""
-    @State var inputUsername = ""
-    @State var inputAvatarURL = ""
-    @State var inputContext = ""
+    @State private var inputURL = ""
+    @State private var inputUsername = ""
+    @State private var inputAvatarURL = ""
+    @State private var inputContext = ""
+    @State private var inputEmbedTitle = ""
 
-    @State var inputEmbedTitle = ""
-
-    @State var isTapEnable: Bool = false
-    @State private var isEditing: Bool = false
     private var viewModel = SendMessageViewModel()
+
+    private var isSendEnabled: Bool {
+        !inputURL.isEmpty
+    }
 
     var body: some View {
         ZStack {
-            Color.discordGray
-                .ignoresSafeArea(edges: [.top])
-                .onTapGesture {
-                    if self.isEditing {
-                        UIApplication.shared.sendAction(
-                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-                        )
-                        self.isEditing = false
-                    }
-                }
+            backgroundView
             VStack(spacing: .zero) {
-                VStack(spacing: 8.0) {
-                    Spacer()
-
-                    HStack {
-                        withIconTextFieldView(
-                            icon: Image(systemName: "link.icloud.fill"),
-                            placeholder: "URLを入れてください",
-                            text: $inputURL
-                        )
-                        .onChange(of: inputURL, initial: true) { _ in
-                            textFieldValidation()
-                        }
-                        .onTapGesture {
-                            self.isEditing = true
-                        }
-
-                        if !inputURL.isEmpty {
-                            Button(action: {
-                                inputURL = ""
-                            }, label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.gray)
-                            })
-                        }
-                    }
-
-                    HStack {
-                        withIconTextFieldView(
-                            icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
-                            placeholder: "名前を入れてください",
-                            text: $inputUsername
-                        )
-                        .onTapGesture {
-                            self.isEditing = true
-                        }
-
-                        if !inputUsername.isEmpty {
-                            Button(action: {
-                                inputUsername = ""
-                            }, label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.gray)
-                            })
-                        }
-                    }
-
-                    HStack {
-                        withIconTextFieldView(
-                            icon: Image(systemName: "person.crop.square"),
-                            placeholder: "プロフィール画像のURLを入れてください",
-                            text: $inputAvatarURL
-                        )
-                        .onTapGesture {
-                            self.isEditing = true
-                        }
-
-                        if !inputAvatarURL.isEmpty {
-                            Button(action: {
-                                inputAvatarURL = ""
-                            }, label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.gray)
-                            })
-                        }
-                    }
-
-                    HStack {
-                        withIconTextFieldView(
-                            icon: Image(systemName: "square.and.pencil"),
-                            placeholder: "メッセージを入れてください",
-                            text: $inputContext
-                        )
-                        .onTapGesture {
-                            self.isEditing = true
-                        }
-
-                        if !inputContext.isEmpty {
-                            Button(action: {
-                                inputContext = ""
-                            }, label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.gray)
-                            })
-                        }
-                    }
-                }
-                .padding(.horizontal)
-
-                Spacer()
-                    .frame(height: 24.0)
-
-                HStack {
-                    withIconTextFieldView(
-                        icon: Image(systemName: "list.clipboard"),
-                        placeholder: "埋め込みタイトルを入れてください",
-                        text: $inputEmbedTitle
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
-                    }
-
-                    if !inputEmbedTitle.isEmpty {
-                        Button(action: {
-                            inputEmbedTitle = ""
-                        }, label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.gray)
-                        })
-                    }
-                }
-                .padding(.horizontal)
-
-                Spacer()
-                    .frame(height: 48.0)
-
-                sendButton(isTapEnabled: isTapEnable)
-
+                messageFieldsSection
+                embedFieldsSection
+                Spacer().frame(height: 48.0)
+                SendButton(isEnabled: isSendEnabled, action: sendMessage)
                 BannerView()
             }
         }
     }
 }
 
-extension SendMessageView {
-    private func withIconTextFieldView(
-        icon: Image,
-        placeholder: LocalizedStringResource,
-        text: Binding<String>
-    ) -> some View {
-        HStack {
-            icon
-                .foregroundStyle(Color.discordPurple)
-                .frame(width: 24.0, height: 24.0)
+// MARK: - Subviews
 
-            ZStack(alignment: .leading) {
-                TextField(
-                    "",
-                    text: text,
-                    prompt: Text(String(localized: placeholder))
-                        .foregroundColor(Color.discordSuperLightGray)
-                )
-                .textFieldStyle(.capsule)
+extension SendMessageView {
+    private var backgroundView: some View {
+        Color.discordGray
+            .ignoresSafeArea(edges: [.top])
+            .onTapGesture {
+                dismissKeyboard()
             }
-        }
     }
 
-    private func sendButton(isTapEnabled: Bool) -> some View {
-        Button(action: {
-            viewModel.postDiscordWebhook(url: inputURL,
-                                         messageEntity: MessageEntity(
-                                            username: inputUsername,
-                                            avatarURL: inputAvatarURL,
-                                            content: inputContext,
-                                            messageEmbedEntity: MessageEmbedEntity(
-                                                title: inputEmbedTitle
-                                            )
-                                         )
+    private var messageFieldsSection: some View {
+        VStack(spacing: 8.0) {
+            Spacer()
+            ClearableIconTextField(
+                systemIconName: "link.icloud.fill",
+                placeholder: "URLを入れてください",
+                text: $inputURL
             )
-        }, label: {
-            Text("メッセージを送信！")
-                .font(.system(size: 24, weight: .semibold, design: .default))
-                .foregroundStyle(.white)
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 30.0)
-                        .foregroundStyle(isTapEnabled ? .indigo : .gray)
-                        .foregroundStyle(.ultraThickMaterial)
-                        .shadow(radius: 5.0)
-                )
-        })
-        .disabled(!isTapEnabled)
+            ClearableIconTextField(
+                systemIconName: "rectangle.and.pencil.and.ellipsis",
+                placeholder: "名前を入れてください",
+                text: $inputUsername
+            )
+            ClearableIconTextField(
+                systemIconName: "person.crop.square",
+                placeholder: "プロフィール画像のURLを入れてください",
+                text: $inputAvatarURL
+            )
+            ClearableIconTextField(
+                systemIconName: "square.and.pencil",
+                placeholder: "メッセージを入れてください",
+                text: $inputContext
+            )
+        }
+        .padding(.horizontal)
+    }
+
+    private var embedFieldsSection: some View {
+        VStack {
+            Spacer().frame(height: 24.0)
+            ClearableIconTextField(
+                systemIconName: "list.clipboard",
+                placeholder: "埋め込みタイトルを入れてください",
+                text: $inputEmbedTitle
+            )
+            .padding(.horizontal)
+        }
     }
 }
 
+// MARK: - Actions
+
 extension SendMessageView {
-    private func textFieldValidation() {
-        if inputURL.isEmpty {
-            isTapEnable = false
-        } else {
-            isTapEnable = true
-        }
+    private func sendMessage() {
+        viewModel.postDiscordWebhook(
+            url: inputURL,
+            messageEntity: MessageEntity(
+                username: inputUsername,
+                avatarURL: inputAvatarURL,
+                content: inputContext,
+                messageEmbedEntity: MessageEmbedEntity(
+                    title: inputEmbedTitle
+                )
+            )
+        )
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil, from: nil, for: nil
+        )
     }
 }
 
