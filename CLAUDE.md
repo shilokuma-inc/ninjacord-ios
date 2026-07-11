@@ -47,6 +47,37 @@ Discord に Webhook / bot 経由でメッセージを送信できる iOS アプ�
 2. 手元確認で問題なければ `/ship <番号>` … PR 作成 → レビュー → マージ
 3. `develop` マージ後は Actions が自動で App Store Connect アップロードまで実施
 
+## コミット / PR 規約
+
+人間・Claude いずれの手作業でも本規約に従うこと。
+
+### type 一覧
+
+既存の Issue テンプレート（`.github/ISSUE_TEMPLATE/`）の分類に揃える。基本はこの5種。
+
+| type | 用途 | 対応 Issue タイトル |
+| --- | --- | --- |
+| `feat` | 新機能・機能追加 | 【FEAT】 |
+| `fix` | バグ修正 | 【FIX】 |
+| `refactor` | 挙動を変えない内部改善 | 【REFACTOR】 |
+| `chore` | 雑務（依存更新・設定・CI 等） | 【CHORE】 |
+| `update` | バージョンアップ | 【UPDATE】 |
+
+補助的に `docs` / `test` / `ci` / `perf` / `style` を使ってもよい（明確に該当する場合のみ）。
+
+### コミットメッセージ
+
+- 件名: **`[type] 日本語の説明`**（type は半角小文字。例: `[feat] メッセージ送信ボタンを追加`）
+- 説明は「何をしたか」を簡潔に。必要なら空行の後に本文で「なぜ」を書く。
+- **粒度**: 1コミット＝1つの論理的変更。人間がコミット単位でレビューして意味が追える単位に分け、無関係な変更を同じコミットに混ぜない（例: 「機能追加」と「既存のリネーム」は別コミット）。
+- Claude が作成したコミットは末尾に `Co-Authored-By: Claude <noreply@anthropic.com>` を付ける。
+
+### PR タイトル
+
+- **`【TYPE】日本語の説明`**（`【】` は全角、TYPE は半角大文字。例: `【FEAT】メッセージ送信ボタンを追加`）
+- TYPE はコミット type を大文字化したもの。原則、対応する Issue のタイトル（【FEAT】等）と同じ種別にする。
+- PR 本文は `.github/pull_request_template.md` の雛形に従う。
+
 ## コーディング方針
 
 - SwiftUI の作法は `ios-swiftui` スキルに従う（State 管理 / View 分割 / Swift Concurrency）。
