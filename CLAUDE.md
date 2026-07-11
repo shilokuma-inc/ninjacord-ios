@@ -11,7 +11,7 @@ Discord に Webhook / bot 経由でメッセージを送信できる iOS アプ�
 | UI フレームワーク | SwiftUI |
 | 言語 / Xcode | Swift 5 / Xcode 26.3 |
 | Deployment Target | iOS 16.0 |
-| バージョン | `MARKETING_VERSION` 1.5.0 |
+| バージョン | `MARKETING_VERSION` 1.5.1 |
 | Bundle ID (本番) | `ml.mrs1669.discord-bot-helper` |
 | App Store | https://apps.apple.com/jp/app/ninja-cord/id6498937487 |
 
