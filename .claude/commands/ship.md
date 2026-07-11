@@ -8,16 +8,26 @@ Issue #$ARGUMENTS の変更を PR にしてマージまで進める。**手元�
 
 手順:
 
-1. **事前チェック**: `git status` と `git diff origin/develop...HEAD` で変更内容を確認。未コミットがあればコミットする（message 末尾に `Co-Authored-By: Claude <noreply@anthropic.com>`）。
+1. **事前チェック**: `git status` と `git diff origin/develop...HEAD` で変更内容を確認。未コミットがあれば **`[type] 日本語の説明`** 形式でコミットする（粒度は CLAUDE.md「コミット / PR 規約」に従い論理単位で分ける。message 末尾に `Co-Authored-By: Claude <noreply@anthropic.com>`）。
 
 2. **レビュー**: `swiftui-reviewer` サブエージェントで diff をレビュー。🔴要修正があれば直してから進む。
 
-3. **push & PR 作成**:
+3. **push & PR 作成**: タイトルは **`【TYPE】日本語の説明`**（TYPE は Issue の種別に対応: FEAT/FIX/REFACTOR/CHORE/UPDATE 等）。本文は `.github/pull_request_template.md` の雛形（概要 / 関連するISSUE / 詳細 / 動作確認）に沿って埋める。
    ```sh
    git push -u origin HEAD
-   gh pr create --base develop --fill --body "Closes #$ARGUMENTS
+   gh pr create --base develop --title "【TYPE】<日本語の説明>" --body "## 概要 (Abstract)
+   <何を・なぜ>
 
-   <変更概要 / 手元確認結果 / スクリーンショット言及>
+   ## 関連するISSUE
+   - resolved #$ARGUMENTS
+
+   ## 詳細 (Detail)
+   <主な変更点>
+
+   ## 動作確認 (Verification)
+   - [x] Simulator でビルド・起動を確認した
+   - [x] 想定通りの挙動を目視確認した
+   <UI 変更はスクリーンショットを添付>
 
    🤖 Generated with [Claude Code](https://claude.com/claude-code)"
    ```
