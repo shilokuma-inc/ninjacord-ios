@@ -16,8 +16,9 @@ struct SendMessageView: View {
 
     @State var inputEmbedTitle = ""
 
-    @State var isTapEnable: Bool = false
     @State private var isEditing: Bool = false
+    @State private var validationError: SendMessageValidationError?
+    @State private var isValidationAlertPresented: Bool = false
     private var viewModel = SendMessageViewModel()
 
     var body: some View {
@@ -42,9 +43,6 @@ struct SendMessageView: View {
                             placeholder: "URLを入れてください",
                             text: $inputURL
                         )
-                        .onChange(of: inputURL, initial: true) { _ in
-                            textFieldValidation()
-                        }
                         .onTapGesture {
                             self.isEditing = true
                         }
@@ -104,9 +102,16 @@ struct SendMessageView: View {
                 Spacer()
                     .frame(height: 48.0)
 
-                sendButton(isTapEnabled: isTapEnable)
+                sendButton
 
                 BannerView()
+            }
+        }
+        .alert(isPresented: $isValidationAlertPresented, error: validationError) { _ in
+            Button("OK", role: .cancel) {}
+        } message: { error in
+            if let recoverySuggestion = error.recoverySuggestion {
+                Text(recoverySuggestion)
             }
         }
     }
@@ -135,18 +140,9 @@ extension SendMessageView {
         }
     }
 
-    private func sendButton(isTapEnabled: Bool) -> some View {
+    private var sendButton: some View {
         Button(action: {
-            viewModel.postDiscordWebhook(url: inputURL,
-                                         messageEntity: MessageEntity(
-                                            username: inputUsername,
-                                            avatarURL: inputAvatarURL,
-                                            content: inputContext,
-                                            messageEmbedEntity: MessageEmbedEntity(
-                                                title: inputEmbedTitle
-                                            )
-                                         )
-            )
+            sendMessage()
         }, label: {
             Text("メッセージを送信！")
                 .font(.system(size: 24, weight: .semibold, design: .default))
@@ -154,22 +150,33 @@ extension SendMessageView {
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 30.0)
-                        .foregroundStyle(isTapEnabled ? .indigo : .gray)
+                        .foregroundStyle(.indigo)
                         .foregroundStyle(.ultraThickMaterial)
                         .shadow(radius: 5.0)
                 )
         })
-        .disabled(!isTapEnabled)
     }
 }
 
 extension SendMessageView {
-    private func textFieldValidation() {
-        if inputURL.isEmpty {
-            isTapEnable = false
-        } else {
-            isTapEnable = true
+    /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する
+    private func sendMessage() {
+        let messageEntity = MessageEntity(
+            username: inputUsername,
+            avatarURL: inputAvatarURL,
+            content: inputContext,
+            messageEmbedEntity: MessageEmbedEntity(
+                title: inputEmbedTitle
+            )
+        )
+
+        if let error = viewModel.validate(url: inputURL, messageEntity: messageEntity) {
+            validationError = error
+            isValidationAlertPresented = true
+            return
         }
+
+        viewModel.postDiscordWebhook(url: inputURL, messageEntity: messageEntity)
     }
 }
 
