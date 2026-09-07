@@ -20,6 +20,54 @@
         }
       }
     },
+    "OK" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "URLが入力されていません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL is not entered"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URLが入力されていません"
+          }
+        }
+      }
+    },
+    "URLの形式が正しくありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL format is invalid"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URLの形式が正しくありません"
+          }
+        }
+      }
+    },
     "URLを入れてください" : {
       "localizations" : {
         "en" : {
@@ -48,6 +96,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "URL設定"
+          }
+        }
+      }
+    },
+    "https:// から始まるWebhook URLを入力してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a Webhook URL starting with https://"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https:// から始まるWebhook URLを入力してください"
+          }
+        }
+      }
+    },
+    "このアプリについて" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About this App"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリについて"
           }
         }
       }
@@ -84,22 +164,6 @@
         }
       }
     },
-    "このアプリについて" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About this App"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このアプリについて"
-          }
-        }
-      }
-    },
     "プライバシーポリシー" : {
       "localizations" : {
         "en" : {
@@ -128,6 +192,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "プロフィール画像のURLを入れてください"
+          }
+        }
+      }
+    },
+    "メッセージが入力されていません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message is not entered"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージが入力されていません"
           }
         }
       }
@@ -212,6 +292,22 @@
         }
       }
     },
+    "名前・メッセージなど、いずれかの項目を入力してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter at least one field, such as username or message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前・メッセージなど、いずれかの項目を入力してください"
+          }
+        }
+      }
+    },
     "埋め込みタイトルを入れてください" : {
       "localizations" : {
         "en" : {
@@ -288,6 +384,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信先URL設定"
+          }
+        }
+      }
+    },
+    "送信先のWebhook URLを入力してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the destination Webhook URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信先のWebhook URLを入力してください"
           }
         }
       }
