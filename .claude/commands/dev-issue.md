@@ -28,9 +28,5 @@ Issue #$ARGUMENTS を実装し、Simulator で手元確認できる状態にす�
 コミット規約（CLAUDE.md「コミット / PR 規約」に従う）:
 - 件名は **`[type] 日本語の説明`**（type は Issue の種別に対応: feat/fix/refactor/chore/update 等）。
 - **粒度を意識する**: 実装を1つの大コミットにまとめず、人間がコミット単位でレビューして意味が追える論理単位に分ける（無関係な変更を混ぜない）。
-- commit message 末尾に必ず:
-  ```
-  Co-Authored-By: Claude <noreply@anthropic.com>
-  ```
 
 push はこの段階では任意（`/ship` 側で行う）。

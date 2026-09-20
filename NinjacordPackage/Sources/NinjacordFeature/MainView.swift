@@ -7,16 +7,17 @@
 
 import SwiftUI
 
-struct MainView: View {
+/// アプリのルート View（送信 / 設定のタブ構成）。アプリターゲットから参照するため public。
+public struct MainView: View {
     let analytics = FirebaseAnalytics()
     @State var selection = 1
 
-    init() {
+    public init() {
         UITabBar.appearance().backgroundColor = UIColor(Color.discordLightGray)
         UITabBar.appearance().unselectedItemTintColor = UIColor(Color.discordSuperLightGray)
     }
 
-    var body: some View {
+    public var body: some View {
         TabView(selection: $selection) {
             SendMessageView()
                 .tabItem {
