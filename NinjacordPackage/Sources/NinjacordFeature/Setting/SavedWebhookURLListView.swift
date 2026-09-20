@@ -19,17 +19,17 @@ struct SavedWebhookURLListView: View {
 
     var body: some View {
         ZStack {
-            Color.discordDarkGray
+            Color.appBackground
                 .ignoresSafeArea(edges: [.top])
 
             if store.items.isEmpty {
                 Text("保存されたURLはありません")
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(Color.appTextSecondary)
             } else {
                 List {
                     ForEach(store.items) { item in
                         row(item)
-                            .listRowBackground(Color.discordGray)
+                            .listRowBackground(Color.appSurface)
                     }
                     .onDelete { offsets in
                         store.remove(at: offsets)
@@ -39,8 +39,6 @@ struct SavedWebhookURLListView: View {
                 .background(.clear)
             }
         }
-        .toolbarBackground(Color.discordDarkGray, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -76,11 +74,11 @@ struct SavedWebhookURLListView: View {
     private func rowContent(_ item: SavedWebhookURL) -> some View {
         VStack(alignment: .leading, spacing: 4.0) {
             Text(item.name)
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.appTextPrimary)
 
             Text(item.url)
                 .font(.caption)
-                .foregroundStyle(.gray)
+                .foregroundStyle(Color.appTextSecondary)
                 .lineLimit(1)
         }
     }
@@ -115,15 +113,13 @@ private struct SavedWebhookURLFormView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.discordDarkGray
+                Color.appBackground
                     .ignoresSafeArea()
 
                 inputFields
             }
             .navigationTitle("URLを保存")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.discordDarkGray, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("キャンセル") {
@@ -149,7 +145,7 @@ private struct SavedWebhookURLFormView: View {
                 "",
                 text: $name,
                 prompt: Text("名前を入れてください")
-                    .foregroundColor(Color.discordSuperLightGray)
+                    .foregroundColor(Color.appPlaceholder)
             )
             .textFieldStyle(.capsule)
 
@@ -157,7 +153,7 @@ private struct SavedWebhookURLFormView: View {
                 "",
                 text: $url,
                 prompt: Text("URLを入れてください")
-                    .foregroundColor(Color.discordSuperLightGray)
+                    .foregroundColor(Color.appPlaceholder)
             )
             .textFieldStyle(.capsule)
             .keyboardType(.URL)

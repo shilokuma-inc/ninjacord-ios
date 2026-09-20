@@ -42,15 +42,20 @@ struct SettingView: View {
                         Button {
                             isURLSettingPresented = true
                         } label: {
-                            Text("URL設定")
-                                .addComingSoon()
-                                .foregroundStyle(Color.appTextPrimary)
+                            HStack {
+                                Text("URL設定")
+                                    .foregroundStyle(Color.appTextPrimary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color.appTextSecondary)
+                            }
                         }
                         .listRowBackground(Color.appSurface)
                         .navigationDestination(isPresented: $isURLSettingPresented) {
                             WebhookURLSettingView()
                         }
-                        .disabled(true)
                     }, header: {
                         Text("送信先URL設定")
                             .foregroundStyle(Color.appTextSecondary)

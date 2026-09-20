@@ -19,6 +19,7 @@ struct SendMessageView: View {
     @State private var isEditing: Bool = false
     @State private var validationError: SendMessageValidationError?
     @State private var isValidationAlertPresented: Bool = false
+    @State private var isSavedURLListPresented = false
     private var viewModel = SendMessageViewModel()
 
     var body: some View {
@@ -55,6 +56,13 @@ struct SendMessageView: View {
                                     .foregroundStyle(Color.appTextSecondary)
                             })
                         }
+
+                        Button(action: {
+                            isSavedURLListPresented = true
+                        }, label: {
+                            Image(systemName: "bookmark.fill")
+                                .foregroundStyle(Color.appAccent)
+                        })
                     }
 
                     withIconTextFieldView(
@@ -114,6 +122,9 @@ struct SendMessageView: View {
                 Text(recoverySuggestion)
             }
         }
+        .sheet(isPresented: $isSavedURLListPresented) {
+            savedURLListSheet
+        }
     }
 }
 
@@ -136,6 +147,28 @@ extension SendMessageView {
                         .foregroundColor(Color.appPlaceholder)
                 )
                 .textFieldStyle(.capsule)
+            }
+        }
+    }
+
+    /// 保存済み URL から選んで URL 欄に反映するシート
+    private var savedURLListSheet: some View {
+        NavigationStack {
+            SavedWebhookURLListView(
+                onSelect: { item in
+                    inputURL = item.url
+                    isSavedURLListPresented = false
+                },
+                initialURL: inputURL
+            )
+            .navigationTitle("保存済みURL")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("閉じる") {
+                        isSavedURLListPresented = false
+                    }
+                }
             }
         }
     }
