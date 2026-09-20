@@ -7,71 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4F0758202BE81F2D0064A30F /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 4F07581F2BE81F2D0064A30F /* GoogleMobileAds */; };
-		4F0EC95A2BD1A2C3009A5CB6 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 4F0EC9592BD1A2C3009A5CB6 /* Alamofire */; };
-		4F31E3B62BECEE1E00F299EE /* NativeAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F31E3B52BECEE1E00F299EE /* NativeAdView.swift */; };
-		4F31E3B82BECEED700F299EE /* NativeAdModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F31E3B72BECEED700F299EE /* NativeAdModel.swift */; };
-		4F3A7B552BE836BF0046765E /* Extension+View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3A7B542BE836BF0046765E /* Extension+View.swift */; };
-		4F435C8E2BE115650087CEE3 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F435C8D2BE115650087CEE3 /* MainView.swift */; };
-		4F435C902BE117840087CEE3 /* SettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F435C8F2BE117840087CEE3 /* SettingView.swift */; };
+		6E1A2B3C4D5E6F708192A3B1 /* NinjacordFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 6E1A2B3C4D5E6F708192A3B2 /* NinjacordFeature */; };
 		4F5072B82BCF901E0005D352 /* NinjacordApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5072B72BCF901E0005D352 /* NinjacordApp.swift */; };
-		4F5072BA2BCF901E0005D352 /* SendMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5072B92BCF901E0005D352 /* SendMessageView.swift */; };
 		4F5072BC2BCF901F0005D352 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4F5072BB2BCF901F0005D352 /* Assets.xcassets */; };
 		4F5072C02BCF901F0005D352 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4F5072BF2BCF901F0005D352 /* Preview Assets.xcassets */; };
-		4F5C1BF52BDDDC2C001C9A51 /* SendMessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5C1BF42BDDDC2C001C9A51 /* SendMessageViewModel.swift */; };
-		4F5C1BF72BDDE8A9001C9A51 /* MessageEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5C1BF62BDDE8A9001C9A51 /* MessageEntity.swift */; };
-		4F67554E2BE0074A00F2629B /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 4F67554D2BE0074A00F2629B /* FirebaseAnalytics */; };
-		4F6755502BE0074A00F2629B /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 4F67554F2BE0074A00F2629B /* FirebaseCrashlytics */; };
-		4F6755522BE0074A00F2629B /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4F6755512BE0074A00F2629B /* FirebaseFirestore */; };
-		4F6755542BE008BC00F2629B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6755532BE008BC00F2629B /* AppDelegate.swift */; };
 		4F6755562BE0123900F2629B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4F6755552BE0123900F2629B /* GoogleService-Info.plist */; };
-		4F6F9FAD2BEB9C820033AFB7 /* Extension+Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6F9FAC2BEB9C820033AFB7 /* Extension+Color.swift */; };
 		4F6F9FB22BEBDEE40033AFB7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */; };
-		4F7248F32BE825D2004FD3DC /* BannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7248F22BE825D2004FD3DC /* BannerViewController.swift */; };
-		4F7248F62BE827DF004FD3DC /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7248F52BE827DF004FD3DC /* BannerView.swift */; };
-		4F8F72372BF99E0D00EB1869 /* ComingSoonModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8F72362BF99E0D00EB1869 /* ComingSoonModifier.swift */; };
-		4F8F723F2BF9ABE100EB1869 /* LicenseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8F723E2BF9ABE100EB1869 /* LicenseView.swift */; };
 		4FAB6FF22BE1923F00B2F33A /* swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 4FAB6FF12BE1923F00B2F33A /* swiftlint.yml */; };
-		4FAB6FFB2BE1C53B00B2F33A /* WebhookURLSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FAB6FFA2BE1C53B00B2F33A /* WebhookURLSettingView.swift */; };
-		4FD55D492BE6F04700581F34 /* FirebaseAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD55D482BE6F04700581F34 /* FirebaseAnalytics.swift */; };
-		4FD55D4B2BE6F92400581F34 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD55D4A2BE6F92400581F34 /* AppInfo.swift */; };
 		4FD55D4D2BE6FCB800581F34 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FD55D4C2BE6FCB800581F34 /* PrivacyInfo.xcprivacy */; };
-		4FD55D502BE701FE00581F34 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD55D4F2BE701FE00581F34 /* PrivacyPolicyView.swift */; };
-		4FF2FEA52BDFAF4F00973FDA /* Extension+TextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF2FEA42BDFAF4F00973FDA /* Extension+TextFieldStyle.swift */; };
-		C6F67B0A2F40C6A100372625 /* LicenseList in Frameworks */ = {isa = PBXBuildFile; productRef = C6F67B092F40C6A100372625 /* LicenseList */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6E1A2B3C4D5E6F708192A3B3 /* NinjacordPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = NinjacordPackage; sourceTree = "<group>"; };
 		4F2CDC502BD31B4A000DF626 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		4F31E3B52BECEE1E00F299EE /* NativeAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdView.swift; sourceTree = "<group>"; };
-		4F31E3B72BECEED700F299EE /* NativeAdModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdModel.swift; sourceTree = "<group>"; };
-		4F3A7B542BE836BF0046765E /* Extension+View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extension+View.swift"; sourceTree = "<group>"; };
-		4F435C8D2BE115650087CEE3 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
-		4F435C8F2BE117840087CEE3 /* SettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingView.swift; sourceTree = "<group>"; };
 		4F5072B42BCF901E0005D352 /* NinjacordApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NinjacordApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F5072B72BCF901E0005D352 /* NinjacordApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NinjacordApp.swift; sourceTree = "<group>"; };
-		4F5072B92BCF901E0005D352 /* SendMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessageView.swift; sourceTree = "<group>"; };
 		4F5072BB2BCF901F0005D352 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4F5072BD2BCF901F0005D352 /* NinjacordApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NinjacordApp.entitlements; sourceTree = "<group>"; };
 		4F5072BF2BCF901F0005D352 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		4F5C1BF42BDDDC2C001C9A51 /* SendMessageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMessageViewModel.swift; sourceTree = "<group>"; };
-		4F5C1BF62BDDE8A9001C9A51 /* MessageEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageEntity.swift; sourceTree = "<group>"; };
-		4F6755532BE008BC00F2629B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4F6755552BE0123900F2629B /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		4F6F9FAC2BEB9C820033AFB7 /* Extension+Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extension+Color.swift"; sourceTree = "<group>"; };
 		4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
-		4F7248F22BE825D2004FD3DC /* BannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerViewController.swift; sourceTree = "<group>"; };
-		4F7248F52BE827DF004FD3DC /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
-		4F8F72362BF99E0D00EB1869 /* ComingSoonModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComingSoonModifier.swift; sourceTree = "<group>"; };
-		4F8F723E2BF9ABE100EB1869 /* LicenseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicenseView.swift; sourceTree = "<group>"; };
 		4FAB6FF12BE1923F00B2F33A /* swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftlint.yml; sourceTree = "<group>"; };
 		4FAB6FF72BE1A04D00B2F33A /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
-		4FAB6FFA2BE1C53B00B2F33A /* WebhookURLSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebhookURLSettingView.swift; sourceTree = "<group>"; };
-		4FD55D482BE6F04700581F34 /* FirebaseAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAnalytics.swift; sourceTree = "<group>"; };
-		4FD55D4A2BE6F92400581F34 /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		4FD55D4C2BE6FCB800581F34 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		4FD55D4F2BE701FE00581F34 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
-		4FF2FEA42BDFAF4F00973FDA /* Extension+TextFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extension+TextFieldStyle.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,12 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4F6755502BE0074A00F2629B /* FirebaseCrashlytics in Frameworks */,
-				4F6755522BE0074A00F2629B /* FirebaseFirestore in Frameworks */,
-				C6F67B0A2F40C6A100372625 /* LicenseList in Frameworks */,
-				4F0758202BE81F2D0064A30F /* GoogleMobileAds in Frameworks */,
-				4F67554E2BE0074A00F2629B /* FirebaseAnalytics in Frameworks */,
-				4F0EC95A2BD1A2C3009A5CB6 /* Alamofire in Frameworks */,
+				6E1A2B3C4D5E6F708192A3B1 /* NinjacordFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +47,7 @@
 		4F5072AB2BCF901E0005D352 = {
 			isa = PBXGroup;
 			children = (
+				6E1A2B3C4D5E6F708192A3B3 /* NinjacordPackage */,
 				4F5072B62BCF901E0005D352 /* NinjacordApp */,
 				4FAB6FF62BE1A01B00B2F33A /* ci_scripts */,
 				4F5072B52BCF901E0005D352 /* Products */,
@@ -111,18 +65,7 @@
 		4F5072B62BCF901E0005D352 /* NinjacordApp */ = {
 			isa = PBXGroup;
 			children = (
-				4FF2FEA32BDFAEC300973FDA /* Extension */,
-				4F8F72352BF99DD600EB1869 /* Common */,
-				4F6755532BE008BC00F2629B /* AppDelegate.swift */,
 				4F5072B72BCF901E0005D352 /* NinjacordApp.swift */,
-				4F435C8D2BE115650087CEE3 /* MainView.swift */,
-				4F5C1BF62BDDE8A9001C9A51 /* MessageEntity.swift */,
-				4FAB6FFA2BE1C53B00B2F33A /* WebhookURLSettingView.swift */,
-				4FD55D482BE6F04700581F34 /* FirebaseAnalytics.swift */,
-				4FD55D4A2BE6F92400581F34 /* AppInfo.swift */,
-				4F6F9FAE2BEBD25B0033AFB7 /* SettingMessage */,
-				4FD55D4E2BE7019100581F34 /* Setting */,
-				4F7248F42BE827C5004FD3DC /* AdMob */,
 				4F5072BB2BCF901F0005D352 /* Assets.xcassets */,
 				4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */,
 				4F5072BD2BCF901F0005D352 /* NinjacordApp.entitlements */,
@@ -143,60 +86,12 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		4F6F9FAE2BEBD25B0033AFB7 /* SettingMessage */ = {
-			isa = PBXGroup;
-			children = (
-				4F5072B92BCF901E0005D352 /* SendMessageView.swift */,
-				4F5C1BF42BDDDC2C001C9A51 /* SendMessageViewModel.swift */,
-			);
-			path = SettingMessage;
-			sourceTree = "<group>";
-		};
-		4F7248F42BE827C5004FD3DC /* AdMob */ = {
-			isa = PBXGroup;
-			children = (
-				4F7248F22BE825D2004FD3DC /* BannerViewController.swift */,
-				4F7248F52BE827DF004FD3DC /* BannerView.swift */,
-				4F31E3B52BECEE1E00F299EE /* NativeAdView.swift */,
-				4F31E3B72BECEED700F299EE /* NativeAdModel.swift */,
-			);
-			path = AdMob;
-			sourceTree = "<group>";
-		};
-		4F8F72352BF99DD600EB1869 /* Common */ = {
-			isa = PBXGroup;
-			children = (
-				4F8F72362BF99E0D00EB1869 /* ComingSoonModifier.swift */,
-			);
-			path = Common;
-			sourceTree = "<group>";
-		};
 		4FAB6FF62BE1A01B00B2F33A /* ci_scripts */ = {
 			isa = PBXGroup;
 			children = (
 				4FAB6FF72BE1A04D00B2F33A /* ci_post_clone.sh */,
 			);
 			path = ci_scripts;
-			sourceTree = "<group>";
-		};
-		4FD55D4E2BE7019100581F34 /* Setting */ = {
-			isa = PBXGroup;
-			children = (
-				4F435C8F2BE117840087CEE3 /* SettingView.swift */,
-				4F8F723E2BF9ABE100EB1869 /* LicenseView.swift */,
-				4FD55D4F2BE701FE00581F34 /* PrivacyPolicyView.swift */,
-			);
-			path = Setting;
-			sourceTree = "<group>";
-		};
-		4FF2FEA32BDFAEC300973FDA /* Extension */ = {
-			isa = PBXGroup;
-			children = (
-				4F6F9FAC2BEB9C820033AFB7 /* Extension+Color.swift */,
-				4F3A7B542BE836BF0046765E /* Extension+View.swift */,
-				4FF2FEA42BDFAF4F00973FDA /* Extension+TextFieldStyle.swift */,
-			);
-			path = Extension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -217,12 +112,7 @@
 			);
 			name = NinjacordApp;
 			packageProductDependencies = (
-				4F0EC9592BD1A2C3009A5CB6 /* Alamofire */,
-				4F67554D2BE0074A00F2629B /* FirebaseAnalytics */,
-				4F67554F2BE0074A00F2629B /* FirebaseCrashlytics */,
-				4F6755512BE0074A00F2629B /* FirebaseFirestore */,
-				4F07581F2BE81F2D0064A30F /* GoogleMobileAds */,
-				C6F67B092F40C6A100372625 /* LicenseList */,
+				6E1A2B3C4D5E6F708192A3B2 /* NinjacordFeature */,
 			);
 			productName = NinjacordApp;
 			productReference = 4F5072B42BCF901E0005D352 /* NinjacordApp.app */;
@@ -263,10 +153,7 @@
 			);
 			mainGroup = 4F5072AB2BCF901E0005D352;
 			packageReferences = (
-				4F0EC9582BD1A2C3009A5CB6 /* XCRemoteSwiftPackageReference "Alamofire" */,
-				4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				4F07581E2BE81F2D0064A30F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
-				C6F67B082F40C6A100372625 /* XCRemoteSwiftPackageReference "LicenseList" */,
+				6E1A2B3C4D5E6F708192A3B4 /* XCLocalSwiftPackageReference "NinjacordPackage" */,
 			);
 			productRefGroup = 4F5072B52BCF901E0005D352 /* Products */;
 			projectDirPath = "";
@@ -319,25 +206,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4F7248F62BE827DF004FD3DC /* BannerView.swift in Sources */,
-				4F6755542BE008BC00F2629B /* AppDelegate.swift in Sources */,
-				4F435C8E2BE115650087CEE3 /* MainView.swift in Sources */,
-				4F5C1BF72BDDE8A9001C9A51 /* MessageEntity.swift in Sources */,
-				4FD55D502BE701FE00581F34 /* PrivacyPolicyView.swift in Sources */,
-				4FD55D4B2BE6F92400581F34 /* AppInfo.swift in Sources */,
-				4F5C1BF52BDDDC2C001C9A51 /* SendMessageViewModel.swift in Sources */,
-				4F8F72372BF99E0D00EB1869 /* ComingSoonModifier.swift in Sources */,
-				4F6F9FAD2BEB9C820033AFB7 /* Extension+Color.swift in Sources */,
-				4F3A7B552BE836BF0046765E /* Extension+View.swift in Sources */,
-				4FF2FEA52BDFAF4F00973FDA /* Extension+TextFieldStyle.swift in Sources */,
-				4F435C902BE117840087CEE3 /* SettingView.swift in Sources */,
-				4F31E3B62BECEE1E00F299EE /* NativeAdView.swift in Sources */,
-				4F5072BA2BCF901E0005D352 /* SendMessageView.swift in Sources */,
-				4FD55D492BE6F04700581F34 /* FirebaseAnalytics.swift in Sources */,
-				4F7248F32BE825D2004FD3DC /* BannerViewController.swift in Sources */,
-				4F31E3B82BECEED700F299EE /* NativeAdModel.swift in Sources */,
-				4FAB6FFB2BE1C53B00B2F33A /* WebhookURLSettingView.swift in Sources */,
-				4F8F723F2BF9ABE100EB1869 /* LicenseView.swift in Sources */,
 				4F5072B82BCF901E0005D352 /* NinjacordApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -694,71 +562,17 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		4F07581E2BE81F2D0064A30F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 11.3.0;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		6E1A2B3C4D5E6F708192A3B4 /* XCLocalSwiftPackageReference "NinjacordPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = NinjacordPackage;
 		};
-		4F0EC9582BD1A2C3009A5CB6 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Alamofire/Alamofire";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.9.1;
-			};
-		};
-		4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 10.24.0;
-			};
-		};
-		C6F67B082F40C6A100372625 /* XCRemoteSwiftPackageReference "LicenseList" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cybozu/LicenseList";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.2.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4F07581F2BE81F2D0064A30F /* GoogleMobileAds */ = {
+		6E1A2B3C4D5E6F708192A3B2 /* NinjacordFeature */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4F07581E2BE81F2D0064A30F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
-			productName = GoogleMobileAds;
-		};
-		4F0EC9592BD1A2C3009A5CB6 /* Alamofire */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4F0EC9582BD1A2C3009A5CB6 /* XCRemoteSwiftPackageReference "Alamofire" */;
-			productName = Alamofire;
-		};
-		4F67554D2BE0074A00F2629B /* FirebaseAnalytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalytics;
-		};
-		4F67554F2BE0074A00F2629B /* FirebaseCrashlytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCrashlytics;
-		};
-		4F6755512BE0074A00F2629B /* FirebaseFirestore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4F67554C2BE0074A00F2629B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
-		};
-		C6F67B092F40C6A100372625 /* LicenseList */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C6F67B082F40C6A100372625 /* XCRemoteSwiftPackageReference "LicenseList" */;
-			productName = LicenseList;
+			productName = NinjacordFeature;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import NinjacordFeature
 
 @main
 struct NinjacordApp: App {
