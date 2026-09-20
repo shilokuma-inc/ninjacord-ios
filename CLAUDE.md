@@ -18,20 +18,27 @@ Discord に Webhook / bot 経由でメッセージを送信できる iOS アプ�
 ## ビルド構成
 
 - **`.xcodeproj` 直**（`.xcworkspace` は無い）。ビルド対象は常に `-project NinjacordApp.xcodeproj`。
+- アプリ本体のコードは **ローカル Swift Package `NinjacordPackage`**（`NinjacordPackage/Package.swift`）に置く。`NinjacordApp` ターゲットは `@main` と各種リソース（Assets / Info.plist / xcstrings 等）だけを持つ薄いシェル。
+  - `.swift` ファイルの追加・削除は `NinjacordPackage/Sources/NinjacordFeature/` 配下で行う。**`.xcodeproj` に差分は出ない**（Issue #211）。
+  - 外部依存（Firebase 等）も `Package.swift` の `dependencies` で管理する。バージョンのピンは従来どおり `NinjacordApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`。
+  - `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate`）だけ `public`。それ以外は internal のまま。
 - Scheme は2つ:
   - `NinjacordApp` … 本番
   - `NinjacordApp-STG` … STG（開発確認はこちらを優先）
 - Configuration: `Debug` / `NinjacordApp-STG` / `Release`
-- 依存は全て SPM: Firebase, Alamofire, Google Mobile Ads (AdMob), LicenseList
+- 依存は全て SPM（`NinjacordPackage/Package.swift` で宣言）: Firebase, Alamofire, Google Mobile Ads (AdMob), LicenseList
 - SwiftLint 使用（CI で `brew install swiftlint`）
 
 ## ディレクトリ
 
-- `NinjacordApp/` … アプリ本体（SwiftUI View / ViewModel）
-  - `SettingMessage/` … メッセージ送信画面
-  - `Setting/` … 設定・ライセンス・プライバシー
-  - `AdMob/` … 広告
-  - `Extension/`, `Common/` … 共通部品
+- `NinjacordApp/` … アプリターゲット（`@main` の `NinjacordApp.swift` とリソース: Assets / Info.plist / Localizable.xcstrings / entitlements 等）
+- `NinjacordPackage/` … ローカル Swift Package（アプリ本体のコード）
+  - `Package.swift` … ターゲット定義と外部依存
+  - `Sources/NinjacordFeature/` … SwiftUI View / ViewModel
+    - `SettingMessage/` … メッセージ送信画面
+    - `Setting/` … 設定・ライセンス・プライバシー
+    - `AdMob/` … 広告
+    - `Extension/`, `Common/` … 共通部品
 - `ci_scripts/ci_post_clone.sh` … CI 前処理（SwiftLint 導入等）
 - `.github/workflows/` … build / archive / upload（`develop`・`master` への push で発火）
 
@@ -70,7 +77,6 @@ Discord に Webhook / bot 経由でメッセージを送信できる iOS アプ�
 - 件名: **`[type] 日本語の説明`**（type は半角小文字。例: `[feat] メッセージ送信ボタンを追加`）
 - 説明は「何をしたか」を簡潔に。必要なら空行の後に本文で「なぜ」を書く。
 - **粒度**: 1コミット＝1つの論理的変更。人間がコミット単位でレビューして意味が追える単位に分け、無関係な変更を同じコミットに混ぜない（例: 「機能追加」と「既存のリネーム」は別コミット）。
-- Claude が作成したコミットは末尾に `Co-Authored-By: Claude <noreply@anthropic.com>` を付ける。
 
 ### PR タイトル
 

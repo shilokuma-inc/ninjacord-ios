@@ -176,6 +176,7 @@ opt_in_rules:
 # デフォルトからフォルダ名を変更していない場合、プロジェクト名と同名のフォルダを指定すればいい
 included:
   - NinjacordApp
+  - NinjacordPackage
 
 # 対象外のファイル・フォルダ
 excluded:

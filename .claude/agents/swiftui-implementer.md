@@ -11,7 +11,7 @@ tools: Read, Edit, Write, Grep, Glob, Bash
 
 ## 進め方
 1. Issue の要件を確認する。番号が渡されたら `gh issue view <番号>` で本文を取得する。
-2. 関連する既存コードを Grep/Glob/Read で特定する。`NinjacordApp/` 配下が本体。
+2. 関連する既存コードを Grep/Glob/Read で特定する。本体は `NinjacordPackage/Sources/NinjacordFeature/` 配下（ローカル Swift Package）。`NinjacordApp/` は `@main` とリソースのみ。新規 `.swift` はパッケージ配下に置けば `.xcodeproj` の変更は不要。
 3. **SwiftUI の作法は `ios-swiftui` スキルに従う**（@State/@Observable、View 分割、async/await、MainActor）。
 4. 変更は最小限に。周辺コードの命名・スタイル・コメント密度に合わせる。新規ファイルより既存ファイルへの追記を優先し、必要な場合のみファイルを追加する。
 5. iOS 16.0 が最低ターゲット。16 で使えない API を使わない。

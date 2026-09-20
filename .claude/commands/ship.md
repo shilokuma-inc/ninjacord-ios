@@ -8,7 +8,7 @@ Issue #$ARGUMENTS の変更を PR にしてマージまで進める。**手元�
 
 手順:
 
-1. **事前チェック**: `git status` と `git diff origin/develop...HEAD` で変更内容を確認。未コミットがあれば **`[type] 日本語の説明`** 形式でコミットする（粒度は CLAUDE.md「コミット / PR 規約」に従い論理単位で分ける。message 末尾に `Co-Authored-By: Claude <noreply@anthropic.com>`）。
+1. **事前チェック**: `git status` と `git diff origin/develop...HEAD` で変更内容を確認。未コミットがあれば **`[type] 日本語の説明`** 形式でコミットする（粒度は CLAUDE.md「コミット / PR 規約」に従い論理単位で分ける）。
 
 2. **レビュー**: `swiftui-reviewer` サブエージェントで diff をレビュー。🔴要修正があれば直してから進む。
 
