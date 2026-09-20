@@ -37,7 +37,10 @@ jobs:
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath NinjacordApp.xcarchive \
-            CODE_SIGNING_ALLOWED=NO
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$PWD/private_keys/AuthKey_${{ secrets.APPLE_API_ISSUER_ID }}.p8" \
+            -authenticationKeyID "${{ secrets.APPLE_API_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.APPLE_API_ISSUER_ID }}"
 
       - name: Create ExportOptions.plist
         run: |
