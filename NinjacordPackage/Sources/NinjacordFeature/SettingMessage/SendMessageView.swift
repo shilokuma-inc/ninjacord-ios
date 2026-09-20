@@ -37,27 +37,16 @@ struct SendMessageView: View {
                 VStack(spacing: 8.0) {
                     Spacer()
 
-                    HStack {
-                        withIconTextFieldView(
-                            icon: Image(systemName: "link.icloud.fill"),
-                            placeholder: "URLを入れてください",
-                            text: $inputURL
-                        )
-                        .onTapGesture {
-                            self.isEditing = true
-                        }
-
-                        if !inputURL.isEmpty {
-                            Button(action: {
-                                inputURL = ""
-                            }, label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color.appTextSecondary)
-                            })
-                        }
+                    ClearableIconTextField(
+                        icon: Image(systemName: "link.icloud.fill"),
+                        placeholder: "URLを入れてください",
+                        text: $inputURL
+                    )
+                    .onTapGesture {
+                        self.isEditing = true
                     }
 
-                    withIconTextFieldView(
+                    ClearableIconTextField(
                         icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
                         placeholder: "名前を入れてください",
                         text: $inputUsername
@@ -66,7 +55,7 @@ struct SendMessageView: View {
                         self.isEditing = true
                     }
 
-                    withIconTextFieldView(
+                    ClearableIconTextField(
                         icon: Image(systemName: "person.crop.square"),
                         placeholder: "プロフィール画像のURLを入れてください",
                         text: $inputAvatarURL
@@ -75,7 +64,7 @@ struct SendMessageView: View {
                         self.isEditing = true
                     }
 
-                    withIconTextFieldView(
+                    ClearableIconTextField(
                         icon: Image(systemName: "square.and.pencil"),
                         placeholder: "メッセージを入れてください",
                         text: $inputContext
@@ -89,7 +78,7 @@ struct SendMessageView: View {
                 Spacer()
                     .frame(height: 24.0)
 
-                withIconTextFieldView(
+                ClearableIconTextField(
                     icon: Image(systemName: "list.clipboard"),
                     placeholder: "埋め込みタイトルを入れてください",
                     text: $inputEmbedTitle
@@ -118,28 +107,6 @@ struct SendMessageView: View {
 }
 
 extension SendMessageView {
-    private func withIconTextFieldView(
-        icon: Image,
-        placeholder: LocalizedStringResource,
-        text: Binding<String>
-    ) -> some View {
-        HStack {
-            icon
-                .foregroundStyle(Color.appAccent)
-                .frame(width: 24.0, height: 24.0)
-
-            ZStack(alignment: .leading) {
-                TextField(
-                    "",
-                    text: text,
-                    prompt: Text(String(localized: placeholder))
-                        .foregroundColor(Color.appPlaceholder)
-                )
-                .textFieldStyle(.capsule)
-            }
-        }
-    }
-
     private var sendButton: some View {
         Button(action: {
             sendMessage()
@@ -150,7 +117,8 @@ extension SendMessageView {
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 30.0)
-                        .foregroundStyle(Color.appAccent)
+                        .foregroundStyle(.indigo)
+                        .foregroundStyle(.ultraThickMaterial)
                         .shadow(radius: 5.0)
                 )
         })
