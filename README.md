@@ -56,7 +56,7 @@ Discordでbot経由で送信できるアプリ
           </a>
         </td>
         <td style="border:2px double #000080;text-align:center;">
-          <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/release-develop.yml">
+          <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/upload-develop.yml">
             <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/upload-develop.yml/badge.svg" alt="Upload/develop">
           </a>
         </td>
