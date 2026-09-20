@@ -63,3 +63,71 @@ extension SendMessageViewModel {
         return param
     }
 }
+
+// MARK: - 入力バリデーション
+
+/// 送信前の入力チェックで検出したエラー。アラートのタイトル・本文として表示する
+enum SendMessageValidationError: LocalizedError {
+    /// 送信先 URL が未入力
+    case emptyURL
+    /// 送信先 URL が URL の形式になっていない
+    case invalidURL
+    /// URL 以外の項目がすべて未入力
+    case emptyMessage
+
+    var errorDescription: String? {
+        switch self {
+        case .emptyURL:
+            return String(localized: "URLが入力されていません")
+        case .invalidURL:
+            return String(localized: "URLの形式が正しくありません")
+        case .emptyMessage:
+            return String(localized: "メッセージが入力されていません")
+        }
+    }
+
+    var recoverySuggestion: String? {
+        switch self {
+        case .emptyURL:
+            return String(localized: "送信先のWebhook URLを入力してください")
+        case .invalidURL:
+            return String(localized: "https:// から始まるWebhook URLを入力してください")
+        case .emptyMessage:
+            return String(localized: "名前・メッセージなど、いずれかの項目を入力してください")
+        }
+    }
+}
+
+extension SendMessageViewModel {
+    /// 送信前に入力内容を検証する。問題がなければ nil を返す
+    func validate(url: String, messageEntity: MessageEntity) -> SendMessageValidationError? {
+        let trimmedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedURL.isEmpty {
+            return .emptyURL
+        }
+        if !isValidURL(trimmedURL) {
+            return .invalidURL
+        }
+        let messageFields = [
+            messageEntity.username,
+            messageEntity.avatarURL,
+            messageEntity.content,
+            messageEntity.messageEmbedEntity.title
+        ]
+        if messageFields.allSatisfy({ $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+            return .emptyMessage
+        }
+        return nil
+    }
+
+    /// http / https のスキームとホストを持つ URL かどうか
+    private func isValidURL(_ string: String) -> Bool {
+        guard let components = URLComponents(string: string),
+              let scheme = components.scheme?.lowercased(),
+              ["http", "https"].contains(scheme),
+              let host = components.host, !host.isEmpty else {
+            return false
+        }
+        return true
+    }
+}
