@@ -22,6 +22,15 @@ struct SendMessageView: View {
     @State private var isSavedURLListPresented = false
     private var viewModel = SendMessageViewModel()
 
+    init() {
+        guard ProcessInfo.processInfo.arguments.contains("-screenshot-demo") else { return }
+        _inputURL = State(initialValue: "https://discord.com/api/webhooks/example")
+        _inputUsername = State(initialValue: "Ninja Cord")
+        _inputAvatarURL = State(initialValue: "https://example.com/avatar.png")
+        _inputContext = State(initialValue: "Discordへかんたん送信")
+        _inputEmbedTitle = State(initialValue: "お知らせ")
+    }
+
     var body: some View {
         ZStack {
             Color.appBackground
@@ -39,22 +48,13 @@ struct SendMessageView: View {
                     Spacer()
 
                     HStack {
-                        withIconTextFieldView(
+                        ClearableIconTextField(
                             icon: Image(systemName: "link.icloud.fill"),
                             placeholder: "URLを入れてください",
                             text: $inputURL
                         )
                         .onTapGesture {
                             self.isEditing = true
-                        }
-
-                        if !inputURL.isEmpty {
-                            Button(action: {
-                                inputURL = ""
-                            }, label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color.appTextSecondary)
-                            })
                         }
 
                         Button(action: {
@@ -65,7 +65,7 @@ struct SendMessageView: View {
                         })
                     }
 
-                    withIconTextFieldView(
+                    ClearableIconTextField(
                         icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
                         placeholder: "名前を入れてください",
                         text: $inputUsername
@@ -74,7 +74,7 @@ struct SendMessageView: View {
                         self.isEditing = true
                     }
 
-                    withIconTextFieldView(
+                    ClearableIconTextField(
                         icon: Image(systemName: "person.crop.square"),
                         placeholder: "プロフィール画像のURLを入れてください",
                         text: $inputAvatarURL
@@ -83,7 +83,7 @@ struct SendMessageView: View {
                         self.isEditing = true
                     }
 
-                    withIconTextFieldView(
+                    ClearableIconTextField(
                         icon: Image(systemName: "square.and.pencil"),
                         placeholder: "メッセージを入れてください",
                         text: $inputContext
@@ -97,7 +97,7 @@ struct SendMessageView: View {
                 Spacer()
                     .frame(height: 24.0)
 
-                withIconTextFieldView(
+                ClearableIconTextField(
                     icon: Image(systemName: "list.clipboard"),
                     placeholder: "埋め込みタイトルを入れてください",
                     text: $inputEmbedTitle
@@ -129,28 +129,6 @@ struct SendMessageView: View {
 }
 
 extension SendMessageView {
-    private func withIconTextFieldView(
-        icon: Image,
-        placeholder: LocalizedStringResource,
-        text: Binding<String>
-    ) -> some View {
-        HStack {
-            icon
-                .foregroundStyle(Color.appAccent)
-                .frame(width: 24.0, height: 24.0)
-
-            ZStack(alignment: .leading) {
-                TextField(
-                    "",
-                    text: text,
-                    prompt: Text(String(localized: placeholder))
-                        .foregroundColor(Color.appPlaceholder)
-                )
-                .textFieldStyle(.capsule)
-            }
-        }
-    }
-
     /// 保存済み URL から選んで URL 欄に反映するシート
     private var savedURLListSheet: some View {
         NavigationStack {
@@ -183,7 +161,8 @@ extension SendMessageView {
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 30.0)
-                        .foregroundStyle(Color.appAccent)
+                        .foregroundStyle(.indigo)
+                        .foregroundStyle(.ultraThickMaterial)
                         .shadow(radius: 5.0)
                 )
         })
