@@ -21,6 +21,15 @@ struct SendMessageView: View {
     @State private var isValidationAlertPresented: Bool = false
     private var viewModel = SendMessageViewModel()
 
+    init() {
+        guard ProcessInfo.processInfo.arguments.contains("-screenshot-demo") else { return }
+        _inputURL = State(initialValue: "https://discord.com/api/webhooks/example")
+        _inputUsername = State(initialValue: "Ninja Cord")
+        _inputAvatarURL = State(initialValue: "https://example.com/avatar.png")
+        _inputContext = State(initialValue: "Discordへかんたん送信")
+        _inputEmbedTitle = State(initialValue: "お知らせ")
+    }
+
     var body: some View {
         ZStack {
             Color.appBackground

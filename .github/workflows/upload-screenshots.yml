@@ -1,0 +1,67 @@
+name: Upload/screenshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      locale:
+        description: App Store Connect のロケール（例: ja）
+        required: false
+        default: ja
+      skip_upload:
+        description: App Store Connect へのアップロードをスキップする
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  screenshots:
+    name: Capture and upload 6.5inch screenshots
+    runs-on: macos-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: ci_post_clone
+        run: |
+          brew install swiftlint
+          defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+          defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
+      - name: Capture 6.5inch screenshots
+        run: |
+          chmod +x ci_scripts/capture_app_store_screenshots.sh
+          ci_scripts/capture_app_store_screenshots.sh
+
+      - name: Upload screenshot artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-store-screenshots-iphone-65
+          path: fastlane/screenshots/ja/*.png
+          if-no-files-found: error
+
+      - name: Create Private Key
+        if: ${{ !inputs.skip_upload }}
+        run: |
+          mkdir -p private_keys
+          echo -n '${{ secrets.APPLE_API_KEY_BASE64 }}' | base64 --decode > ./private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+
+      - name: Install App Store Connect upload dependencies
+        if: ${{ !inputs.skip_upload }}
+        run: python3 -m pip install --user 'PyJWT[crypto]' || python3 -m pip install --user --break-system-packages 'PyJWT[crypto]'
+
+      - name: Upload screenshots to App Store Connect
+        if: ${{ !inputs.skip_upload }}
+        env:
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+        run: |
+          python3 ci_scripts/upload_app_store_screenshots.py \
+            --directory fastlane/screenshots/ja \
+            --locale '${{ inputs.locale }}' \
+            --private-key-path "./private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8"
