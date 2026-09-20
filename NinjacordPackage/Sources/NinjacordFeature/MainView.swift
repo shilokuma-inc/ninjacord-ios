@@ -12,10 +12,7 @@ public struct MainView: View {
     let analytics = FirebaseAnalytics()
     @State var selection = 1
 
-    public init() {
-        UITabBar.appearance().backgroundColor = UIColor(Color.discordLightGray)
-        UITabBar.appearance().unselectedItemTintColor = UIColor(Color.discordSuperLightGray)
-    }
+    public init() {}
 
     public var body: some View {
         TabView(selection: $selection) {
@@ -37,6 +34,8 @@ public struct MainView: View {
                     analytics.sendAnalyticsScreen(screenName: "SettingView")
                 }
         }
-        .accentColor(.discordPurple)
+        .tint(Color.appAccent)
+        .toolbarBackground(Color.appSurface, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
     }
 }

@@ -11,18 +11,18 @@ import LicenseList
 struct LicenseView: View {
     var body: some View {
         ZStack {
-            Color.discordDarkGray
+            Color.appBackground
                 .ignoresSafeArea(edges: [.top])
             List {
                 Section(content: {
                     ForEach(Library.libraries, id: \.name) { library in
                         Text(library.name)
-                            .listRowBackground(Color.discordGray)
-                            .foregroundStyle(.white)
+                            .listRowBackground(Color.appSurface)
+                            .foregroundStyle(Color.appTextPrimary)
                     }
                 }, header: {
                     Text("ライセンス一覧")
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.appTextSecondary)
                 })
             }
             .scrollContentBackground(.hidden)

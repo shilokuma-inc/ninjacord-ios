@@ -23,7 +23,7 @@ struct SendMessageView: View {
 
     var body: some View {
         ZStack {
-            Color.discordGray
+            Color.appBackground
                 .ignoresSafeArea(edges: [.top])
                 .onTapGesture {
                     if self.isEditing {
@@ -52,7 +52,7 @@ struct SendMessageView: View {
                                 inputURL = ""
                             }, label: {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.gray)
+                                    .foregroundStyle(Color.appTextSecondary)
                             })
                         }
                     }
@@ -125,7 +125,7 @@ extension SendMessageView {
     ) -> some View {
         HStack {
             icon
-                .foregroundStyle(Color.discordPurple)
+                .foregroundStyle(Color.appAccent)
                 .frame(width: 24.0, height: 24.0)
 
             ZStack(alignment: .leading) {
@@ -133,7 +133,7 @@ extension SendMessageView {
                     "",
                     text: text,
                     prompt: Text(String(localized: placeholder))
-                        .foregroundColor(Color.discordSuperLightGray)
+                        .foregroundColor(Color.appPlaceholder)
                 )
                 .textFieldStyle(.capsule)
             }
@@ -150,8 +150,7 @@ extension SendMessageView {
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 30.0)
-                        .foregroundStyle(.indigo)
-                        .foregroundStyle(.ultraThickMaterial)
+                        .foregroundStyle(Color.appAccent)
                         .shadow(radius: 5.0)
                 )
         })
