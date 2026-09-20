@@ -12,19 +12,19 @@ struct WebhookURLSettingView: View {
 
     var body: some View {
         ZStack {
-            Color.pink
-                .opacity(0.2)
+            Color.appBackground
                 .ignoresSafeArea(edges: [.top])
 
             VStack(spacing: 32.0) {
                 Text("URL設定")
+                    .foregroundStyle(Color.appTextPrimary)
 
                 Button(action: {
                     dismiss()
                 }, label: {
                     Text("設定完了")
                         .font(.system(size: 24, weight: .semibold, design: .default))
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.appTextPrimary)
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 30.0)

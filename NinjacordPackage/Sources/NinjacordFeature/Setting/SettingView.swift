@@ -12,6 +12,7 @@ struct SettingView: View {
 
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @StateObject private var model = NativeAdModel()
+    @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
     @State private var isURLSettingPresented = false
     @State private var isLicensePresented = false
     @State private var isPrivacyPolicyPresented = false
@@ -19,47 +20,62 @@ struct SettingView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.discordDarkGray
+                Color.appBackground
                     .ignoresSafeArea(edges: [.top])
                 List {
+                    Section {
+                        Picker("テーマ", selection: $appTheme) {
+                            ForEach(AppTheme.allCases) { theme in
+                                Text(theme.localizedTitle)
+                                    .tag(theme.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityLabel("アプリのテーマ")
+                        .listRowBackground(Color.appSurface)
+                    } header: {
+                        Text("テーマ")
+                            .foregroundStyle(Color.appTextSecondary)
+                    }
+
                     Section(content: {
                         Button {
                             isURLSettingPresented = true
                         } label: {
                             Text("URL設定")
                                 .addComingSoon()
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.appTextPrimary)
                         }
-                        .listRowBackground(Color.discordGray)
+                        .listRowBackground(Color.appSurface)
                         .navigationDestination(isPresented: $isURLSettingPresented) {
                             WebhookURLSettingView()
                         }
                         .disabled(true)
                     }, header: {
                         Text("送信先URL設定")
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appTextSecondary)
                     })
 
                     Section(content: {
                         Text("このアプリについて")
                             .addComingSoon()
-                            .foregroundStyle(.white)
-                            .listRowBackground(Color.discordGray)
+                            .foregroundStyle(Color.appTextPrimary)
+                            .listRowBackground(Color.appSurface)
 
                         Button {
                             isPrivacyPolicyPresented = true
                         } label: {
                             HStack {
                                 Text("プライバシーポリシー")
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.appTextPrimary)
 
                                 Spacer()
 
                                 Image(systemName: "chevron.right")
-                                    .foregroundStyle(.gray)
+                                    .foregroundStyle(Color.appTextSecondary)
                             }
                         }
-                        .listRowBackground(Color.discordGray)
+                        .listRowBackground(Color.appSurface)
                         .navigationDestination(isPresented: $isPrivacyPolicyPresented) {
                             PrivacyPolicyView()
                         }
@@ -69,32 +85,32 @@ struct SettingView: View {
                         } label: {
                             HStack {
                                 Text("ライセンス")
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.appTextPrimary)
 
                                 Spacer()
 
                                 Image(systemName: "chevron.right")
-                                    .foregroundStyle(.gray)
+                                    .foregroundStyle(Color.appTextSecondary)
                             }
                         }
-                        .listRowBackground(Color.discordGray)
+                        .listRowBackground(Color.appSurface)
                         .navigationDestination(isPresented: $isLicensePresented) {
                             LicenseView()
                         }
 
                         HStack {
                             Text("アプリバージョン")
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.appTextPrimary)
 
                             Spacer()
 
                             Text(appInfo.getVersion())
-                                .foregroundStyle(.gray)
+                                .foregroundStyle(Color.appTextSecondary)
                         }
-                        .listRowBackground(Color.discordGray)
+                        .listRowBackground(Color.appSurface)
                     }, header: {
                         Text("アプリ情報")
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.appTextSecondary)
                     })
 
                     if let nativeAd = model.nativeAd {
