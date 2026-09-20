@@ -12,7 +12,11 @@ public struct MainView: View {
     let analytics = FirebaseAnalytics()
     @State var selection = 1
 
-    public init() {}
+    public init() {
+        if ProcessInfo.processInfo.arguments.contains("-screenshot-settings") {
+            _selection = State(initialValue: 2)
+        }
+    }
 
     public var body: some View {
         TabView(selection: $selection) {
