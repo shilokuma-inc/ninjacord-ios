@@ -10,7 +10,10 @@ cd "$ROOT_DIR"
 SCHEME="${SCHEME:-NinjacordApp}"
 CONFIGURATION="${CONFIGURATION:-Debug}"
 SCREENSHOT_DIR="${SCREENSHOT_DIR:-$ROOT_DIR/fastlane/screenshots/ja}"
-DERIVED_DATA="${DERIVED_DATA:-$ROOT_DIR/DerivedData}"
+# DerivedData はリポジトリ外に置く。リポジトリ内に置くと、ビルドフェーズの
+# SwiftLint が SPM 依存のソース（DerivedData/SourcePackages/checkouts）まで
+# lint してしまい、大量の violation でビルドが失敗する。
+DERIVED_DATA="${DERIVED_DATA:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/NinjacordScreenshotDerivedData}"
 
 mkdir -p "$SCREENSHOT_DIR"
 
