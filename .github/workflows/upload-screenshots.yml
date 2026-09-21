@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       locale:
-        description: App Store Connect のロケール（例: ja）
+        description: "App Store Connect のロケール（例: ja）"
         required: false
         default: ja
       skip_upload:
-        description: App Store Connect へのアップロードをスキップする
+        description: "App Store Connect へのアップロードをスキップする"
         type: boolean
         required: false
         default: false
