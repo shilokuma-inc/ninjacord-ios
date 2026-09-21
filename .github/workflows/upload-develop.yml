@@ -63,7 +63,19 @@ jobs:
           mkdir -p "$PROFILES_DIR"
           echo -n "$PROFILE_BASE64" | tr -d '[:space:]' | base64 --decode > "$PROFILES_DIR/appstore.mobileprovision"
           PROFILE_NAME="$(security cms -D -i "$PROFILES_DIR/appstore.mobileprovision" | plutil -extract Name raw -)"
-          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+
+          # 手動署名の設定は xcconfig にまとめ、プロファイル指定はアプリターゲットだけに当てる。
+          # コマンドライン引数で PROVISIONING_PROFILE_SPECIFIER を渡すと SPM のパッケージターゲットにも
+          # 波及し、"does not support provisioning profiles" で archive が落ちる。
+          SIGNING_XCCONFIG="$RUNNER_TEMP/ManualSigning.xcconfig"
+          cat > "$SIGNING_XCCONFIG" <<EOF
+          CODE_SIGN_STYLE = Manual
+          CODE_SIGN_IDENTITY = Apple Distribution
+          DEVELOPMENT_TEAM = XU74X3434S
+          PROVISIONING_PROFILE_SPECIFIER = \$(PROVISIONING_PROFILE_SPECIFIER_\$(PRODUCT_NAME))
+          PROVISIONING_PROFILE_SPECIFIER_NinjacordApp = $PROFILE_NAME
+          EOF
+          echo "SIGNING_XCCONFIG=$SIGNING_XCCONFIG" >> "$GITHUB_ENV"
 
       - name: Determine Build Number
         id: build_number
@@ -77,11 +89,8 @@ jobs:
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath NinjacordApp.xcarchive \
-            CURRENT_PROJECT_VERSION=${{ steps.build_number.outputs.value }} \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
-            DEVELOPMENT_TEAM=XU74X3434S
+            -xcconfig "$SIGNING_XCCONFIG" \
+            CURRENT_PROJECT_VERSION=${{ steps.build_number.outputs.value }}
 
       # EXPORT_OPTIONS はリポジトリ secret（signingStyle: manual）。org secret の自動署名用を上書きしている
       - name: Create ExportOptions.plist
