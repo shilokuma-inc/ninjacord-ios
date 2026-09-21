@@ -116,6 +116,22 @@
         }
       }
     },
+    "お問い合わせ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact Us"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お問い合わせ"
+          }
+        }
+      }
+    },
     "このアプリについて" : {
       "localizations" : {
         "en" : {
