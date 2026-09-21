@@ -57,12 +57,7 @@ struct SendMessageView: View {
                             self.isEditing = true
                         }
 
-                        Button(action: {
-                            isSavedURLListPresented = true
-                        }, label: {
-                            Image(systemName: "bookmark.fill")
-                                .foregroundStyle(Color.appAccent)
-                        })
+                        savedURLButton
                     }
 
                     ClearableIconTextField(
@@ -129,6 +124,21 @@ struct SendMessageView: View {
 }
 
 extension SendMessageView {
+    /// 保存済み URL 一覧を開くボタン。
+    /// アイコンだけだとタップ領域がグリフの大きさ（約 11x18pt）しかなく指で押しても反応しないため、
+    /// 44pt 角の当たり判定を明示する
+    private var savedURLButton: some View {
+        Button(action: {
+            isSavedURLListPresented = true
+        }, label: {
+            Image(systemName: "bookmark.fill")
+                .foregroundStyle(Color.appAccent)
+                .frame(width: 44.0, height: 44.0)
+                .contentShape(Rectangle())
+        })
+        .accessibilityLabel("保存済みURL")
+    }
+
     /// 保存済み URL から選んで URL 欄に反映するシート
     private var savedURLListSheet: some View {
         NavigationStack {
