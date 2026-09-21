@@ -5,6 +5,12 @@ on:
     branches: 
       - 'release/**'
 
+# App Store Connect へのアップロードが並走すると、同じビルド番号で衝突して 409 になる。
+# upload 系ワークフロー全体で 1 本ずつ実行する。
+concurrency:
+  group: upload-app-store-connect
+  cancel-in-progress: false
+
 jobs:          
   build:
     name: Upload/release
