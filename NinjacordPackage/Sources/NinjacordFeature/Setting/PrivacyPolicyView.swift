@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import WebKit
 
 struct PrivacyPolicyView: View {
     let baseUrl: String = "https://shilokuma-inc.github.io"
@@ -17,23 +16,10 @@ struct PrivacyPolicyView: View {
 
     var body: some View {
         if let privacyPolicyUrl = URL(string: privacyPolicyUrlString) {
-            PrivacyPolicyWebView(url: privacyPolicyUrl)
+            WebView(url: privacyPolicyUrl)
                 .navigationTitle("プライバシーポリシー")
         } else {
             EmptyView()
         }
-    }
-}
-
-private struct PrivacyPolicyWebView: UIViewRepresentable {
-    let url: URL
-
-    func makeUIView(context: Context) -> WKWebView {
-        return WKWebView()
-    }
-
-    func updateUIView(_ uiView: WKWebView, context: Context) {
-        let request = URLRequest(url: url)
-        uiView.load(request)
     }
 }
