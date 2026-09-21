@@ -29,10 +29,53 @@ jobs:
           defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
           defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 
-      - name: Create Private Key
+      # -allowProvisioningUpdates は runner ごとに Apple Development 証明書を新規発行してしまい、
+      # アカウントの証明書上限に達して archive が落ちる (Issue #235)。
+      # Secrets の Apple Distribution 証明書と Provisioning Profile を持ち込んで手動署名する。
+      - name: Import Code Signing Assets
+        env:
+          P12_BASE64: ${{ secrets.DISTRIBUTION_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
         run: |
-          mkdir private_keys
-          echo -n '${{ secrets.APPLE_API_KEY_BASE64 }}' | base64 --decode > ./private_keys/AuthKey_${{ secrets.APPLE_API_ISSUER_ID }}.p8
+          set -euo pipefail
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+
+          # 一時キーチェーンを作成する（runner ごと破棄されるので後片付けは不要）
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+
+          # Apple Distribution 証明書を import する
+          echo -n "$P12_BASE64" | tr -d '[:space:]' | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" \
+            -k "$KEYCHAIN_PATH" -P "$P12_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" > /dev/null
+          rm -f "$RUNNER_TEMP/cert.p12"
+
+          # App Store 用 Provisioning Profile を配置し、プロファイル名を後続ステップへ渡す
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILES_DIR"
+          echo -n "$PROFILE_BASE64" | tr -d '[:space:]' | base64 --decode > "$PROFILES_DIR/appstore.mobileprovision"
+          PROFILE_NAME="$(security cms -D -i "$PROFILES_DIR/appstore.mobileprovision" | plutil -extract Name raw -)"
+
+          # 手動署名の設定は xcconfig にまとめ、プロファイル指定はアプリターゲットだけに当てる。
+          # コマンドライン引数で PROVISIONING_PROFILE_SPECIFIER を渡すと SPM のパッケージターゲットにも
+          # 波及し、"does not support provisioning profiles" で archive が落ちる。
+          SIGNING_XCCONFIG="$RUNNER_TEMP/ManualSigning.xcconfig"
+          cat > "$SIGNING_XCCONFIG" <<EOF
+          CODE_SIGN_STYLE = Manual
+          CODE_SIGN_IDENTITY = Apple Distribution
+          DEVELOPMENT_TEAM = XU74X3434S
+          PROVISIONING_PROFILE_SPECIFIER = \$(PROVISIONING_PROFILE_SPECIFIER_\$(PRODUCT_NAME))
+          PROVISIONING_PROFILE_SPECIFIER_NinjacordApp = $PROFILE_NAME
+          EOF
+          echo "SIGNING_XCCONFIG=$SIGNING_XCCONFIG" >> "$GITHUB_ENV"
 
       - name: Determine Build Number
         id: build_number
@@ -46,12 +89,10 @@ jobs:
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath NinjacordApp.xcarchive \
-            CURRENT_PROJECT_VERSION=${{ steps.build_number.outputs.value }} \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$PWD/private_keys/AuthKey_${{ secrets.APPLE_API_ISSUER_ID }}.p8" \
-            -authenticationKeyID "${{ secrets.APPLE_API_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.APPLE_API_ISSUER_ID }}"
+            -xcconfig "$SIGNING_XCCONFIG" \
+            CURRENT_PROJECT_VERSION=${{ steps.build_number.outputs.value }}
 
+      # EXPORT_OPTIONS はリポジトリ secret（signingStyle: manual）。org secret の自動署名用を上書きしている
       - name: Create ExportOptions.plist
         run: |
           echo '${{ secrets.EXPORT_OPTIONS }}' > ExportOptions.plist
@@ -61,11 +102,7 @@ jobs:
           xcodebuild -exportArchive \
             -archivePath NinjacordApp.xcarchive \
             -exportOptionsPlist ExportOptions.plist \
-            -exportPath app.ipa \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$PWD/private_keys/AuthKey_${{ secrets.APPLE_API_ISSUER_ID }}.p8" \
-            -authenticationKeyID "${{ secrets.APPLE_API_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.APPLE_API_ISSUER_ID }}"
+            -exportPath app.ipa
 
       - name: Upload IPA to App Store Connect
         run: |

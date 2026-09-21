@@ -25,7 +25,6 @@ Discordでbot経由で送信できるアプリ
       <tr>
         <td style="border:2px double #000080;">branch \ workflow</td>
         <td style="border:2px double #000080;">Build</td>
-        <td style="border:2px double #000080;">Archive</td>
         <td style="border:2px double #000080;">Upload</td>
       </tr>
       <tr>
@@ -36,11 +35,6 @@ Discordでbot経由で送信できるアプリ
           </a>
         </td>
         <td style="border:2px double #000080;text-align:center;">
-          <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-master.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-master.yml/badge.svg" alt="Archive/master">
-          </a>
-        </td>
-        <td style="border:2px double #000080;text-align:center;">
         </td>
       </tr>
       <tr>
@@ -48,11 +42,6 @@ Discordでbot経由で送信できるアプリ
         <td style="border:2px double #000080;text-align:center;">
           <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/build-develop.yml">
             <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/build-develop.yml/badge.svg" alt="Build/develop">
-          </a>
-        </td>
-        <td style="border:2px double #000080;text-align:center;">
-          <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-develop.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/archive-develop.yml/badge.svg" alt="Archive/develop">
           </a>
         </td>
         <td style="border:2px double #000080;text-align:center;">
