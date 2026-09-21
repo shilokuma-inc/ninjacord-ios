@@ -1,4 +1,4 @@
-name: Upload/screenshots
+name: ScreenShot
 
 on:
   workflow_dispatch:
