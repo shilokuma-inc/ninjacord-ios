@@ -7,33 +7,16 @@
 
 import SwiftUI
 
+/// 設定タブから開く、保存済み Webhook URL の管理画面（閲覧・追加・削除）
 struct WebhookURLSettingView: View {
-    @Environment(\.dismiss) private var dismiss
-
     var body: some View {
-        ZStack {
-            Color.appBackground
-                .ignoresSafeArea(edges: [.top])
+        SavedWebhookURLListView(onSelect: nil)
+            .navigationTitle("URL設定")
+    }
+}
 
-            VStack(spacing: 32.0) {
-                Text("URL設定")
-                    .foregroundStyle(Color.appTextPrimary)
-
-                Button(action: {
-                    dismiss()
-                }, label: {
-                    Text("設定完了")
-                        .font(.system(size: 24, weight: .semibold, design: .default))
-                        .foregroundStyle(Color.appTextPrimary)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 30.0)
-                                .foregroundStyle(.ultraThickMaterial)
-                                .shadow(radius: 5.0)
-                        )
-                })
-            }
-        }
-        .navigationBarHidden(true)
+#Preview {
+    NavigationStack {
+        WebhookURLSettingView()
     }
 }
