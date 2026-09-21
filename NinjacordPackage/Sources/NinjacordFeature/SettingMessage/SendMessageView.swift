@@ -107,7 +107,9 @@ struct SendMessageView: View {
 
                 sendButton
 
-                BannerView()
+                if AdConfiguration.isEnabled {
+                    BannerView()
+                }
             }
         }
         .alert(isPresented: $isValidationAlertPresented, error: validationError) { _ in

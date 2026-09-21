@@ -16,7 +16,9 @@ public class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
     -> Bool {
         FirebaseApp.configure()
 
-        GADMobileAds.sharedInstance().start(completionHandler: nil)
+        if AdConfiguration.isEnabled {
+            GADMobileAds.sharedInstance().start(completionHandler: nil)
+        }
 
         return true
     }

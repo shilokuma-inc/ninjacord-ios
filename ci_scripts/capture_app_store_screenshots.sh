@@ -7,8 +7,9 @@ set -eu
 ROOT_DIR="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
-SCHEME="${SCHEME:-NinjacordApp}"
-CONFIGURATION="${CONFIGURATION:-Debug}"
+# 広告なしの専用 Scheme / Configuration を使う（スクリーンショットに AdMob の広告を写さない）
+SCHEME="${SCHEME:-NinjacordApp-Screenshot}"
+CONFIGURATION="${CONFIGURATION:-NinjacordApp-Screenshot}"
 SCREENSHOT_DIR="${SCREENSHOT_DIR:-$ROOT_DIR/fastlane/screenshots/ja}"
 # DerivedData はリポジトリ外に置く。リポジトリ内に置くと、ビルドフェーズの
 # SwiftLint が SPM 依存のソース（DerivedData/SourcePackages/checkouts）まで

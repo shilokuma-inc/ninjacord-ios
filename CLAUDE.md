@@ -22,10 +22,12 @@ Discord に Webhook / bot 経由でメッセージを送信できる iOS アプ�
   - `.swift` ファイルの追加・削除は `NinjacordPackage/Sources/NinjacordFeature/` 配下で行う。**`.xcodeproj` に差分は出ない**（Issue #211）。
   - 外部依存（Firebase 等）も `Package.swift` の `dependencies` で管理する。バージョンのピンは従来どおり `NinjacordApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`。
   - `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate`）だけ `public`。それ以外は internal のまま。
-- Scheme は2つ:
+- Scheme は3つ:
   - `NinjacordApp` … 本番
   - `NinjacordApp-STG` … STG（開発確認はこちらを優先）
-- Configuration: `Debug` / `NinjacordApp-STG` / `Release`
+  - `NinjacordApp-Screenshot` … App Store 掲載用スクリーンショット撮影用。広告を表示しない（`ADS_ENABLED = NO`）
+- Configuration: `Debug` / `NinjacordApp-STG` / `NinjacordApp-Screenshot` / `Release`
+- 広告の表示可否は Configuration の `ADS_ENABLED` → Info.plist の `AdsEnabled` → `AdConfiguration.isEnabled` で切り替える
 - 依存は全て SPM（`NinjacordPackage/Package.swift` で宣言）: Firebase, Alamofire, Google Mobile Ads (AdMob), LicenseList
 - SwiftLint 使用（CI で `brew install swiftlint`）
 
