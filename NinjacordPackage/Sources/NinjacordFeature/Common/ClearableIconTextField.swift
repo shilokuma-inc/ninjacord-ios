@@ -13,9 +13,9 @@ struct ClearableIconTextField: View {
     let placeholder: LocalizedStringResource
     @Binding var text: String
 
-    /// クリアボタン分だけ TextField 右側の余白を広げ、入力文字がボタンの下に隠れないようにする
-    private let clearButtonSize: CGFloat = 20.0
-    private let clearButtonTrailingPadding: CGFloat = 12.0
+    /// クリアボタンのタップ領域。HIG の最小サイズ（44pt 角）に合わせる。
+    /// 同じ値を TextField 右側の余白にも使い、入力文字がタップ領域の下に潜り込まないようにする
+    private let clearButtonHitSize: CGFloat = 44.0
 
     var body: some View {
         HStack {
@@ -29,11 +29,10 @@ struct ClearableIconTextField: View {
                 prompt: Text(String(localized: placeholder))
                     .foregroundColor(Color.appPlaceholder)
             )
-            .textFieldStyle(.capsule(trailingPadding: clearButtonTrailingPadding + clearButtonSize + 4.0))
+            .textFieldStyle(.capsule(trailingPadding: clearButtonHitSize))
             .overlay(alignment: .trailing) {
                 if !text.isEmpty {
                     clearButton
-                        .padding(.trailing, clearButtonTrailingPadding)
                 }
             }
         }
@@ -45,8 +44,10 @@ struct ClearableIconTextField: View {
         } label: {
             Image(systemName: "xmark.circle.fill")
                 .foregroundStyle(Color.appTextSecondary)
-                .frame(width: clearButtonSize, height: clearButtonSize)
+                .frame(width: clearButtonHitSize, height: clearButtonHitSize)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel("入力をクリア")
     }
 }
 
