@@ -151,6 +151,8 @@ struct SettingView: View {
     }
 
     private func loadAd() {
+        guard AdConfiguration.isEnabled else { return }
+
         model.load(
             windowScene: sceneDelegate.windowScene,
             rootViewController: sceneDelegate.window?.rootViewController
