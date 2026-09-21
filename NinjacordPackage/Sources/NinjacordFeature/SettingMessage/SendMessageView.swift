@@ -109,6 +109,11 @@ struct SendMessageView: View {
 
                 if AdConfiguration.isEnabled {
                     BannerView()
+                } else {
+                    // バナーが占めていた下端の可変領域を、空の View で同じように確保する。
+                    // Spacer だと入力欄の上にある Spacer に高さを奪われ、画面全体が下に寄ってしまう
+                    Color.clear
+                        .frame(maxHeight: .infinity)
                 }
             }
         }
