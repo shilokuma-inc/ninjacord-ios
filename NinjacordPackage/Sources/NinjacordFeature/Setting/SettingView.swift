@@ -16,6 +16,7 @@ struct SettingView: View {
     @State private var isURLSettingPresented = false
     @State private var isLicensePresented = false
     @State private var isPrivacyPolicyPresented = false
+    @State private var isContactPresented = false
 
     var body: some View {
         NavigationStack {
@@ -83,6 +84,24 @@ struct SettingView: View {
                         .listRowBackground(Color.appSurface)
                         .navigationDestination(isPresented: $isPrivacyPolicyPresented) {
                             PrivacyPolicyView()
+                        }
+
+                        Button {
+                            isContactPresented = true
+                        } label: {
+                            HStack {
+                                Text("お問い合わせ")
+                                    .foregroundStyle(Color.appTextPrimary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color.appTextSecondary)
+                            }
+                        }
+                        .listRowBackground(Color.appSurface)
+                        .navigationDestination(isPresented: $isContactPresented) {
+                            ContactView()
                         }
 
                         Button {
