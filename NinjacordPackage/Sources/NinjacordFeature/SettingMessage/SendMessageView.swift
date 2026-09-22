@@ -232,6 +232,7 @@ extension SendMessageView {
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
+                await TrackingAuthorization.requestIfNeeded()
             case .failure(let error):
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
             }
