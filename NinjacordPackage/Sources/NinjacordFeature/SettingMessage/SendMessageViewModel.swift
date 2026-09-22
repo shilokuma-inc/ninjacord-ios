@@ -9,9 +9,13 @@ import Foundation
 import Alamofire
 
 struct SendMessageViewModel {
-    /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す
+    /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
+    /// 失敗時は Discord のレスポンスから判定した原因を返す
     @discardableResult
-    public func postDiscordWebhook(url: String, messageEntity: MessageEntity) async -> Result<Void, AFError> {
+    public func postDiscordWebhook(
+        url: String,
+        messageEntity: MessageEntity
+    ) async -> Result<Void, DiscordWebhookError> {
         let baseUrlString = url
         let param: Parameters = {
             makeParameter(messageEntity: messageEntity)
@@ -37,8 +41,8 @@ struct SendMessageViewModel {
             print("success")
             return .success(())
         case .failure(let error):
-            print("error")
-            return .failure(error)
+            print("error: \(error)")
+            return .failure(DiscordWebhookError(statusCode: response.response?.statusCode, data: response.data))
         }
     }
 }

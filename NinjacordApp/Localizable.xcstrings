@@ -20,6 +20,22 @@
         }
       }
     },
+    "Discordで障害が発生しています。しばらく待ってから送信してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord is having problems. Please wait a moment and try again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordで障害が発生しています。しばらく待ってから送信してください"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "en" : {
@@ -96,6 +112,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "URL設定"
+          }
+        }
+      }
+    },
+    "Webhook URLが正しくありません。Discordでコピーし直してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The webhook URL is invalid. Copy it again from Discord."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URLが正しくありません。Discordでコピーし直してください"
+          }
+        }
+      }
+    },
+    "Webhookが見つかりません。URLが正しいか、Webhookが削除されていないか確認してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook not found. Check that the URL is correct and the webhook has not been deleted."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhookが見つかりません。URLが正しいか、Webhookが削除されていないか確認してください"
           }
         }
       }
@@ -420,6 +468,22 @@
         }
       }
     },
+    "送信に失敗しました（エラーコード: %lld）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to send message (error code: %lld)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信に失敗しました（エラーコード: %lld）"
+          }
+        }
+      }
+    },
     "送信中…" : {
       "localizations" : {
         "en" : {
@@ -464,6 +528,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信先のWebhook URLを入力してください"
+          }
+        }
+      }
+    },
+    "送信内容に誤りがあります。プロフィール画像のURLや文字数を確認してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The message could not be accepted. Check the profile image URL and message length."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信内容に誤りがあります。プロフィール画像のURLや文字数を確認してください"
+          }
+        }
+      }
+    },
+    "送信回数が多すぎます。しばらく待ってから送信してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too many messages. Please wait a moment and try again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信回数が多すぎます。しばらく待ってから送信してください"
+          }
+        }
+      }
+    },
+    "通信に失敗しました。ネットワーク接続を確認してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection failed. Check your network connection."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通信に失敗しました。ネットワーク接続を確認してください"
           }
         }
       }
