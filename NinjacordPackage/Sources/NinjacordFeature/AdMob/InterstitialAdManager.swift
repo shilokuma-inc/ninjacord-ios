@@ -23,6 +23,7 @@ final class InterstitialAdManager: NSObject {
     func preload() {
         let adUnitID = AdUnitIdProvider.interstitial
         guard AdConfiguration.isEnabled,
+              !PurchaseManager.shared.isPro,
               AdConsentManager.shared.canRequestAds,
               !adUnitID.isEmpty,
               interstitialAd == nil,
@@ -45,6 +46,8 @@ final class InterstitialAdManager: NSObject {
 
     /// 頻度上限の範囲内で、読み込み済みの広告を表示する。表示しなかった場合も次の広告の読み込みを試みる
     func showIfAllowed(from viewController: UIViewController?) {
+        // 読み込み後に Pro を購入した場合もあるので、表示の直前にも確かめる
+        guard !PurchaseManager.shared.isPro else { return }
         guard let interstitialAd, frequencyCap.canShow() else {
             preload()
             return
