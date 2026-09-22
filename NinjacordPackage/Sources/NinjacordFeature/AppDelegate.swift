@@ -18,6 +18,8 @@ public class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
 
         // 前回までに同意済みなら、ここで GoogleMobileAds の初期化が始まる
         _ = AdConsentManager.shared
+        // 起動中に届く購入の更新（自動更新・返金など）を取りこぼさないよう、最初に監視を始める
+        _ = PurchaseManager.shared
 
         return true
     }
