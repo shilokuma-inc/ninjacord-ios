@@ -20,6 +20,22 @@
         }
       }
     },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
     "Discordで障害が発生しています。しばらく待ってから送信してください" : {
       "localizations" : {
         "en" : {
@@ -32,6 +48,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discordで障害が発生しています。しばらく待ってから送信してください"
+          }
+        }
+      }
+    },
+    "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Discord, open the channel settings, go to Integrations → Webhooks, and copy the URL."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします"
+          }
+        }
+      }
+    },
+    "Discordへかんたん送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to Discord with ease"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordへかんたん送信"
           }
         }
       }
@@ -100,6 +148,22 @@
         }
       }
     },
+    "URL欄の横のブックマークから、保存したURLをすぐに呼び出せます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap the bookmark next to the URL field to quickly pick a saved URL."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL欄の横のブックマークから、保存したURLをすぐに呼び出せます"
+          }
+        }
+      }
+    },
     "URL設定" : {
       "localizations" : {
         "en" : {
@@ -132,6 +196,22 @@
         }
       }
     },
+    "Webhook URLをコピー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy the webhook URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URLをコピー"
+          }
+        }
+      }
+    },
     "Webhookが見つかりません。URLが正しいか、Webhookが削除されていないか確認してください" : {
       "localizations" : {
         "en" : {
@@ -144,6 +224,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Webhookが見つかりません。URLが正しいか、Webhookが削除されていないか確認してください"
+          }
+        }
+      }
+    },
+    "Webhookを使って、好きな名前・アイコンでDiscordのチャンネルにメッセージを送れます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use a webhook to post messages to a Discord channel with any name and icon you like."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhookを使って、好きな名前・アイコンでDiscordのチャンネルにメッセージを送れます"
           }
         }
       }
@@ -196,6 +292,38 @@
         }
       }
     },
+    "はじめる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Started"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "はじめる"
+          }
+        }
+      }
+    },
+    "よく使うURLは保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save the URLs you use often"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "よく使うURLは保存"
+          }
+        }
+      }
+    },
     "アプリバージョン" : {
       "localizations" : {
         "en" : {
@@ -224,6 +352,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アプリ情報"
+          }
+        }
+      }
+    },
+    "コピーしたURLを貼り付けて、メッセージを入力したら「メッセージを送信！」を押すだけです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste the URL, type your message, and tap \"Send a message!\"."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしたURLを貼り付けて、メッセージを入力したら「メッセージを送信！」を押すだけです"
+          }
+        }
+      }
+    },
+    "スキップ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキップ"
           }
         }
       }
@@ -388,6 +548,22 @@
         }
       }
     },
+    "次へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次へ"
+          }
+        }
+      }
+    },
     "設定" : {
       "localizations" : {
         "en" : {
@@ -416,6 +592,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定完了"
+          }
+        }
+      }
+    },
+    "貼り付けて送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste and send"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貼り付けて送信"
           }
         }
       }

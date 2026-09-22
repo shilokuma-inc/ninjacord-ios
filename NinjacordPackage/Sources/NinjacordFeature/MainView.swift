@@ -12,11 +12,19 @@ public struct MainView: View {
     let analytics = FirebaseAnalytics()
     @State var selection = 1
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
+    @AppStorage(Self.hasCompletedOnboardingKey) private var hasCompletedOnboarding = false
+    @State private var isOnboardingPresented = false
+
+    static let hasCompletedOnboardingKey = "hasCompletedOnboarding"
 
     public init() {
         if ProcessInfo.processInfo.arguments.contains("-screenshot-settings") {
             _selection = State(initialValue: 2)
         }
+        // App Store 用スクリーンショットにオンボーディングを写り込ませない
+        let isScreenshotDemo = ProcessInfo.processInfo.arguments.contains("-screenshot-demo")
+        let hasCompleted = UserDefaults.standard.bool(forKey: Self.hasCompletedOnboardingKey)
+        _isOnboardingPresented = State(initialValue: !hasCompleted && !isScreenshotDemo)
     }
 
     public var body: some View {
@@ -42,9 +50,25 @@ public struct MainView: View {
         .tint(Color.appAccent)
         .toolbarBackground(Color.appSurface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
+        .fullScreenCover(isPresented: $isOnboardingPresented, onDismiss: {
+            // オンボーディングを閉じ終わってから同意フォームを出す（表示中はルートから重ねて表示できないため）
+            Task {
+                await gatherAdConsent()
+            }
+        }, content: {
+            OnboardingView {
+                hasCompletedOnboarding = true
+                isOnboardingPresented = false
+            }
+        })
         .task {
-            // 同意フォームは画面の上に表示するため、ルート View の表示後に同意情報を取得する
-            await AdConsentManager.shared.gatherConsent(from: sceneDelegate.window?.rootViewController)
+            guard !isOnboardingPresented else { return }
+            await gatherAdConsent()
         }
+    }
+
+    /// 同意フォームは画面の上に表示するため、ルート View の表示後に同意情報を取得する
+    private func gatherAdConsent() async {
+        await AdConsentManager.shared.gatherConsent(from: sceneDelegate.window?.rootViewController)
     }
 }
