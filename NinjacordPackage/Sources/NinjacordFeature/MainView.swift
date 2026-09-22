@@ -11,6 +11,7 @@ import SwiftUI
 public struct MainView: View {
     let analytics = FirebaseAnalytics()
     @State var selection = 1
+    @EnvironmentObject private var sceneDelegate: MySceneDelegate
 
     public init() {
         if ProcessInfo.processInfo.arguments.contains("-screenshot-settings") {
@@ -41,5 +42,9 @@ public struct MainView: View {
         .tint(Color.appAccent)
         .toolbarBackground(Color.appSurface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
+        .task {
+            // 同意フォームは画面の上に表示するため、ルート View の表示後に同意情報を取得する
+            await AdConsentManager.shared.gatherConsent(from: sceneDelegate.window?.rootViewController)
+        }
     }
 }
