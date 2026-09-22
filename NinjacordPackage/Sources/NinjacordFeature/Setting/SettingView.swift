@@ -195,7 +195,8 @@ struct SettingView: View {
                             .foregroundStyle(Color.appTextSecondary)
                     })
 
-                    if let nativeAd = model.nativeAd {
+                    // ペイウォールの特典「広告を非表示」に合わせ、Pro 購読中はネイティブ広告も出さない
+                    if let nativeAd = model.nativeAd, !purchaseManager.isPro {
                         NativeAdView(nativeAd: nativeAd)
                             .aspectRatio(4 / 3, contentMode: .fit)
                             .listRowInsets(EdgeInsets())
@@ -277,7 +278,7 @@ struct SettingView: View {
     }
 
     private func loadAd() {
-        guard AdConfiguration.isEnabled, adConsent.canRequestAds else { return }
+        guard AdConfiguration.isEnabled, adConsent.canRequestAds, !purchaseManager.isPro else { return }
 
         model.load(
             windowScene: sceneDelegate.windowScene,
