@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct SendMessageView: View {
 
@@ -25,7 +26,11 @@ struct SendMessageView: View {
     @State private var isSending = false
     /// 送信結果を知らせるトースト
     @State private var toast: Toast?
+    @Environment(\.requestReview) private var requestReview
     private var viewModel = SendMessageViewModel()
+
+    /// 何回目の送信成功でレビューを依頼するか
+    private static let reviewRequestSendCount = 3
 
     init() {
         guard ProcessInfo.processInfo.arguments.contains("-screenshot-demo") else { return }
@@ -268,6 +273,10 @@ extension SendMessageView {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
                 await TrackingAuthorization.requestIfNeeded()
+                // 成功回数は postDiscordWebhook の中で記録済み。ちょうど 3 回目の送信のときだけ依頼する
+                if SendSuccessCounter().count == Self.reviewRequestSendCount {
+                    requestReview()
+                }
             case .failure(let error):
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
             }
