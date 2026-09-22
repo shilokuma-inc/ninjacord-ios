@@ -31,10 +31,16 @@ final class PurchaseManager: ObservableObject {
     @Published private(set) var products: [Product] = []
     /// 現在有効な（購読中の）商品 ID
     @Published private(set) var purchasedProductIDs: Set<String> = []
+    /// Pro プランを購読中か。
+    /// 起動直後は App Store の情報を集計し終わるまで前回の値を使う（Pro の人に一瞬だけ広告が出るのを防ぐため）
+    @Published private(set) var isPro: Bool
+
+    private static let isProCacheKey = "isProSubscriber"
 
     private var transactionUpdatesTask: Task<Void, Never>?
 
     private init() {
+        isPro = UserDefaults.standard.bool(forKey: Self.isProCacheKey)
         transactionUpdatesTask = observeTransactionUpdates()
         Task {
             await refreshPurchasedProducts()
@@ -80,6 +86,8 @@ final class PurchaseManager: ObservableObject {
             productIDs.insert(transaction.productID)
         }
         purchasedProductIDs = productIDs
+        isPro = !productIDs.isDisjoint(with: ProductID.all)
+        UserDefaults.standard.set(isPro, forKey: Self.isProCacheKey)
     }
 
     /// アプリ外（別端末・自動更新・返金・保留中の承認など）で起きた購入の変化を反映する
