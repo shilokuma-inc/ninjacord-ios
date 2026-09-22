@@ -22,6 +22,8 @@ struct SendMessageView: View {
     @State private var isSavedURLListPresented = false
     /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
     @State private var isSending = false
+    /// 送信結果を知らせるトースト
+    @State private var toast: Toast?
     private var viewModel = SendMessageViewModel()
 
     init() {
@@ -129,6 +131,7 @@ struct SendMessageView: View {
         .sheet(isPresented: $isSavedURLListPresented) {
             savedURLListSheet
         }
+        .toast($toast)
     }
 }
 
@@ -224,8 +227,14 @@ extension SendMessageView {
 
         isSending = true
         Task {
-            await viewModel.postDiscordWebhook(url: inputURL, messageEntity: messageEntity)
+            let result = await viewModel.postDiscordWebhook(url: inputURL, messageEntity: messageEntity)
             isSending = false
+            switch result {
+            case .success:
+                toast = Toast(style: .success, message: "送信しました")
+            case .failure:
+                toast = Toast(style: .failure, message: "送信に失敗しました")
+            }
         }
     }
 }
