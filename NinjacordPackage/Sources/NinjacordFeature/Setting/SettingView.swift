@@ -21,6 +21,8 @@ struct SettingView: View {
     @State private var isContactPresented = false
     @State private var isOnboardingPresented = false
     @State private var isPaywallPresented = false
+    @State private var isRestoring = false
+    @State private var restoreResultMessage: LocalizedStringKey?
 
     var body: some View {
         NavigationStack {
@@ -56,6 +58,8 @@ struct SettingView: View {
                         .sheet(isPresented: $isPaywallPresented) {
                             paywallSheet
                         }
+
+                        restorePurchasesRow
                     }
 
                     Section {
@@ -205,6 +209,55 @@ struct SettingView: View {
                 .scrollContentBackground(.hidden)
                 .background(.clear)
             }
+        }
+    }
+
+    /// 機種変更・再インストール後に、ペイウォールを開かなくても購入を復元できるようにする
+    private var restorePurchasesRow: some View {
+        Button {
+            Task {
+                await restorePurchases()
+            }
+        } label: {
+            HStack {
+                Text("購入を復元")
+                    .foregroundStyle(Color.appTextPrimary)
+
+                Spacer()
+
+                if isRestoring {
+                    ProgressView()
+                }
+            }
+        }
+        .disabled(isRestoring)
+        .listRowBackground(Color.appSurface)
+        .alert(
+            "購入を復元",
+            isPresented: Binding(
+                get: { restoreResultMessage != nil },
+                set: { if !$0 { restoreResultMessage = nil } }
+            ),
+            actions: {
+                Button("OK", role: .cancel) {}
+            },
+            message: {
+                if let restoreResultMessage {
+                    Text(restoreResultMessage)
+                }
+            }
+        )
+    }
+
+    private func restorePurchases() async {
+        isRestoring = true
+        defer { isRestoring = false }
+        do {
+            try await purchaseManager.restore()
+            restoreResultMessage = purchaseManager.isPro ? "購入を復元しました" : "復元できる購入が見つかりませんでした"
+        } catch {
+            print("Failed to restore: \(error)")
+            restoreResultMessage = "購入を復元できませんでした。時間をおいてもう一度お試しください"
         }
     }
 
