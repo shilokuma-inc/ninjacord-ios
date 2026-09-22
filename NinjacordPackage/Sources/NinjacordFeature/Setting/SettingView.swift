@@ -12,6 +12,7 @@ struct SettingView: View {
 
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @StateObject private var model = NativeAdModel()
+    @ObservedObject private var adConsent = AdConsentManager.shared
     @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
     @State private var isURLSettingPresented = false
     @State private var isLicensePresented = false
@@ -144,6 +145,10 @@ struct SettingView: View {
                     }
                 }
                 .onAppear(perform: loadAd)
+                .onChange(of: adConsent.canRequestAds) { _ in
+                    // 設定画面を開いている間に同意が得られた場合も広告を読み込む
+                    loadAd()
+                }
                 .scrollContentBackground(.hidden)
                 .background(.clear)
             }
@@ -151,7 +156,7 @@ struct SettingView: View {
     }
 
     private func loadAd() {
-        guard AdConfiguration.isEnabled else { return }
+        guard AdConfiguration.isEnabled, adConsent.canRequestAds else { return }
 
         model.load(
             windowScene: sceneDelegate.windowScene,
