@@ -31,4 +31,9 @@ final class FirebaseAnalytics {
             ]
         )
     }
+
+    /// インストール後、初めてメッセージ送信に成功したことを記録する
+    func sendFirstSendCompletedEvent() {
+        Analytics.logEvent("first_send_completed", parameters: nil)
+    }
 }

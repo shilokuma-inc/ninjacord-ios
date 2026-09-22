@@ -10,6 +10,7 @@ import Alamofire
 
 struct SendMessageViewModel {
     private let analytics = FirebaseAnalytics()
+    private let sendSuccessCounter = SendSuccessCounter()
 
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
     /// 失敗時は Discord のレスポンスから判定した原因を返す
@@ -45,6 +46,9 @@ struct SendMessageViewModel {
         switch response.result {
         case .success:
             print("success")
+            if sendSuccessCounter.increment() == 1 {
+                analytics.sendFirstSendCompletedEvent()
+            }
             return .success(())
         case .failure(let error):
             print("error: \(error)")
