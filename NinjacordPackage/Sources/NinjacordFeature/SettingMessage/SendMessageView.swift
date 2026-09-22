@@ -20,6 +20,7 @@ struct SendMessageView: View {
     @State private var validationError: SendMessageValidationError?
     @State private var isValidationAlertPresented: Bool = false
     @State private var isSavedURLListPresented = false
+    @State private var isURLHelpPresented = false
     /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
     @State private var isSending = false
     /// 送信結果を知らせるトースト
@@ -60,6 +61,8 @@ struct SendMessageView: View {
                         .onTapGesture {
                             self.isEditing = true
                         }
+
+                        urlHelpButton
 
                         savedURLButton
                     }
@@ -131,6 +134,9 @@ struct SendMessageView: View {
         .sheet(isPresented: $isSavedURLListPresented) {
             savedURLListSheet
         }
+        .sheet(isPresented: $isURLHelpPresented) {
+            urlHelpSheet
+        }
         .toast($toast)
     }
 }
@@ -149,6 +155,35 @@ extension SendMessageView {
                 .contentShape(Rectangle())
         })
         .accessibilityLabel("保存済みURL")
+    }
+
+    /// Webhook URL の取得方法を表示するボタン。保存済み URL ボタンと同じく 44pt 角の当たり判定にする
+    private var urlHelpButton: some View {
+        Button(action: {
+            isURLHelpPresented = true
+        }, label: {
+            Image(systemName: "questionmark.circle")
+                .foregroundStyle(Color.appAccent)
+                .frame(width: 44.0, height: 44.0)
+                .contentShape(Rectangle())
+        })
+        .accessibilityLabel("Webhook URLの取得方法")
+    }
+
+    private var urlHelpSheet: some View {
+        NavigationStack {
+            WebhookURLHelpView()
+                .navigationTitle("Webhook URLの取得方法")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("閉じる") {
+                            isURLHelpPresented = false
+                        }
+                    }
+                }
+        }
+        .presentationDetents([.medium, .large])
     }
 
     /// 保存済み URL から選んで URL 欄に反映するシート

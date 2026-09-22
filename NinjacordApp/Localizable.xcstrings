@@ -36,6 +36,22 @@
         }
       }
     },
+    "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Discord, open \"Edit Channel\" (the gear icon) for the channel you want to post to."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます"
+          }
+        }
+      }
+    },
     "Discordで障害が発生しています。しばらく待ってから送信してください" : {
       "localizations" : {
         "en" : {
@@ -196,6 +212,22 @@
         }
       }
     },
+    "Webhook URLの取得方法" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to Get a Webhook URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URLの取得方法"
+          }
+        }
+      }
+    },
     "Webhook URLをコピー" : {
       "localizations" : {
         "en" : {
@@ -260,6 +292,38 @@
         }
       }
     },
+    "「新しいウェブフック」を作り、「ウェブフックURLをコピー」を押します" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a \"New Webhook\" and tap \"Copy Webhook URL\"."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「新しいウェブフック」を作り、「ウェブフックURLをコピー」を押します"
+          }
+        }
+      }
+    },
+    "「連携サービス」→「ウェブフック」を開きます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to \"Integrations\" → \"Webhooks\"."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「連携サービス」→「ウェブフック」を開きます"
+          }
+        }
+      }
+    },
     "お問い合わせ" : {
       "localizations" : {
         "en" : {
@@ -288,6 +352,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "このアプリについて"
+          }
+        }
+      }
+    },
+    "このアプリのURL欄に貼り付けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste it into the URL field in this app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリのURL欄に貼り付けます"
           }
         }
       }
@@ -368,6 +448,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アプリ情報"
+          }
+        }
+      }
+    },
+    "ウェブフックを作るには、そのサーバーで「ウェブフックの管理」の権限が必要です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You need the \"Manage Webhooks\" permission on the server to create a webhook."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウェブフックを作るには、そのサーバーで「ウェブフックの管理」の権限が必要です"
           }
         }
       }
