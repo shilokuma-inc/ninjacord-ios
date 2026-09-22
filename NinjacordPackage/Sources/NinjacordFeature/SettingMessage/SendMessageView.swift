@@ -204,7 +204,9 @@ extension SendMessageView {
             return
         }
 
-        viewModel.postDiscordWebhook(url: inputURL, messageEntity: messageEntity)
+        Task {
+            await viewModel.postDiscordWebhook(url: inputURL, messageEntity: messageEntity)
+        }
     }
 }
 
