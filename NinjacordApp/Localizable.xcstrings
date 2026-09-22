@@ -388,6 +388,22 @@
         }
       }
     },
+    "送信中…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sending…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信中…"
+          }
+        }
+      }
+    },
     "送信先URL設定" : {
       "localizations" : {
         "en" : {

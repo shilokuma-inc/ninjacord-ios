@@ -20,6 +20,8 @@ struct SendMessageView: View {
     @State private var validationError: SendMessageValidationError?
     @State private var isValidationAlertPresented: Bool = false
     @State private var isSavedURLListPresented = false
+    /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
+    @State private var isSending = false
     private var viewModel = SendMessageViewModel()
 
     init() {
@@ -172,9 +174,22 @@ extension SendMessageView {
         Button(action: {
             sendMessage()
         }, label: {
+            // ローディング中もボタンの大きさが変わらないよう、文言は透明にして残し上に重ねる
             Text("メッセージを送信！")
                 .font(.system(size: 24, weight: .semibold, design: .default))
                 .foregroundStyle(.white)
+                .opacity(isSending ? 0 : 1)
+                .overlay {
+                    if isSending {
+                        HStack(spacing: 8.0) {
+                            ProgressView()
+                                .tint(.white)
+                            Text("送信中…")
+                                .font(.system(size: 20, weight: .semibold, design: .default))
+                                .foregroundStyle(.white)
+                        }
+                    }
+                }
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 30.0)
@@ -183,12 +198,15 @@ extension SendMessageView {
                         .shadow(radius: 5.0)
                 )
         })
+        .disabled(isSending)
     }
 }
 
 extension SendMessageView {
     /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する
     private func sendMessage() {
+        guard !isSending else { return }
+
         let messageEntity = MessageEntity(
             username: inputUsername,
             avatarURL: inputAvatarURL,
@@ -204,8 +222,10 @@ extension SendMessageView {
             return
         }
 
+        isSending = true
         Task {
             await viewModel.postDiscordWebhook(url: inputURL, messageEntity: messageEntity)
+            isSending = false
         }
     }
 }
