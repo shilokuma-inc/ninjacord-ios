@@ -13,7 +13,7 @@ struct Toast: Equatable {
     }
 
     let style: Style
-    let message: LocalizedStringKey
+    let message: Text
 
     static func == (lhs: Toast, rhs: Toast) -> Bool {
         lhs.id == rhs.id
@@ -24,15 +24,28 @@ struct Toast: Equatable {
 
     init(style: Style, message: LocalizedStringKey) {
         self.style = style
-        self.message = message
+        self.message = Text(message)
+    }
+
+    /// 翻訳済みの文言（`LocalizedError.errorDescription` など）をそのまま表示する
+    init(style: Style, verbatimMessage: String) {
+        self.style = style
+        self.message = Text(verbatim: verbatimMessage)
     }
 }
 
 struct ToastModifier: ViewModifier {
     @Binding var toast: Toast?
 
-    /// トーストを表示しておく時間
-    private let duration: Duration = .seconds(2.5)
+    /// トーストを表示しておく時間。失敗時は原因の説明文を読めるよう長めにする
+    private func duration(for style: Toast.Style) -> Duration {
+        switch style {
+        case .success:
+            return .seconds(2.5)
+        case .failure:
+            return .seconds(4)
+        }
+    }
 
     func body(content: Content) -> some View {
         content
@@ -49,11 +62,11 @@ struct ToastModifier: ViewModifier {
             }
             .animation(.easeInOut(duration: 0.25), value: toast)
             .task(id: toast) {
-                guard toast != nil else { return }
-                try? await Task.sleep(for: duration)
+                guard let toast else { return }
+                try? await Task.sleep(for: duration(for: toast.style))
                 // 待機中に別のトーストへ差し替わった場合は task(id:) ごとキャンセルされるので、ここには来ない
                 guard !Task.isCancelled else { return }
-                toast = nil
+                self.toast = nil
             }
     }
 }
@@ -65,7 +78,7 @@ private struct ToastView: View {
         HStack(spacing: 8.0) {
             Image(systemName: iconName)
                 .foregroundStyle(iconColor)
-            Text(toast.message)
+            toast.message
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
@@ -73,7 +86,8 @@ private struct ToastView: View {
         .padding(.horizontal, 16.0)
         .padding(.vertical, 12.0)
         .background(
-            Capsule()
+            // 失敗時の説明文は複数行になるため、Capsule ではなく角丸の四角形にする
+            RoundedRectangle(cornerRadius: 20.0, style: .continuous)
                 .fill(.regularMaterial)
                 .shadow(radius: 4.0)
         )
