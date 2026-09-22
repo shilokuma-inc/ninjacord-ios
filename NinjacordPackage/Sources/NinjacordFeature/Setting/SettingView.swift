@@ -13,12 +13,14 @@ struct SettingView: View {
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @StateObject private var model = NativeAdModel()
     @ObservedObject private var adConsent = AdConsentManager.shared
+    @EnvironmentObject private var purchaseManager: PurchaseManager
     @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
     @State private var isURLSettingPresented = false
     @State private var isLicensePresented = false
     @State private var isPrivacyPolicyPresented = false
     @State private var isContactPresented = false
     @State private var isOnboardingPresented = false
+    @State private var isPaywallPresented = false
 
     var body: some View {
         NavigationStack {
@@ -26,6 +28,36 @@ struct SettingView: View {
                 Color.appBackground
                     .ignoresSafeArea(edges: [.top])
                 List {
+                    Section {
+                        Button {
+                            isPaywallPresented = true
+                        } label: {
+                            HStack {
+                                Label {
+                                    Text("Ninjacord Pro")
+                                        .foregroundStyle(Color.appTextPrimary)
+                                } icon: {
+                                    Image(systemName: "crown.fill")
+                                        .foregroundStyle(.yellow)
+                                }
+
+                                Spacer()
+
+                                if purchaseManager.isPro {
+                                    Text("購読中")
+                                        .foregroundStyle(Color.appTextSecondary)
+                                }
+
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color.appTextSecondary)
+                            }
+                        }
+                        .listRowBackground(Color.appSurface)
+                        .sheet(isPresented: $isPaywallPresented) {
+                            paywallSheet
+                        }
+                    }
+
                     Section {
                         Picker("テーマ", selection: $appTheme) {
                             ForEach(AppTheme.allCases) { theme in
@@ -174,6 +206,21 @@ struct SettingView: View {
                 .background(.clear)
             }
         }
+    }
+
+    private var paywallSheet: some View {
+        NavigationStack {
+            PaywallView()
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("閉じる") {
+                            isPaywallPresented = false
+                        }
+                    }
+                }
+        }
+        // シートは別の View 階層になるため、Pro 状態を明示的に渡す
+        .environmentObject(purchaseManager)
     }
 
     private func loadAd() {
