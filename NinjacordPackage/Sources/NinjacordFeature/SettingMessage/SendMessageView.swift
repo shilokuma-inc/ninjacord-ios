@@ -232,8 +232,8 @@ extension SendMessageView {
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
-            case .failure:
-                toast = Toast(style: .failure, message: "送信に失敗しました")
+            case .failure(let error):
+                toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
             }
         }
     }
