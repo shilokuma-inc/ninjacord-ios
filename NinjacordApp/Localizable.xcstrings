@@ -20,6 +20,22 @@
         }
       }
     },
+    "%@ / 月" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / month"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / 月"
+          }
+        }
+      }
+    },
     "%lld / %lld" : {
       "localizations" : {
         "en" : {
@@ -112,6 +128,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
+          }
+        }
+      }
+    },
+    "Proを購読する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscribe to Pro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proを購読する"
           }
         }
       }
@@ -340,6 +372,22 @@
         }
       }
     },
+    "お支払いは購入の確定時にApple IDに請求されます。サブスクリプションは、現在の期間が終了する24時間前までに自動更新をオフにしない限り、自動的に更新されます。自動更新はApp Storeのアカウント設定から管理・解約できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment will be charged to your Apple ID at confirmation of purchase. The subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period. You can manage or cancel auto-renewal in your App Store account settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お支払いは購入の確定時にApple IDに請求されます。サブスクリプションは、現在の期間が終了する24時間前までに自動更新をオフにしない限り、自動的に更新されます。自動更新はApp Storeのアカウント設定から管理・解約できます。"
+          }
+        }
+      }
+    },
     "このアプリについて" : {
       "localizations" : {
         "en" : {
@@ -516,6 +564,22 @@
         }
       }
     },
+    "プランの情報を読み込めませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load the plan information."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プランの情報を読み込めませんでした"
+          }
+        }
+      }
+    },
     "プロフィール画像のURLを入れてください" : {
       "localizations" : {
         "en" : {
@@ -612,6 +676,38 @@
         }
       }
     },
+    "再読み込み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reload"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再読み込み"
+          }
+        }
+      }
+    },
+    "利用規約" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms of Use"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用規約"
+          }
+        }
+      }
+    },
     "名前を入れてください" : {
       "localizations" : {
         "en" : {
@@ -656,6 +752,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "埋め込みタイトルを入れてください"
+          }
+        }
+      }
+    },
+    "広告を非表示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ads"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告を非表示"
+          }
+        }
+      }
+    },
+    "復元できる購入が見つかりませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No purchases to restore were found."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "復元できる購入が見つかりませんでした"
           }
         }
       }
@@ -720,6 +848,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "貼り付けて送信"
+          }
+        }
+      }
+    },
+    "購入できませんでした。時間をおいてもう一度お試しください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The purchase couldn't be completed. Please try again later."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入できませんでした。時間をおいてもう一度お試しください"
+          }
+        }
+      }
+    },
+    "購入の承認待ちです。承認されると自動でProが有効になります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your purchase is awaiting approval. Pro will be enabled automatically once it's approved."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入の承認待ちです。承認されると自動でProが有効になります"
+          }
+        }
+      }
+    },
+    "購入を復元" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Purchases"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入を復元"
+          }
+        }
+      }
+    },
+    "購入を復元しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your purchases have been restored."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入を復元しました"
+          }
+        }
+      }
+    },
+    "購入を復元できませんでした。時間をおいてもう一度お試しください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't restore purchases. Please try again later."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入を復元できませんでした。時間をおいてもう一度お試しください"
+          }
+        }
+      }
+    },
+    "購読中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscribed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購読中"
           }
         }
       }
