@@ -29,6 +29,7 @@ struct SendMessageView: View {
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
+    @EnvironmentObject private var purchaseManager: PurchaseManager
     private var viewModel = SendMessageViewModel()
 
     /// 何回目の送信成功でレビューを依頼するか
@@ -121,7 +122,8 @@ struct SendMessageView: View {
 
                 sendButton
 
-                if AdConfiguration.isEnabled {
+                // Pro 購読中は広告を出さない。購入した瞬間に消え、解約・失効したら戻る
+                if AdConfiguration.isEnabled && !purchaseManager.isPro {
                     BannerView()
                 } else {
                     // バナーが占めていた下端の可変領域を、空の View で同じように確保する。
