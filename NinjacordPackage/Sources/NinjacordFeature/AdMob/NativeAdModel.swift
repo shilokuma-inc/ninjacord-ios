@@ -21,6 +21,11 @@ enum AdUnitIdProvider {
         // Release は AdMob で広告ユニットを作るまで空。空の間はインタースティシャルを読み込まない
         Bundle.main.object(forInfoDictionaryKey: "AdMobInterstitialAdUnitID") as? String ?? ""
     }
+
+    static var rewarded: String {
+        // Release は AdMob で広告ユニットを作るまで空。空の間はリワード広告を読み込まない
+        Bundle.main.object(forInfoDictionaryKey: "AdMobRewardedAdUnitID") as? String ?? ""
+    }
 }
 
 class NativeAdModel: NSObject, ObservableObject, GADNativeAdLoaderDelegate {
