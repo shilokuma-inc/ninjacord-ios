@@ -12,6 +12,8 @@ public struct MainView: View {
     let analytics = FirebaseAnalytics()
     @State var selection = 1
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
+    /// Pro 状態を配下のすべての画面から `@EnvironmentObject` で参照できるよう、ルートで配る
+    @ObservedObject private var purchaseManager = PurchaseManager.shared
     @AppStorage(Self.hasCompletedOnboardingKey) private var hasCompletedOnboarding = false
     @State private var isOnboardingPresented = false
 
@@ -61,6 +63,7 @@ public struct MainView: View {
                 isOnboardingPresented = false
             }
         })
+        .environmentObject(purchaseManager)
         .task {
             guard !isOnboardingPresented else { return }
             await gatherAdConsent()
