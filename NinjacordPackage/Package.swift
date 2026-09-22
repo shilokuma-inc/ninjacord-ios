@@ -19,6 +19,10 @@ let package = Package(
         .package(url: "https://github.com/Alamofire/Alamofire", from: "5.9.1"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "10.24.0"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "11.3.0"),
+        .package(
+            url: "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
+            from: "2.4.0"
+        ),
         .package(url: "https://github.com/cybozu/LicenseList", from: "2.2.0")
     ],
     targets: [
@@ -30,6 +34,10 @@ let package = Package(
                 .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
+                .product(
+                    name: "GoogleUserMessagingPlatform",
+                    package: "swift-package-manager-google-user-messaging-platform"
+                ),
                 .product(name: "LicenseList", package: "LicenseList")
             ]
         )
