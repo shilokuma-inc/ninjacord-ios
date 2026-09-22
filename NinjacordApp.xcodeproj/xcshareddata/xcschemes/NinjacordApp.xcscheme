@@ -50,6 +50,9 @@
             ReferencedContainer = "container:NinjacordApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../NinjacordApp/NinjacordPro.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
