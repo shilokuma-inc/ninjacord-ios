@@ -9,6 +9,8 @@ import Foundation
 import Alamofire
 
 struct SendMessageViewModel {
+    private let analytics = FirebaseAnalytics()
+
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
     /// 失敗時は Discord のレスポンスから判定した原因を返す
     @discardableResult
@@ -36,6 +38,10 @@ struct SendMessageViewModel {
         // validate() を付けないと Discord が 4xx / 5xx を返しても success 扱いになるため、
         // ステータスコードが 2xx 以外なら failure にする
         let response = await AF.request(request).validate().serializingData().response
+        analytics.sendMessageSendEvent(
+            isSuccess: response.error == nil,
+            httpStatus: response.response?.statusCode
+        )
         switch response.result {
         case .success:
             print("success")
