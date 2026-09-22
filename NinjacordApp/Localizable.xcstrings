@@ -324,6 +324,22 @@
         }
       }
     },
+    "アプリの使い方" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to Use"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリの使い方"
+          }
+        }
+      }
+    },
     "アプリバージョン" : {
       "localizations" : {
         "en" : {

@@ -18,6 +18,7 @@ struct SettingView: View {
     @State private var isLicensePresented = false
     @State private var isPrivacyPolicyPresented = false
     @State private var isContactPresented = false
+    @State private var isOnboardingPresented = false
 
     var body: some View {
         NavigationStack {
@@ -64,6 +65,26 @@ struct SettingView: View {
                     })
 
                     Section(content: {
+                        Button {
+                            isOnboardingPresented = true
+                        } label: {
+                            HStack {
+                                Text("アプリの使い方")
+                                    .foregroundStyle(Color.appTextPrimary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color.appTextSecondary)
+                            }
+                        }
+                        .listRowBackground(Color.appSurface)
+                        .fullScreenCover(isPresented: $isOnboardingPresented) {
+                            OnboardingView {
+                                isOnboardingPresented = false
+                            }
+                        }
+
                         Text("このアプリについて")
                             .addComingSoon()
                             .foregroundStyle(Color.appTextPrimary)
