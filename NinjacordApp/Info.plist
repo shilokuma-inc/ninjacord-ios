@@ -8,6 +8,8 @@
 	<string>$(ADMOB_INTERSTITIAL_AD_UNIT_ID)</string>
 	<key>AdMobNativeAdUnitID</key>
 	<string>$(ADMOB_NATIVE_AD_UNIT_ID)</string>
+	<key>AdMobRewardedAdUnitID</key>
+	<string>$(ADMOB_REWARDED_AD_UNIT_ID)</string>
 	<key>AdsEnabled</key>
 	<string>$(ADS_ENABLED)</string>
 	<key>GADApplicationIdentifier</key>
