@@ -516,6 +516,22 @@
         }
       }
     },
+    "キャンセル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
+          }
+        }
+      }
+    },
     "コピーしたURLを貼り付けて、メッセージを入力したら「メッセージを送信！」を押すだけです" : {
       "localizations" : {
         "en" : {
@@ -544,6 +560,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スキップ"
+          }
+        }
+      }
+    },
+    "テンプレート" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Templates"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレート"
+          }
+        }
+      }
+    },
+    "テンプレートとして保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as Template"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートとして保存"
+          }
+        }
+      }
+    },
+    "テンプレートを保存しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template saved"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートを保存しました"
+          }
+        }
+      }
+    },
+    "テンプレート名" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template name"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレート名"
           }
         }
       }
@@ -672,6 +752,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ライセンス一覧"
+          }
+        }
+      }
+    },
+    "今の入力内容を保存します（送信先のURLは含みません）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saves what you've entered (not including the destination URL)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今の入力内容を保存します（送信先のURLは含みません）"
+          }
+        }
+      }
+    },
+    "保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
+        }
+      }
+    },
+    "保存されたテンプレートはありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No saved templates"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存されたテンプレートはありません"
           }
         }
       }

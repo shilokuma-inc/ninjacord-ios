@@ -18,3 +18,16 @@ struct MessageEntity: Codable, Equatable {
 struct MessageEmbedEntity: Codable, Equatable {
     var title: String
 }
+
+extension MessageEntity {
+    /// 名前・アイコン URL・本文・埋め込みタイトルのいずれかが入力されているか
+    var hasContent: Bool {
+        [username, avatarURL, content, messageEmbedEntity.title]
+            .contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
+    /// 一覧などで中身を見分けるための要約。本文があれば本文、無ければ埋め込みタイトル
+    var summary: String {
+        content.isEmpty ? messageEmbedEntity.title : content
+    }
+}
