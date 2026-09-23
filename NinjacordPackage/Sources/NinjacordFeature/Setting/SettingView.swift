@@ -28,7 +28,7 @@ struct SettingView: View {
         NavigationStack {
             ZStack {
                 Color.appBackground
-                    .ignoresSafeArea(edges: [.top])
+                    .ignoresSafeArea()
                 List {
                     Section {
                         Button {

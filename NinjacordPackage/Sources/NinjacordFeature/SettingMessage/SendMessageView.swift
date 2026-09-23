@@ -51,7 +51,7 @@ struct SendMessageView: View {
     var body: some View {
         ZStack {
             Color.appBackground
-                .ignoresSafeArea(edges: [.top])
+                .ignoresSafeArea()
                 .onTapGesture {
                     if self.isEditing {
                         UIApplication.shared.sendAction(
