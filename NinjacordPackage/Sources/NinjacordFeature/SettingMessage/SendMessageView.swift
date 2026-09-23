@@ -21,7 +21,6 @@ struct SendMessageView: View {
     @State private var isEditing: Bool = false
     @State private var validationError: SendMessageValidationError?
     @State private var isValidationAlertPresented: Bool = false
-    @State private var isSavedURLListPresented = false
     /// 一斉送信（Pro 限定）の宛先。空なら URL 欄の宛先に送る
     @State private var broadcastTargets: [SavedWebhookURL] = []
     /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
@@ -76,7 +75,7 @@ struct SendMessageView: View {
 
                             WebhookURLHelpButton()
 
-                            savedURLButton
+                            SavedWebhookURLButton(url: $inputURL)
                         }
                     } else {
                         broadcastTargetsRow
@@ -164,9 +163,6 @@ struct SendMessageView: View {
                 Text(recoverySuggestion)
             }
         }
-        .sheet(isPresented: $isSavedURLListPresented) {
-            savedURLListSheet
-        }
         .toast($toast)
         .onAppear {
             InterstitialAdManager.shared.preload()
@@ -179,43 +175,6 @@ struct SendMessageView: View {
 }
 
 extension SendMessageView {
-    /// 保存済み URL 一覧を開くボタン。
-    /// アイコンだけだとタップ領域がグリフの大きさ（約 11x18pt）しかなく指で押しても反応しないため、
-    /// 44pt 角の当たり判定を明示する
-    private var savedURLButton: some View {
-        Button(action: {
-            isSavedURLListPresented = true
-        }, label: {
-            Image(systemName: "bookmark.fill")
-                .foregroundStyle(Color.appAccent)
-                .frame(width: 44.0, height: 44.0)
-                .contentShape(Rectangle())
-        })
-        .accessibilityLabel("保存済みURL")
-    }
-
-    /// 保存済み URL から選んで URL 欄に反映するシート
-    private var savedURLListSheet: some View {
-        NavigationStack {
-            SavedWebhookURLListView(
-                onSelect: { item in
-                    inputURL = item.url
-                    isSavedURLListPresented = false
-                },
-                initialURL: inputURL
-            )
-            .navigationTitle("保存済みURL")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("閉じる") {
-                        isSavedURLListPresented = false
-                    }
-                }
-            }
-        }
-    }
-
     private var sendButton: some View {
         Button(action: {
             sendMessage()
