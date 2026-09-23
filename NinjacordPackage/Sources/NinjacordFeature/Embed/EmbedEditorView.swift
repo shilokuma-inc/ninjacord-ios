@@ -11,6 +11,19 @@ struct EmbedEditorView: View {
 
     var body: some View {
         Form {
+            Section("プレビュー") {
+                if embed.hasContent {
+                    // 入力に合わせてその場で更新される
+                    EmbedPreview(embed: embed)
+                        .listRowInsets(EdgeInsets())
+                } else {
+                    Text("項目を入力すると、Discordでの見え方がここに表示されます")
+                        .font(.footnote)
+                        .foregroundStyle(Color.appTextSecondary)
+                }
+            }
+            .listRowBackground(embed.hasContent ? Color.clear : Color.appSurface)
+
             Section {
                 // 入力欄と文字数を 1 行にまとめる（別の行にすると区切り線が増えて読みにくい）
                 VStack(spacing: 4.0) {
