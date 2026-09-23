@@ -1188,6 +1188,22 @@
         }
       }
     },
+    "一斉送信の宛先" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recipients"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一斉送信の宛先"
+          }
+        }
+      }
+    },
     "今の入力内容を保存します（送信先のURLは含みません）" : {
       "localizations" : {
         "en" : {
@@ -1216,6 +1232,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存"
+          }
+        }
+      }
+    },
+    "保存されたURLはありません。設定の「URL設定」か、送信画面のブックマークから保存してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No saved URLs. Save one from \"URL Settings\" in Settings or the bookmark on the send screen."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存されたURLはありません。設定の「URL設定」か、送信画面のブックマークから保存してください"
           }
         }
       }
@@ -1700,6 +1732,22 @@
         }
       }
     },
+    "複数の宛先に送る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to Multiple"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複数の宛先に送る"
+          }
+        }
+      }
+    },
     "設定" : {
       "localizations" : {
         "en" : {
@@ -2144,6 +2192,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通信に失敗しました。ネットワーク接続を確認してください"
+          }
+        }
+      }
+    },
+    "選んだ宛先に、同じメッセージを1件ずつ順に送ります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The same message is sent to each selected recipient, one at a time."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選んだ宛先に、同じメッセージを1件ずつ順に送ります"
           }
         }
       }
