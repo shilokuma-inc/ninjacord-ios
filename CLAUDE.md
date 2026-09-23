@@ -42,12 +42,20 @@ Discord に Webhook / bot 経由でメッセージを送信できる iOS アプ�
     - `AdMob/` … 広告
     - `Extension/`, `Common/` … 共通部品
 - `ci_scripts/ci_post_clone.sh` … CI 前処理（SwiftLint 導入等）
-- `.github/workflows/` … build / upload（`develop`・`master` への push で発火）
+- `.github/workflows/` … build / archive / upload（発火するブランチは「ブランチ運用」参照）
 
 ## ブランチ運用
 
 - 作業は `develop` 起点でフィーチャーブランチを切る（例: `feat/xxx`, `fix/xxx`）。
-- `develop` / `master` への push で GitHub Actions（build → upload）が発火する。
+- push で発火する GitHub Actions は以下のとおり。
+
+  | push 先 | 発火するワークフロー |
+  | --- | --- |
+  | フィーチャーブランチ | Build / Archive |
+  | `develop` | Build/develop / Upload/develop（App Store Connect へアップロード） |
+  | `release/**` | Build / Upload/release（App Store Connect へアップロード） |
+  | `master` | Build/master のみ（upload は走らない） |
+
 - PR のマージ先は原則 `develop`。
 
 ## 開発ワークフロー（Claude Code）
