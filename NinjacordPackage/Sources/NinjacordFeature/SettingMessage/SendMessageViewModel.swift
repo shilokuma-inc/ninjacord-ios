@@ -15,9 +15,12 @@ struct SendMessageViewModel {
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
     /// 失敗時は Discord のレスポンスから判定した原因を返す
     @discardableResult
+    /// - Parameter countsAsSend: 送信成功回数（初回送信の計測・ATT・レビュー依頼の判定に使う）に数えるか。
+    ///   一斉送信では宛先ごとではなく 1 回の操作で 1 回と数えるため、呼び出し元でまとめて数える
     public func postDiscordWebhook(
         url: String,
-        messageEntity: MessageEntity
+        messageEntity: MessageEntity,
+        countsAsSend: Bool = true
     ) async -> Result<Void, DiscordWebhookError> {
         let baseUrlString = url
         let param: Parameters = {
@@ -46,8 +49,8 @@ struct SendMessageViewModel {
         switch response.result {
         case .success:
             print("success")
-            if sendSuccessCounter.increment() == 1 {
-                analytics.sendFirstSendCompletedEvent()
+            if countsAsSend {
+                recordSendSuccess()
             }
             return .success(())
         case .failure(let error):
@@ -58,6 +61,33 @@ struct SendMessageViewModel {
 }
 
 extension SendMessageViewModel {
+    /// 一斉送信の宛先 1 件ごとの結果
+    struct BroadcastResult {
+        let url: String
+        let result: Result<Void, DiscordWebhookError>
+    }
+
+    /// 複数の Webhook に同じメッセージを 1 件ずつ順に送る（Pro 限定の一斉送信）。
+    /// Discord の送信制限は Webhook ごとなので、宛先が違えば続けて送ってよい
+    func broadcast(to urls: [String], messageEntity: MessageEntity) async -> [BroadcastResult] {
+        var results: [BroadcastResult] = []
+        for url in urls {
+            let result = await postDiscordWebhook(url: url, messageEntity: messageEntity, countsAsSend: false)
+            results.append(BroadcastResult(url: url, result: result))
+        }
+        // 送信成功回数は、1 件でも届いていれば一斉送信 1 回につき 1 回と数える
+        if results.contains(where: { (try? $0.result.get()) != nil }) {
+            recordSendSuccess()
+        }
+        return results
+    }
+
+    private func recordSendSuccess() {
+        if sendSuccessCounter.increment() == 1 {
+            analytics.sendFirstSendCompletedEvent()
+        }
+    }
+
     private func makeParameter(messageEntity: MessageEntity) -> Parameters {
         var param: Parameters = [
             "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
@@ -117,6 +147,8 @@ enum SendMessageValidationError: LocalizedError {
     case invalidEmbed(EmbedValidationIssue)
     /// Pro でないのに、埋め込みに Pro 限定の項目が入っている
     case proEmbedFeatures
+    /// Pro でないのに、一斉送信の宛先が選ばれている
+    case proBroadcast
 
     var errorDescription: String? {
         switch self {
@@ -130,6 +162,8 @@ enum SendMessageValidationError: LocalizedError {
             return String(localized: "埋め込みの内容を確認してください")
         case .proEmbedFeatures:
             return String(localized: "Pro限定の項目が入っています")
+        case .proBroadcast:
+            return String(localized: "一斉送信はNinjacord Pro限定です")
         }
     }
 
@@ -145,6 +179,8 @@ enum SendMessageValidationError: LocalizedError {
             return issue.message
         case .proEmbedFeatures:
             return String(localized: "埋め込みの色・フィールド・画像・サムネイルはNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください")
+        case .proBroadcast:
+            return String(localized: "宛先の選択を解除して1件ずつ送るか、Proにしてください")
         }
     }
 }
