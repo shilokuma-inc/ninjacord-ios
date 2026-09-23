@@ -86,14 +86,17 @@ struct EmbedEditorView: View {
             .disabled(!canUseProFeatures)
             .listRowBackground(Color.appSurface)
 
-            Section("フッター") {
+            Section {
                 VStack(spacing: 4.0) {
                     TextField("フッターのテキスト", text: $embed.footerText)
                     EmbedLengthCounter(text: embed.footerText, limit: EmbedLimit.footerText)
                 }
                 Toggle("送信日時を表示する", isOn: $embed.includesTimestamp)
                     .tint(Color.appAccent)
+            } header: {
+                proHeader("フッター")
             }
+            .disabled(!canUseProFeatures)
             .listRowBackground(Color.appSurface)
         }
         .scrollContentBackground(.hidden)
@@ -117,7 +120,7 @@ struct EmbedEditorView: View {
         }
     }
 
-    /// 色・フィールド・画像は Pro 限定（Discussion #259 の決定。無料は title + description まで）。
+    /// 色・フィールド・画像・フッターは Pro 限定（Discussion #259 の決定。無料は title + description まで）。
     /// リワード広告の一時解放中も使える
     private var canUseProFeatures: Bool {
         ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
@@ -129,7 +132,7 @@ struct EmbedEditorView: View {
             Button {
                 isPaywallPresented = true
             } label: {
-                Label("Ninjacord Proで色・フィールド・画像を使う", systemImage: "crown.fill")
+                Label("Ninjacord Proで色・フィールド・画像・フッターを使う", systemImage: "crown.fill")
             }
             RewardedUnlockButton()
             if embed.usesProFeatures {

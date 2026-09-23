@@ -228,18 +228,18 @@
         }
       }
     },
-    "Ninjacord Proで色・フィールド・画像を使う" : {
+    "Ninjacord Proで色・フィールド・画像・フッターを使う" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use colors, fields, and images with Ninjacord Pro"
+            "value" : "Use colors, fields, images, and footers with Ninjacord Pro"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ninjacord Proで色・フィールド・画像を使う"
+            "value" : "Ninjacord Proで色・フィールド・画像・フッターを使う"
           }
         }
       }
@@ -1524,18 +1524,18 @@
         }
       }
     },
-    "埋め込みの色・フィールド・画像・サムネイルはNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください" : {
+    "埋め込みの色・フィールド・画像・サムネイル・フッター・送信日時はNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Embed colors, fields, images, and thumbnails are Ninjacord Pro features. Remove them in the embed editor or upgrade to Pro."
+            "value" : "Embed colors, fields, images, thumbnails, footers, and timestamps are Ninjacord Pro features. Remove them in the embed editor or upgrade to Pro."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "埋め込みの色・フィールド・画像・サムネイルはNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください"
+            "value" : "埋め込みの色・フィールド・画像・サムネイル・フッター・送信日時はNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください"
           }
         }
       }

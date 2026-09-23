@@ -218,7 +218,7 @@ enum SendMessageValidationError: LocalizedError {
         case .invalidEmbed(let issue):
             return issue.message
         case .proEmbedFeatures:
-            return String(localized: "埋め込みの色・フィールド・画像・サムネイルはNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください")
+            return String(localized: "埋め込みの色・フィールド・画像・サムネイル・フッター・送信日時はNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください")
         case .proBroadcast:
             return String(localized: "宛先の選択を解除して1件ずつ送るか、Proにしてください")
         }
