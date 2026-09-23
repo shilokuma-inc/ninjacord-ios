@@ -15,13 +15,15 @@ struct SendMessageView: View {
     @State var inputAvatarURL = ""
     @State var inputContext = ""
 
-    @State var inputEmbedTitle = ""
+    /// 埋め込み。タイトルは送信画面で、それ以外の項目は embed エディタで入力する
+    @State var inputEmbed = MessageEmbedEntity()
 
     @State private var isEditing: Bool = false
     @State private var validationError: SendMessageValidationError?
     @State private var isValidationAlertPresented: Bool = false
     @State private var isSavedURLListPresented = false
     @State private var isURLHelpPresented = false
+    @State private var isEmbedEditorPresented = false
     /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
     @State private var isSending = false
     /// 送信結果を知らせるトースト
@@ -42,7 +44,7 @@ struct SendMessageView: View {
         _inputUsername = State(initialValue: "Ninja Cord")
         _inputAvatarURL = State(initialValue: "https://example.com/avatar.png")
         _inputContext = State(initialValue: "Discordへかんたん送信")
-        _inputEmbedTitle = State(initialValue: "お知らせ")
+        _inputEmbed = State(initialValue: MessageEmbedEntity(title: "お知らせ"))
     }
 
     var body: some View {
@@ -114,15 +116,19 @@ struct SendMessageView: View {
                 Spacer()
                     .frame(height: 24.0)
 
-                ClearableIconTextField(
-                    icon: Image(systemName: "list.clipboard"),
-                    placeholder: "埋め込みタイトルを入れてください",
-                    text: $inputEmbedTitle
-                )
-                .padding(.horizontal)
-                .onTapGesture {
-                    self.isEditing = true
+                HStack {
+                    ClearableIconTextField(
+                        icon: Image(systemName: "list.clipboard"),
+                        placeholder: "埋め込みタイトルを入れてください",
+                        text: $inputEmbed.title
+                    )
+                    .onTapGesture {
+                        self.isEditing = true
+                    }
+
+                    embedEditorButton
                 }
+                .padding(.horizontal)
 
                 Spacer()
                     .frame(height: 48.0)
@@ -149,6 +155,9 @@ struct SendMessageView: View {
         }
         .sheet(isPresented: $isSavedURLListPresented) {
             savedURLListSheet
+        }
+        .sheet(isPresented: $isEmbedEditorPresented) {
+            embedEditorSheet
         }
         .sheet(isPresented: $isURLHelpPresented) {
             urlHelpSheet
@@ -207,6 +216,32 @@ extension SendMessageView {
                 }
         }
         .presentationDetents([.medium, .large])
+    }
+
+    /// 埋め込みのタイトル以外の項目を入力する embed エディタを開くボタン
+    private var embedEditorButton: some View {
+        Button(action: {
+            isEmbedEditorPresented = true
+        }, label: {
+            Image(systemName: "slider.horizontal.3")
+                .foregroundStyle(Color.appAccent)
+                .frame(width: 44.0, height: 44.0)
+                .contentShape(Rectangle())
+        })
+        .accessibilityLabel("埋め込みを編集")
+    }
+
+    private var embedEditorSheet: some View {
+        NavigationStack {
+            EmbedEditorView(embed: $inputEmbed)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("完了") {
+                            isEmbedEditorPresented = false
+                        }
+                    }
+                }
+        }
     }
 
     /// 保存済み URL から選んで URL 欄に反映するシート
@@ -313,9 +348,7 @@ extension SendMessageView {
             username: inputUsername,
             avatarURL: inputAvatarURL,
             content: inputContext,
-            messageEmbedEntity: MessageEmbedEntity(
-                title: inputEmbedTitle
-            )
+            messageEmbedEntity: inputEmbed
         )
     }
 
@@ -324,7 +357,7 @@ extension SendMessageView {
         inputUsername = template.message.username
         inputAvatarURL = template.message.avatarURL
         inputContext = template.message.content
-        inputEmbedTitle = template.message.messageEmbedEntity.title
+        inputEmbed = template.message.messageEmbedEntity
     }
 }
 
