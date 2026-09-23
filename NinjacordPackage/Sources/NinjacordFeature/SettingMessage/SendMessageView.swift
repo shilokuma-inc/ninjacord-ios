@@ -305,7 +305,11 @@ extension SendMessageView {
 
         let messageEntity = currentMessage
 
-        if let error = viewModel.validate(url: inputURL, messageEntity: messageEntity) {
+        if let error = viewModel.validate(
+            url: inputURL,
+            messageEntity: messageEntity,
+            canUseProFeatures: purchaseManager.isPro
+        ) {
             validationError = error
             isValidationAlertPresented = true
             return
