@@ -1,11 +1,13 @@
 name: Archive
 
+# release/** は Upload/release が同じ Release 構成で archive するため除外する。
 on:
   push:
     branches:
       - '**'
       - '!master'
       - '!develop'
+      - '!release/**'
 
 jobs:          
   build:
