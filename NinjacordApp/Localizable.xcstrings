@@ -1732,6 +1732,22 @@
         }
       }
     },
+    "添付した画像" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attached image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添付した画像"
+          }
+        }
+      }
+    },
     "無料プランでは%lld件まで保存できます（%lld / %lld）" : {
       "localizations" : {
         "en" : {
@@ -1792,6 +1808,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画像のURLは https:// から始めてください"
+          }
+        }
+      }
+    },
+    "画像を外す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像を外す"
+          }
+        }
+      }
+    },
+    "画像を添付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach Image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像を添付"
+          }
+        }
+      }
+    },
+    "画像を添付できませんでした。10MBまでの画像を選んでください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't attach the image. Choose an image up to 10 MB."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像を添付できませんでした。10MBまでの画像を選んでください"
           }
         }
       }

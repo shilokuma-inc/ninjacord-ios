@@ -21,6 +21,8 @@ struct SendMessageView: View {
     @State private var isEditing: Bool = false
     @State private var validationError: SendMessageValidationError?
     @State private var isValidationAlertPresented: Bool = false
+    /// 添付する画像（1 枚）。テンプレート・送信履歴には保存しない
+    @State private var attachment: ImageAttachment?
     /// 一斉送信（Pro 限定）の宛先。空なら URL 欄の宛先に送る
     @State private var broadcastTargets: [SavedWebhookURL] = []
     /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
@@ -85,6 +87,9 @@ struct SendMessageView: View {
                     HStack {
                         BroadcastButton(targets: $broadcastTargets)
                         Spacer()
+                        ImageAttachmentButton(attachment: $attachment) {
+                            toast = Toast(style: .failure, message: "画像を添付できませんでした。10MBまでの画像を選んでください")
+                        }
                     }
                     .padding(.leading, 44.0)
 
@@ -233,7 +238,11 @@ extension SendMessageView {
         // 送信中に URL 欄が書き換えられても、実際に送った先を履歴に残す
         let url = inputURL
         Task {
-            let result = await viewModel.postDiscordWebhook(url: url, messageEntity: messageEntity)
+            let result = await viewModel.postDiscordWebhook(
+                url: url,
+                messageEntity: messageEntity,
+                attachment: attachment
+            )
             isSending = false
             // 設定で「送信履歴を保存する」が ON のときだけ記録される
             historyStore.record(url: url, message: messageEntity, isSuccess: (try? result.get()) != nil)
@@ -262,7 +271,7 @@ extension SendMessageView {
 
         isSending = true
         Task {
-            let results = await viewModel.broadcast(to: urls, messageEntity: messageEntity)
+            let results = await viewModel.broadcast(to: urls, messageEntity: messageEntity, attachment: attachment)
             isSending = false
             let failureCount = results.filter { (try? $0.result.get()) == nil }.count
             for result in results {
