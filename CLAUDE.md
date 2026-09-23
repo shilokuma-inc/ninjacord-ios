@@ -1,6 +1,6 @@
 # Ninjacord iOS
 
-Discord に Webhook / bot 経由でメッセージを送信できる iOS アプリ。
+Discord に Webhook 経由でメッセージを送信できる iOS アプリ。bot token による送信には現時点で対応していない（Discussion #260 で見送り、Issue #308 で先送り）。
 
 ## プロジェクト基本情報
 
