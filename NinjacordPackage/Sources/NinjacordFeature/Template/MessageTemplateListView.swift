@@ -10,6 +10,7 @@ import SwiftUI
 struct MessageTemplateListView: View {
     let onSelect: (MessageTemplate) -> Void
 
+    @EnvironmentObject private var purchaseManager: PurchaseManager
     @StateObject private var store = MessageTemplateStore()
 
     var body: some View {
@@ -49,6 +50,15 @@ struct MessageTemplateListView: View {
                     }
                     .onMove { source, destination in
                         store.move(fromOffsets: source, toOffset: destination)
+                    }
+
+                    if !purchaseManager.isPro {
+                        Section {
+                        } footer: {
+                            let limit = MessageTemplateStore.freeLimit
+                            Text("無料プランでは\(limit)件まで保存できます（\(store.items.count) / \(limit)）")
+                                .foregroundStyle(Color.appTextSecondary)
+                        }
                     }
                 }
                 .scrollContentBackground(.hidden)

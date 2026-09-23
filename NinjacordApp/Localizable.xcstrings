@@ -116,6 +116,22 @@
         }
       }
     },
+    "Ninjacord Proなら、テンプレートを無制限に保存できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With Ninjacord Pro, you can save unlimited templates."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninjacord Proなら、テンプレートを無制限に保存できます"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "en" : {
@@ -128,6 +144,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
+          }
+        }
+      }
+    },
+    "Proを見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See Pro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proを見る"
           }
         }
       }
@@ -596,6 +628,22 @@
         }
       }
     },
+    "テンプレートは%lld件までです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can save up to %lld templates"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートは%lld件までです"
+          }
+        }
+      }
+    },
     "テンプレートを保存しました" : {
       "localizations" : {
         "en" : {
@@ -976,6 +1024,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "次へ"
+          }
+        }
+      }
+    },
+    "無料プランでは%lld件まで保存できます（%lld / %lld）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The free plan can save up to %1$lld templates (%2$lld / %3$lld)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料プランでは%1$lld件まで保存できます（%2$lld / %3$lld）"
           }
         }
       }
