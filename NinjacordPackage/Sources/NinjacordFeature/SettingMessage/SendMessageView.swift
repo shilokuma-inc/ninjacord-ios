@@ -30,6 +30,7 @@ struct SendMessageView: View {
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
     @EnvironmentObject private var purchaseManager: PurchaseManager
+    @StateObject private var historyStore = SendHistoryStore()
     private var viewModel = SendMessageViewModel()
 
     /// 何回目の送信成功でレビューを依頼するか
@@ -276,9 +277,13 @@ extension SendMessageView {
         }
 
         isSending = true
+        // 送信中に URL 欄が書き換えられても、実際に送った先を履歴に残す
+        let url = inputURL
         Task {
-            let result = await viewModel.postDiscordWebhook(url: inputURL, messageEntity: messageEntity)
+            let result = await viewModel.postDiscordWebhook(url: url, messageEntity: messageEntity)
             isSending = false
+            // 設定で「送信履歴を保存する」が ON のときだけ記録される
+            historyStore.record(url: url, message: messageEntity, isSuccess: (try? result.get()) != nil)
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
