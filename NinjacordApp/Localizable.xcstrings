@@ -996,6 +996,22 @@
         }
       }
     },
+    "プレビュー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレビュー"
+          }
+        }
+      }
+    },
     "プロフィール画像のURLを入れてください" : {
       "localizations" : {
         "en" : {
@@ -2032,6 +2048,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通信に失敗しました。ネットワーク接続を確認してください"
+          }
+        }
+      }
+    },
+    "項目を入力すると、Discordでの見え方がここに表示されます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill in the fields to see how it will look on Discord."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "項目を入力すると、Discordでの見え方がここに表示されます"
           }
         }
       }
