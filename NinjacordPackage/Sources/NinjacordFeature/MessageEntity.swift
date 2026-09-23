@@ -7,13 +7,14 @@
 
 import Foundation
 
-struct MessageEntity {
+/// 送信するメッセージの中身。テンプレートとして保存するため Codable にしている
+struct MessageEntity: Codable, Equatable {
     var username: String
     var avatarURL: String
     var content: String
     var messageEmbedEntity: MessageEmbedEntity
 }
 
-struct MessageEmbedEntity {
+struct MessageEmbedEntity: Codable, Equatable {
     var title: String
 }
