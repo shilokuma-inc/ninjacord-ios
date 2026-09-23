@@ -65,6 +65,8 @@ final class RewardedAdManager: NSObject, ObservableObject {
                 unlock.grant()
             }
         }
+        // 解放した機能をすぐ使えるよう、画面に知らせる
+        RewardedUnlockState.shared.refresh()
         return didEarnReward
     }
 
