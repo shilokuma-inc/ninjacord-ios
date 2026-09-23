@@ -22,6 +22,8 @@ struct SendMessageView: View {
     @State private var validationError: SendMessageValidationError?
     @State private var isValidationAlertPresented: Bool = false
     @State private var isSavedURLListPresented = false
+    /// 一斉送信（Pro 限定）の宛先。空なら URL 欄の宛先に送る
+    @State private var broadcastTargets: [SavedWebhookURL] = []
     /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
     @State private var isSending = false
     /// 送信結果を知らせるトースト
@@ -61,20 +63,31 @@ struct SendMessageView: View {
                 VStack(spacing: 8.0) {
                     Spacer()
 
-                    HStack {
-                        ClearableIconTextField(
-                            icon: Image(systemName: "link.icloud.fill"),
-                            placeholder: "URLを入れてください",
-                            text: $inputURL
-                        )
-                        .onTapGesture {
-                            self.isEditing = true
+                    if broadcastTargets.isEmpty {
+                        HStack {
+                            ClearableIconTextField(
+                                icon: Image(systemName: "link.icloud.fill"),
+                                placeholder: "URLを入れてください",
+                                text: $inputURL
+                            )
+                            .onTapGesture {
+                                self.isEditing = true
+                            }
+
+                            WebhookURLHelpButton()
+
+                            savedURLButton
                         }
-
-                        WebhookURLHelpButton()
-
-                        savedURLButton
+                    } else {
+                        broadcastTargetsRow
                     }
+
+                    // 宛先を選ぶボタンなので、宛先（URL）の直下に置く
+                    HStack {
+                        BroadcastButton(targets: $broadcastTargets)
+                        Spacer()
+                    }
+                    .padding(.leading, 44.0)
 
                     // 宛先（URL）ではなく中身の入力欄の上に置く
                     MessageTemplateButtons(message: currentMessage, onApply: applyTemplate) {
@@ -242,6 +255,11 @@ extension SendMessageView {
 
         let messageEntity = currentMessage
 
+        if !broadcastTargets.isEmpty {
+            sendBroadcast(messageEntity)
+            return
+        }
+
         if let error = viewModel.validate(
             url: inputURL,
             messageEntity: messageEntity,
@@ -263,22 +281,89 @@ extension SendMessageView {
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
-                let didRequestTracking = await TrackingAuthorization.requestIfNeeded()
-                // 成功回数は postDiscordWebhook の中で記録済み。ちょうど 3 回目の送信のときだけ依頼する
-                let shouldRequestReview = SendSuccessCounter().count == Self.reviewRequestSendCount
-                if shouldRequestReview {
-                    requestReview()
-                }
-                // ATT やレビュー依頼のダイアログに続けて全画面広告を出すと体験を損なうため、その送信では出さない
-                if !didRequestTracking && !shouldRequestReview {
-                    // 成功のトーストを見てもらってから表示する
-                    try? await Task.sleep(for: .seconds(1))
-                    InterstitialAdManager.shared.showIfAllowed(from: sceneDelegate.window?.rootViewController)
-                }
+                await handleSendSucceeded()
             case .failure(let error):
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
             }
         }
+    }
+
+    /// 選んだ宛先に一斉送信する（Pro 限定）
+    private func sendBroadcast(_ messageEntity: MessageEntity) {
+        let urls = broadcastTargets.map(\.url)
+        // 宛先を選んだあとに Pro でなくなった場合は送らない
+        let error: SendMessageValidationError? = purchaseManager.isPro
+            ? viewModel.validate(url: urls[0], messageEntity: messageEntity, canUseProFeatures: true)
+            : .proBroadcast
+        if let error {
+            validationError = error
+            isValidationAlertPresented = true
+            return
+        }
+
+        isSending = true
+        Task {
+            let results = await viewModel.broadcast(to: urls, messageEntity: messageEntity)
+            isSending = false
+            let failureCount = results.filter { (try? $0.result.get()) == nil }.count
+            for result in results {
+                let isSuccess = (try? result.result.get()) != nil
+                historyStore.record(url: result.url, message: messageEntity, isSuccess: isSuccess)
+            }
+            if failureCount == 0 {
+                toast = Toast(style: .success, message: "\(results.count)件の宛先に送信しました")
+            } else {
+                toast = Toast(style: .failure, message: "\(results.count)件中\(failureCount)件の送信に失敗しました")
+            }
+            if failureCount < results.count {
+                await handleSendSucceeded()
+            }
+        }
+    }
+
+    /// 送信に成功したあとの ATT の許可・レビュー依頼・インタースティシャル広告
+    private func handleSendSucceeded() async {
+        let didRequestTracking = await TrackingAuthorization.requestIfNeeded()
+        // 成功回数は ViewModel で記録済み。ちょうど 3 回目の送信のときだけ依頼する
+        let shouldRequestReview = SendSuccessCounter().count == Self.reviewRequestSendCount
+        if shouldRequestReview {
+            requestReview()
+        }
+        // ATT やレビュー依頼のダイアログに続けて全画面広告を出すと体験を損なうため、その送信では出さない
+        if !didRequestTracking && !shouldRequestReview {
+            // 成功のトーストを見てもらってから表示する
+            try? await Task.sleep(for: .seconds(1))
+            InterstitialAdManager.shared.showIfAllowed(from: sceneDelegate.window?.rootViewController)
+        }
+    }
+
+    /// 一斉送信の宛先を選んでいる間、URL 欄の代わりに出す
+    private var broadcastTargetsRow: some View {
+        HStack {
+            Image(systemName: "paperplane.circle.fill")
+                .font(.title2)
+                .foregroundStyle(Color.appAccent)
+                .frame(width: 44.0)
+            VStack(alignment: .leading, spacing: 2.0) {
+                Text("\(broadcastTargets.count)件の宛先に一斉送信")
+                    .foregroundStyle(Color.appTextPrimary)
+                Text(broadcastTargets.map(\.name).joined(separator: "、"))
+                    .font(.caption)
+                    .foregroundStyle(Color.appTextSecondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Button {
+                broadcastTargets = []
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(Color.appTextSecondary)
+                    .frame(width: 44.0, height: 44.0)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("一斉送信をやめる")
+        }
+        .frame(minHeight: 56.0)
     }
 }
 

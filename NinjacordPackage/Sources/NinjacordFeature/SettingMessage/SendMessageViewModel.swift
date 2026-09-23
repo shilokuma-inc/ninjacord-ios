@@ -147,6 +147,8 @@ enum SendMessageValidationError: LocalizedError {
     case invalidEmbed(EmbedValidationIssue)
     /// Pro でないのに、埋め込みに Pro 限定の項目が入っている
     case proEmbedFeatures
+    /// Pro でないのに、一斉送信の宛先が選ばれている
+    case proBroadcast
 
     var errorDescription: String? {
         switch self {
@@ -160,6 +162,8 @@ enum SendMessageValidationError: LocalizedError {
             return String(localized: "埋め込みの内容を確認してください")
         case .proEmbedFeatures:
             return String(localized: "Pro限定の項目が入っています")
+        case .proBroadcast:
+            return String(localized: "一斉送信はNinjacord Pro限定です")
         }
     }
 
@@ -175,6 +179,8 @@ enum SendMessageValidationError: LocalizedError {
             return issue.message
         case .proEmbedFeatures:
             return String(localized: "埋め込みの色・フィールド・画像・サムネイルはNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください")
+        case .proBroadcast:
+            return String(localized: "宛先の選択を解除して1件ずつ送るか、Proにしてください")
         }
     }
 }

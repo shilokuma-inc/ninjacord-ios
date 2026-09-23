@@ -68,6 +68,54 @@
         }
       }
     },
+    "%lld件の宛先に一斉送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to %lld recipients"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld件の宛先に一斉送信"
+          }
+        }
+      }
+    },
+    "%lld件の宛先に送信しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent to %lld recipients"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld件の宛先に送信しました"
+          }
+        }
+      }
+    },
+    "%lld件中%lld件の送信に失敗しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to send to %2$lld of %1$lld recipients"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld件中%2$lld件の送信に失敗しました"
+          }
+        }
+      }
+    },
     "%lld番目のフィールドの値は%lld文字までです" : {
       "localizations" : {
         "en" : {
@@ -1204,6 +1252,38 @@
         }
       }
     },
+    "一斉送信はNinjacord Pro限定です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sending to multiple recipients is a Ninjacord Pro feature"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一斉送信はNinjacord Pro限定です"
+          }
+        }
+      }
+    },
+    "一斉送信をやめる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop sending to multiple recipients"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一斉送信をやめる"
+          }
+        }
+      }
+    },
     "今の入力内容を保存します（送信先のURLは含みません）" : {
       "localizations" : {
         "en" : {
@@ -1536,6 +1616,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完了"
+          }
+        }
+      }
+    },
+    "宛先の選択を解除して1件ずつ送るか、Proにしてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear the recipients and send one at a time, or upgrade to Pro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先の選択を解除して1件ずつ送るか、Proにしてください"
           }
         }
       }
