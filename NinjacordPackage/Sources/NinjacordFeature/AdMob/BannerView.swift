@@ -11,6 +11,8 @@ import GoogleMobileAds
 struct BannerView: UIViewControllerRepresentable {
     @State private var viewWidth: CGFloat = .zero
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
+    /// 同意が得られたときに updateUIViewController を呼び直して読み込ませるため監視する
+    @ObservedObject private var adConsent = AdConsentManager.shared
     private let bannerView = GADBannerView()
     private let adUnitID = AdUnitIdProvider.banner
 
@@ -36,7 +38,7 @@ struct BannerView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-        guard viewWidth != .zero else { return }
+        guard viewWidth != .zero, adConsent.canRequestAds else { return }
 
         // Request a banner ad with the updated viewWidth.
         bannerView.adSize = GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(viewWidth)

@@ -1,6 +1,7 @@
 name: Archive
 
 # release/** は Upload/release が同じ Release 構成で archive するため除外する。
+# assets/** はスクリーンショット置き場でアプリのコードを含まないため除外する。
 on:
   push:
     branches:
@@ -8,6 +9,7 @@ on:
       - '!master'
       - '!develop'
       - '!release/**'
+      - '!assets/**'
 
 jobs:          
   build:

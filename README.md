@@ -1,6 +1,6 @@
 # Ninjacord
 
-Discordでbot経由で送信できるアプリ
+DiscordのWebhookを使って、好きな名前・アイコンでメッセージを送信できるアプリ（bot tokenによる送信には対応していません）
 
 ## Environment
 - Xcode26.3

@@ -13,6 +13,7 @@
 		4F5072C02BCF901F0005D352 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4F5072BF2BCF901F0005D352 /* Preview Assets.xcassets */; };
 		4F6755562BE0123900F2629B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4F6755552BE0123900F2629B /* GoogleService-Info.plist */; };
 		4F6F9FB22BEBDEE40033AFB7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */; };
+		4F7A1C0A2E9B0D1000A1B2C3 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F7A1C0B2E9B0D1000A1B2C3 /* InfoPlist.xcstrings */; };
 		4FAB6FF22BE1923F00B2F33A /* swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 4FAB6FF12BE1923F00B2F33A /* swiftlint.yml */; };
 		4FD55D4D2BE6FCB800581F34 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FD55D4C2BE6FCB800581F34 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -27,6 +28,8 @@
 		4F5072BF2BCF901F0005D352 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		4F6755552BE0123900F2629B /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		4F7A1C0C2E9B0D1000A1B2C3 /* NinjacordPro.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = NinjacordPro.storekit; sourceTree = "<group>"; };
+		4F7A1C0B2E9B0D1000A1B2C3 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		4FAB6FF12BE1923F00B2F33A /* swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftlint.yml; sourceTree = "<group>"; };
 		4FAB6FF72BE1A04D00B2F33A /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
 		4FD55D4C2BE6FCB800581F34 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -68,8 +71,10 @@
 				4F5072B72BCF901E0005D352 /* NinjacordApp.swift */,
 				4F5072BB2BCF901F0005D352 /* Assets.xcassets */,
 				4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */,
+				4F7A1C0B2E9B0D1000A1B2C3 /* InfoPlist.xcstrings */,
 				4F5072BD2BCF901F0005D352 /* NinjacordApp.entitlements */,
 				4F2CDC502BD31B4A000DF626 /* Info.plist */,
+				4F7A1C0C2E9B0D1000A1B2C3 /* NinjacordPro.storekit */,
 				4FD55D4C2BE6FCB800581F34 /* PrivacyInfo.xcprivacy */,
 				4FAB6FF12BE1923F00B2F33A /* swiftlint.yml */,
 				4F6755552BE0123900F2629B /* GoogleService-Info.plist */,
@@ -173,6 +178,7 @@
 				4FAB6FF22BE1923F00B2F33A /* swiftlint.yml in Resources */,
 				4F5072C02BCF901F0005D352 /* Preview Assets.xcassets in Resources */,
 				4F6F9FB22BEBDEE40033AFB7 /* Localizable.xcstrings in Resources */,
+				4F7A1C0A2E9B0D1000A1B2C3 /* InfoPlist.xcstrings in Resources */,
 				4F5072BC2BCF901F0005D352 /* Assets.xcassets in Resources */,
 				4FD55D4D2BE6FCB800581F34 /* PrivacyInfo.xcprivacy in Resources */,
 				4F6755562BE0123900F2629B /* GoogleService-Info.plist in Resources */,
@@ -363,6 +369,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ADMOB_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/2934735716";
+				ADMOB_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/4411468910";
+				ADMOB_REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/1712485313";
 				ADMOB_NATIVE_AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
 				ADS_ENABLED = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -412,6 +420,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ADMOB_BANNER_AD_UNIT_ID = "ca-app-pub-7683522872696760/4620024755";
+				ADMOB_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-7683522872696760/2280495586";
+				ADMOB_REWARDED_AD_UNIT_ID = "ca-app-pub-7683522872696760/1973373828";
 				ADMOB_NATIVE_AD_UNIT_ID = "ca-app-pub-7683522872696760/1379062983";
 				ADS_ENABLED = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -523,6 +533,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ADMOB_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/2934735716";
+				ADMOB_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/4411468910";
+				ADMOB_REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/1712485313";
 				ADMOB_NATIVE_AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
 				ADS_ENABLED = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -636,6 +648,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ADMOB_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/2934735716";
+				ADMOB_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/4411468910";
+				ADMOB_REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/1712485313";
 				ADMOB_NATIVE_AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
 				ADS_ENABLED = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;

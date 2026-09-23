@@ -9,7 +9,21 @@ import Foundation
 import Alamofire
 
 struct SendMessageViewModel {
-    public func postDiscordWebhook(url: String, messageEntity: MessageEntity) {
+    private let analytics = FirebaseAnalytics()
+    private let sendSuccessCounter = SendSuccessCounter()
+
+    /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
+    /// 失敗時は Discord のレスポンスから判定した原因を返す
+    @discardableResult
+    /// - Parameter countsAsSend: 送信成功回数（初回送信の計測・ATT・レビュー依頼の判定に使う）に数えるか。
+    ///   一斉送信では宛先ごとではなく 1 回の操作で 1 回と数えるため、呼び出し元でまとめて数える
+    /// - Parameter attachment: 添付する画像。あれば multipart/form-data で送る
+    public func postDiscordWebhook(
+        url: String,
+        messageEntity: MessageEntity,
+        attachment: ImageAttachment? = nil,
+        countsAsSend: Bool = true
+    ) async -> Result<Void, DiscordWebhookError> {
         let baseUrlString = url
         let param: Parameters = {
             makeParameter(messageEntity: messageEntity)
@@ -27,38 +41,133 @@ struct SendMessageViewModel {
         )!
             .data(using: String.Encoding.utf8.rawValue)
         print(request)
-        AF.request(request)
-        .responseData { response in
-            switch response.result {
-            case .success:
-                print("success")
-            case .failure:
-                print("error")
+        // validate() を付けないと Discord が 4xx / 5xx を返しても success 扱いになるため、
+        // ステータスコードが 2xx 以外なら failure にする
+        let response = if let attachment {
+            await upload(to: request.url, parameter: param, attachment: attachment)
+        } else {
+            await AF.request(request).validate().serializingData().response
+        }
+        analytics.sendMessageSendEvent(
+            isSuccess: response.error == nil,
+            httpStatus: response.response?.statusCode
+        )
+        switch response.result {
+        case .success:
+            print("success")
+            if countsAsSend {
+                recordSendSuccess()
             }
+            return .success(())
+        case .failure(let error):
+            print("error: \(error)")
+            return .failure(DiscordWebhookError(statusCode: response.response?.statusCode, data: response.data))
         }
     }
 }
 
 extension SendMessageViewModel {
+    /// 一斉送信の宛先 1 件ごとの結果
+    struct BroadcastResult {
+        let url: String
+        let result: Result<Void, DiscordWebhookError>
+    }
+
+    /// 複数の Webhook に同じメッセージを 1 件ずつ順に送る（Pro 限定の一斉送信）。
+    /// Discord の送信制限は Webhook ごとなので、宛先が違えば続けて送ってよい
+    func broadcast(
+        to urls: [String],
+        messageEntity: MessageEntity,
+        attachment: ImageAttachment? = nil
+    ) async -> [BroadcastResult] {
+        var results: [BroadcastResult] = []
+        for url in urls {
+            let result = await postDiscordWebhook(
+                url: url,
+                messageEntity: messageEntity,
+                attachment: attachment,
+                countsAsSend: false
+            )
+            results.append(BroadcastResult(url: url, result: result))
+        }
+        // 送信成功回数は、1 件でも届いていれば一斉送信 1 回につき 1 回と数える
+        if results.contains(where: { (try? $0.result.get()) != nil }) {
+            recordSendSuccess()
+        }
+        return results
+    }
+
+    /// 画像を添付して送る。メッセージは payload_json、画像は files[0] として multipart/form-data で送る
+    /// https://discord.com/developers/docs/reference#uploading-files
+    private func upload(
+        to url: URL?,
+        parameter: Parameters,
+        attachment: ImageAttachment
+    ) async -> DataResponse<Data, AFError> {
+        let payload = (try? JSONSerialization.data(withJSONObject: parameter)) ?? Data()
+        return await AF.upload(
+            multipartFormData: { form in
+                form.append(payload, withName: "payload_json", mimeType: "application/json")
+                form.append(
+                    attachment.data,
+                    withName: "files[0]",
+                    fileName: attachment.fileName,
+                    mimeType: attachment.mimeType
+                )
+            },
+            to: url ?? URL(string: "https://www.apple.com/")!
+        )
+        .validate()
+        .serializingData()
+        .response
+    }
+
+    private func recordSendSuccess() {
+        if sendSuccessCounter.increment() == 1 {
+            analytics.sendFirstSendCompletedEvent()
+        }
+    }
+
     private func makeParameter(messageEntity: MessageEntity) -> Parameters {
-        var param: Parameters
-        if messageEntity.messageEmbedEntity.title.isEmpty {
-            param = [
-                "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
-                "avatar_url": messageEntity.avatarURL,
-                "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
-            ]
-        } else {
-            param = [
-                "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
-                "avatar_url": messageEntity.avatarURL,
-                "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content,
-                "embeds": [
-                    [
-                        "title": messageEntity.messageEmbedEntity.title
-                    ]
-                ]
-            ]
+        var param: Parameters = [
+            "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
+            "avatar_url": messageEntity.avatarURL,
+            "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
+        ]
+        if messageEntity.messageEmbedEntity.hasContent {
+            param["embeds"] = [makeEmbedParameter(messageEntity.messageEmbedEntity)]
+        }
+        return param
+    }
+
+    /// Discord の embed オブジェクトを組み立てる。空の項目は送らない
+    /// https://discord.com/developers/docs/resources/message#embed-object
+    private func makeEmbedParameter(_ embed: MessageEmbedEntity, sentAt: Date = Date()) -> [String: Any] {
+        var param: [String: Any] = [:]
+        if !embed.title.isEmpty {
+            param["title"] = embed.title
+        }
+        if !embed.description.isEmpty {
+            param["description"] = embed.description
+        }
+        if let color = embed.color {
+            param["color"] = color
+        }
+        let fields = embed.sendableFields
+        if !fields.isEmpty {
+            param["fields"] = fields.map { ["name": $0.name, "value": $0.value, "inline": $0.isInline] }
+        }
+        if !embed.footerText.isEmpty {
+            param["footer"] = ["text": embed.footerText]
+        }
+        if !embed.imageURL.isEmpty {
+            param["image"] = ["url": embed.imageURL]
+        }
+        if !embed.thumbnailURL.isEmpty {
+            param["thumbnail"] = ["url": embed.thumbnailURL]
+        }
+        if embed.includesTimestamp {
+            param["timestamp"] = ISO8601DateFormatter().string(from: sentAt)
         }
         return param
     }
@@ -74,6 +183,12 @@ enum SendMessageValidationError: LocalizedError {
     case invalidURL
     /// URL 以外の項目がすべて未入力
     case emptyMessage
+    /// 埋め込みが Discord の上限を超えているなど
+    case invalidEmbed(EmbedValidationIssue)
+    /// Pro でないのに、埋め込みに Pro 限定の項目が入っている
+    case proEmbedFeatures
+    /// Pro でないのに、一斉送信の宛先が選ばれている
+    case proBroadcast
 
     var errorDescription: String? {
         switch self {
@@ -83,6 +198,12 @@ enum SendMessageValidationError: LocalizedError {
             return String(localized: "URLの形式が正しくありません")
         case .emptyMessage:
             return String(localized: "メッセージが入力されていません")
+        case .invalidEmbed:
+            return String(localized: "埋め込みの内容を確認してください")
+        case .proEmbedFeatures:
+            return String(localized: "Pro限定の項目が入っています")
+        case .proBroadcast:
+            return String(localized: "一斉送信はNinjacord Pro限定です")
         }
     }
 
@@ -94,13 +215,20 @@ enum SendMessageValidationError: LocalizedError {
             return String(localized: "https:// から始まるWebhook URLを入力してください")
         case .emptyMessage:
             return String(localized: "名前・メッセージなど、いずれかの項目を入力してください")
+        case .invalidEmbed(let issue):
+            return issue.message
+        case .proEmbedFeatures:
+            return String(localized: "埋め込みの色・フィールド・画像・サムネイル・フッター・送信日時はNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください")
+        case .proBroadcast:
+            return String(localized: "宛先の選択を解除して1件ずつ送るか、Proにしてください")
         }
     }
 }
 
 extension SendMessageViewModel {
     /// 送信前に入力内容を検証する。問題がなければ nil を返す
-    func validate(url: String, messageEntity: MessageEntity) -> SendMessageValidationError? {
+    /// - Parameter canUseProFeatures: Pro 限定の項目を使えるか（Pro 購読中など）
+    func validate(url: String, messageEntity: MessageEntity, canUseProFeatures: Bool) -> SendMessageValidationError? {
         let trimmedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedURL.isEmpty {
             return .emptyURL
@@ -108,14 +236,15 @@ extension SendMessageViewModel {
         if !isValidURL(trimmedURL) {
             return .invalidURL
         }
-        let messageFields = [
-            messageEntity.username,
-            messageEntity.avatarURL,
-            messageEntity.content,
-            messageEntity.messageEmbedEntity.title
-        ]
-        if messageFields.allSatisfy({ $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+        if !messageEntity.hasContent {
             return .emptyMessage
+        }
+        if !canUseProFeatures && messageEntity.messageEmbedEntity.usesProFeatures {
+            return .proEmbedFeatures
+        }
+        // 最初の 1 件だけを示す（直して送り直せば次の誤りが分かる）
+        if let issue = messageEntity.messageEmbedEntity.validationIssues().first {
+            return .invalidEmbed(issue)
         }
         return nil
     }

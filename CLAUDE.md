@@ -1,6 +1,6 @@
 # Ninjacord iOS
 
-Discord に Webhook / bot 経由でメッセージを送信できる iOS アプリ。
+Discord に Webhook 経由でメッセージを送信できる iOS アプリ。bot token による送信には現時点で対応していない（Discussion #260 で見送り、Issue #308 で先送り）。
 
 ## プロジェクト基本情報
 
@@ -93,6 +93,17 @@ Discord に Webhook / bot 経由でメッセージを送信できる iOS アプ�
 - **`【TYPE】日本語の説明`**（`【】` は全角、TYPE は半角大文字。例: `【FEAT】メッセージ送信ボタンを追加`）
 - TYPE はコミット type を大文字化したもの。原則、対応する Issue のタイトル（【FEAT】等）と同じ種別にする。
 - PR 本文は `.github/pull_request_template.md` の雛形に従う。
+
+### PR 本文のスクリーンショット
+
+UI の見た目が変わる変更では、Before / After のスクリーンショットを PR 本文に添付する。
+
+- 画像は PR の diff を汚さないよう、**`assets/issue-<Issue番号>` ブランチ**に置き、PR 本文からは raw URL で参照する。
+  - 例: `https://raw.githubusercontent.com/shilokuma-inc/ninjacord-ios/assets/issue-335/335/before.png`
+  - このブランチは `.github/workflows/cleanup-assets-branch.yml` が PR のマージ時に自動削除する。ブランチ名がこの規約から外れると削除されないので注意。
+- Before / After は表で横に並べ、同一条件（同じ端末・OS・テーマ・データ状態）で撮影する。
+- 影響する画面が複数ある場合は画面ごとに用意する。新規画面で Before が無い場合は「なし」と書く。
+- プレースホルダーのコメント（`<!-- 修正前のスクリーンショットを添付 -->`）を残したまま PR を出さない。
 
 ## コーディング方針
 

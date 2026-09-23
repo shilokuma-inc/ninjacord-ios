@@ -1,0 +1,51 @@
+{
+  "identifier" : "6B1F3C2A-8E4D-4F7A-9C21-3D5E7A9B1C40",
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "ja",
+    "_storefront" : "JPN",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21584301",
+      "localizations" : [],
+      "name" : "Ninjacord Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "100",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21584302",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "広告を非表示にし、Pro機能を使えるようにします",
+              "displayName" : "Ninjacord Pro",
+              "locale" : "ja"
+            },
+            {
+              "description" : "Removes ads and unlocks Pro features",
+              "displayName" : "Ninjacord Pro",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "ml.mrs1669.discord_bot_helper.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Ninjacord Pro Monthly",
+          "subscriptionGroupID" : "21584301",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : []
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
