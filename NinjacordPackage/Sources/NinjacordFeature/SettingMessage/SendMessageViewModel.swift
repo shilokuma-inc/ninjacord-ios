@@ -17,9 +17,11 @@ struct SendMessageViewModel {
     @discardableResult
     /// - Parameter countsAsSend: 送信成功回数（初回送信の計測・ATT・レビュー依頼の判定に使う）に数えるか。
     ///   一斉送信では宛先ごとではなく 1 回の操作で 1 回と数えるため、呼び出し元でまとめて数える
+    /// - Parameter attachment: 添付する画像。あれば multipart/form-data で送る
     public func postDiscordWebhook(
         url: String,
         messageEntity: MessageEntity,
+        attachment: ImageAttachment? = nil,
         countsAsSend: Bool = true
     ) async -> Result<Void, DiscordWebhookError> {
         let baseUrlString = url
@@ -41,7 +43,11 @@ struct SendMessageViewModel {
         print(request)
         // validate() を付けないと Discord が 4xx / 5xx を返しても success 扱いになるため、
         // ステータスコードが 2xx 以外なら failure にする
-        let response = await AF.request(request).validate().serializingData().response
+        let response = if let attachment {
+            await upload(to: request.url, parameter: param, attachment: attachment)
+        } else {
+            await AF.request(request).validate().serializingData().response
+        }
         analytics.sendMessageSendEvent(
             isSuccess: response.error == nil,
             httpStatus: response.response?.statusCode
@@ -69,10 +75,19 @@ extension SendMessageViewModel {
 
     /// 複数の Webhook に同じメッセージを 1 件ずつ順に送る（Pro 限定の一斉送信）。
     /// Discord の送信制限は Webhook ごとなので、宛先が違えば続けて送ってよい
-    func broadcast(to urls: [String], messageEntity: MessageEntity) async -> [BroadcastResult] {
+    func broadcast(
+        to urls: [String],
+        messageEntity: MessageEntity,
+        attachment: ImageAttachment? = nil
+    ) async -> [BroadcastResult] {
         var results: [BroadcastResult] = []
         for url in urls {
-            let result = await postDiscordWebhook(url: url, messageEntity: messageEntity, countsAsSend: false)
+            let result = await postDiscordWebhook(
+                url: url,
+                messageEntity: messageEntity,
+                attachment: attachment,
+                countsAsSend: false
+            )
             results.append(BroadcastResult(url: url, result: result))
         }
         // 送信成功回数は、1 件でも届いていれば一斉送信 1 回につき 1 回と数える
@@ -80,6 +95,31 @@ extension SendMessageViewModel {
             recordSendSuccess()
         }
         return results
+    }
+
+    /// 画像を添付して送る。メッセージは payload_json、画像は files[0] として multipart/form-data で送る
+    /// https://discord.com/developers/docs/reference#uploading-files
+    private func upload(
+        to url: URL?,
+        parameter: Parameters,
+        attachment: ImageAttachment
+    ) async -> DataResponse<Data, AFError> {
+        let payload = (try? JSONSerialization.data(withJSONObject: parameter)) ?? Data()
+        return await AF.upload(
+            multipartFormData: { form in
+                form.append(payload, withName: "payload_json", mimeType: "application/json")
+                form.append(
+                    attachment.data,
+                    withName: "files[0]",
+                    fileName: attachment.fileName,
+                    mimeType: attachment.mimeType
+                )
+            },
+            to: url ?? URL(string: "https://www.apple.com/")!
+        )
+        .validate()
+        .serializingData()
+        .response
     }
 
     private func recordSendSuccess() {
