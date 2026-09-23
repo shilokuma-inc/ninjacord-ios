@@ -1,11 +1,13 @@
 name: Build
 
+# assets/** はスクリーンショット置き場でアプリのコードを含まないため除外する。
 on:
   push:
     branches:
       - '**'
       - '!master'
       - '!develop'
+      - '!assets/**'
 
 jobs:
   build:
