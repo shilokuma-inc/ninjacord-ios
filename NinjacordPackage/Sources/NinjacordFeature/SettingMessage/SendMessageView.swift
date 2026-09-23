@@ -22,6 +22,10 @@ struct SendMessageView: View {
     @State private var isValidationAlertPresented: Bool = false
     @State private var isSavedURLListPresented = false
     @State private var isURLHelpPresented = false
+    @State private var isTemplateListPresented = false
+    @State private var isTemplateSaveAlertPresented = false
+    @State private var templateName = ""
+    @StateObject private var templateStore = MessageTemplateStore()
     /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
     @State private var isSending = false
     /// 送信結果を知らせるトースト
@@ -74,6 +78,8 @@ struct SendMessageView: View {
 
                         savedURLButton
                     }
+
+                    templateButtons
 
                     ClearableIconTextField(
                         icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
@@ -143,6 +149,18 @@ struct SendMessageView: View {
         .sheet(isPresented: $isSavedURLListPresented) {
             savedURLListSheet
         }
+        .sheet(isPresented: $isTemplateListPresented) {
+            templateListSheet
+        }
+        .alert("テンプレートとして保存", isPresented: $isTemplateSaveAlertPresented) {
+            TextField("テンプレート名", text: $templateName)
+            Button("保存") {
+                saveTemplate()
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("今の入力内容を保存します（送信先のURLは含みません）")
+        }
         .sheet(isPresented: $isURLHelpPresented) {
             urlHelpSheet
         }
@@ -203,6 +221,50 @@ extension SendMessageView {
     }
 
     /// 保存済み URL から選んで URL 欄に反映するシート
+    /// テンプレートの呼び出し・保存ボタン。宛先（URL）ではなく中身の入力欄の上に置く
+    private var templateButtons: some View {
+        HStack(spacing: 16.0) {
+            Spacer()
+
+            Button {
+                isTemplateListPresented = true
+            } label: {
+                Label("テンプレート", systemImage: "doc.on.doc")
+            }
+
+            Button {
+                templateName = ""
+                isTemplateSaveAlertPresented = true
+            } label: {
+                Label("保存", systemImage: "square.and.arrow.down")
+            }
+            // 何も入力していない状態を保存しても使い道が無いので押せなくする
+            .disabled(!currentMessage.hasContent)
+        }
+        .font(.system(size: 15, weight: .semibold))
+        .tint(Color.appAccent)
+        .frame(minHeight: 44.0)
+        .padding(.leading, 44.0)
+    }
+
+    private var templateListSheet: some View {
+        NavigationStack {
+            MessageTemplateListView { template in
+                applyTemplate(template)
+                isTemplateListPresented = false
+            }
+            .navigationTitle("テンプレート")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("閉じる") {
+                        isTemplateListPresented = false
+                    }
+                }
+            }
+        }
+    }
+
     private var savedURLListSheet: some View {
         NavigationStack {
             SavedWebhookURLListView(
@@ -261,14 +323,7 @@ extension SendMessageView {
     private func sendMessage() {
         guard !isSending else { return }
 
-        let messageEntity = MessageEntity(
-            username: inputUsername,
-            avatarURL: inputAvatarURL,
-            content: inputContext,
-            messageEmbedEntity: MessageEmbedEntity(
-                title: inputEmbedTitle
-            )
-        )
+        let messageEntity = currentMessage
 
         if let error = viewModel.validate(url: inputURL, messageEntity: messageEntity) {
             validationError = error
@@ -299,6 +354,36 @@ extension SendMessageView {
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
             }
         }
+    }
+}
+
+extension SendMessageView {
+    /// 入力欄の内容から組み立てた、送信・テンプレート保存用のメッセージ
+    private var currentMessage: MessageEntity {
+        MessageEntity(
+            username: inputUsername,
+            avatarURL: inputAvatarURL,
+            content: inputContext,
+            messageEmbedEntity: MessageEmbedEntity(
+                title: inputEmbedTitle
+            )
+        )
+    }
+
+    private func saveTemplate() {
+        let message = currentMessage
+        let trimmedName = templateName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = trimmedName.isEmpty ? MessageTemplate.defaultName(for: message) : trimmedName
+        templateStore.add(name: name, message: message)
+        toast = Toast(style: .success, message: "テンプレートを保存しました")
+    }
+
+    /// テンプレートの中身を入力欄に反映する。宛先（URL）はそのまま残す
+    private func applyTemplate(_ template: MessageTemplate) {
+        inputUsername = template.message.username
+        inputAvatarURL = template.message.avatarURL
+        inputContext = template.message.content
+        inputEmbedTitle = template.message.messageEmbedEntity.title
     }
 }
 
