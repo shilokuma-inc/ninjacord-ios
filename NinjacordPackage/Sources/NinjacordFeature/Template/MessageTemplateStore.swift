@@ -10,6 +10,8 @@ import Foundation
 @MainActor
 final class MessageTemplateStore: ObservableObject {
     private static let storageKey = "messageTemplates"
+    /// 無料で保存できるテンプレートの数（Discussion #258 の決定）。Pro は無制限
+    static let freeLimit = 3
 
     @Published private(set) var items: [MessageTemplate] = []
 
@@ -28,6 +30,11 @@ final class MessageTemplateStore: ObservableObject {
             return
         }
         items = decoded
+    }
+
+    /// もう 1 件追加できるか。上限を超えて保存済みの分（Pro を解約した場合など）は消さず、追加だけを止める
+    func canAdd(isPro: Bool) -> Bool {
+        isPro || items.count < Self.freeLimit
     }
 
     @discardableResult

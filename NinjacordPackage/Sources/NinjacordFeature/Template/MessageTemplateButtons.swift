@@ -14,9 +14,12 @@ struct MessageTemplateButtons: View {
     /// 保存したとき（送信画面でトーストを出すため）
     let onSave: () -> Void
 
+    @EnvironmentObject private var purchaseManager: PurchaseManager
     @StateObject private var store = MessageTemplateStore()
     @State private var isListPresented = false
     @State private var isSaveAlertPresented = false
+    @State private var isLimitAlertPresented = false
+    @State private var isPaywallPresented = false
     @State private var name = ""
 
     var body: some View {
@@ -30,8 +33,14 @@ struct MessageTemplateButtons: View {
             }
 
             Button {
-                name = ""
-                isSaveAlertPresented = true
+                // 一覧シートで削除された分を反映してから上限を判定する
+                store.reload()
+                if store.canAdd(isPro: purchaseManager.isPro) {
+                    name = ""
+                    isSaveAlertPresented = true
+                } else {
+                    isLimitAlertPresented = true
+                }
             } label: {
                 Label("保存", systemImage: "square.and.arrow.down")
             }
@@ -53,6 +62,27 @@ struct MessageTemplateButtons: View {
         } message: {
             Text("今の入力内容を保存します（送信先のURLは含みません）")
         }
+        .alert("テンプレートは\(MessageTemplateStore.freeLimit)件までです", isPresented: $isLimitAlertPresented) {
+            Button("Proを見る") {
+                isPaywallPresented = true
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("Ninjacord Proなら、テンプレートを無制限に保存できます")
+        }
+        .sheet(isPresented: $isPaywallPresented) {
+            NavigationStack {
+                PaywallView()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("閉じる") {
+                                isPaywallPresented = false
+                            }
+                        }
+                    }
+            }
+            .environmentObject(purchaseManager)
+        }
     }
 
     private var listSheet: some View {
@@ -71,6 +101,8 @@ struct MessageTemplateButtons: View {
                 }
             }
         }
+        // シートは別の View 階層になるため、Pro 状態を明示的に渡す
+        .environmentObject(purchaseManager)
     }
 
     private func save() {
