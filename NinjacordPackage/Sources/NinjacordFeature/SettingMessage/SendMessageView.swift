@@ -227,7 +227,7 @@ extension SendMessageView {
         if let error = viewModel.validate(
             url: inputURL,
             messageEntity: messageEntity,
-            canUseProFeatures: purchaseManager.isPro
+            canUseProFeatures: ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
         ) {
             validationError = error
             isValidationAlertPresented = true
@@ -260,7 +260,7 @@ extension SendMessageView {
     private func sendBroadcast(_ messageEntity: MessageEntity) {
         let urls = broadcastTargets.map(\.url)
         // 宛先を選んだあとに Pro でなくなった場合は送らない
-        let error: SendMessageValidationError? = purchaseManager.isPro
+        let error: SendMessageValidationError? = ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
             ? viewModel.validate(url: urls[0], messageEntity: messageEntity, canUseProFeatures: true)
             : .proBroadcast
         if let error {

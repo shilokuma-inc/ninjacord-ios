@@ -15,12 +15,14 @@ struct MessageTemplateButtons: View {
     let onSave: () -> Void
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
+    @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
     @StateObject private var store = MessageTemplateStore()
     @State private var isListPresented = false
     @State private var isSaveAlertPresented = false
     @State private var isLimitAlertPresented = false
     @State private var isPaywallPresented = false
     @State private var name = ""
+    @ObservedObject private var rewardedAdManager = RewardedAdManager.shared
 
     var body: some View {
         HStack(spacing: 16.0) {
@@ -35,7 +37,8 @@ struct MessageTemplateButtons: View {
             Button {
                 // 一覧シートで削除された分を反映してから上限を判定する
                 store.reload()
-                if store.canAdd(isPro: purchaseManager.isPro) {
+                // リワード広告の一時解放中も、Pro と同じく無制限に保存できる
+                if store.canAdd(isPro: ProFeatureAccess.canUse(isPro: purchaseManager.isPro)) {
                     name = ""
                     isSaveAlertPresented = true
                 } else {
@@ -50,6 +53,7 @@ struct MessageTemplateButtons: View {
         .font(.system(size: 15, weight: .semibold))
         .tint(Color.appAccent)
         .frame(minHeight: 44.0)
+        .preloadsRewardedAd(when: !ProFeatureAccess.canUse(isPro: purchaseManager.isPro))
         .sheet(isPresented: $isListPresented) {
             listSheet
         }
@@ -65,6 +69,17 @@ struct MessageTemplateButtons: View {
         .alert("テンプレートは\(MessageTemplateStore.freeLimit)件までです", isPresented: $isLimitAlertPresented) {
             Button("Proを見る") {
                 isPaywallPresented = true
+            }
+            if rewardedAdManager.isReady {
+                Button(RewardedUnlock.watchAdTitle) {
+                    Task {
+                        if await rewardedAdManager.showForUnlock() {
+                            // 解放されたら、そのまま保存に進む
+                            name = ""
+                            isSaveAlertPresented = true
+                        }
+                    }
+                }
             }
             Button("キャンセル", role: .cancel) {}
         } message: {

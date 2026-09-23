@@ -10,13 +10,19 @@ struct BroadcastButton: View {
     @Binding var targets: [SavedWebhookURL]
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
+    @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
     @State private var isPickerPresented = false
     @State private var isPaywallPresented = false
+    @State private var isUpsellPresented = false
+    @ObservedObject private var rewardedAdManager = RewardedAdManager.shared
 
     var body: some View {
         Button {
-            if purchaseManager.isPro {
+            if canUseBroadcast {
                 isPickerPresented = true
+            } else if rewardedAdManager.isReady {
+                // リワード広告を読み込めていれば、Pro にするか広告を見るかを選べるようにする
+                isUpsellPresented = true
             } else {
                 isPaywallPresented = true
             }
@@ -24,7 +30,7 @@ struct BroadcastButton: View {
             HStack(spacing: 4.0) {
                 Label("複数の宛先に送る", systemImage: "paperplane.circle")
                 // 一斉送信は Pro 限定（Discussion #260 の決定）
-                if !purchaseManager.isPro {
+                if !canUseBroadcast {
                     Text("PRO")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(.white)
@@ -38,6 +44,20 @@ struct BroadcastButton: View {
         .font(.system(size: 15, weight: .semibold))
         .tint(Color.appAccent)
         .frame(minHeight: 44.0)
+        .preloadsRewardedAd(when: !canUseBroadcast)
+        .confirmationDialog("一斉送信はNinjacord Pro限定です", isPresented: $isUpsellPresented, titleVisibility: .visible) {
+            Button("Proを見る") {
+                isPaywallPresented = true
+            }
+            Button(RewardedUnlock.watchAdTitle) {
+                Task {
+                    if await rewardedAdManager.showForUnlock() {
+                        isPickerPresented = true
+                    }
+                }
+            }
+            Button("キャンセル", role: .cancel) {}
+        }
         .sheet(isPresented: $isPickerPresented) {
             NavigationStack {
                 BroadcastTargetPickerView(selection: $targets)
@@ -65,5 +85,10 @@ struct BroadcastButton: View {
             }
             .environmentObject(purchaseManager)
         }
+    }
+
+    /// リワード広告の一時解放中も一斉送信できる
+    private var canUseBroadcast: Bool {
+        ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
     }
 }
