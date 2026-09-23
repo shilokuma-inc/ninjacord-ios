@@ -12,11 +12,17 @@ struct SettingView: View {
 
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @StateObject private var model = NativeAdModel()
+    @ObservedObject private var adConsent = AdConsentManager.shared
+    @EnvironmentObject private var purchaseManager: PurchaseManager
     @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
     @State private var isURLSettingPresented = false
     @State private var isLicensePresented = false
     @State private var isPrivacyPolicyPresented = false
     @State private var isContactPresented = false
+    @State private var isOnboardingPresented = false
+    @State private var isPaywallPresented = false
+    @State private var isRestoring = false
+    @State private var restoreResultMessage: LocalizedStringKey?
 
     var body: some View {
         NavigationStack {
@@ -24,6 +30,38 @@ struct SettingView: View {
                 Color.appBackground
                     .ignoresSafeArea()
                 List {
+                    Section {
+                        Button {
+                            isPaywallPresented = true
+                        } label: {
+                            HStack {
+                                Label {
+                                    Text("Ninjacord Pro")
+                                        .foregroundStyle(Color.appTextPrimary)
+                                } icon: {
+                                    Image(systemName: "crown.fill")
+                                        .foregroundStyle(.yellow)
+                                }
+
+                                Spacer()
+
+                                if purchaseManager.isPro {
+                                    Text("購読中")
+                                        .foregroundStyle(Color.appTextSecondary)
+                                }
+
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color.appTextSecondary)
+                            }
+                        }
+                        .listRowBackground(Color.appSurface)
+                        .sheet(isPresented: $isPaywallPresented) {
+                            paywallSheet
+                        }
+
+                        restorePurchasesRow
+                    }
+
                     Section {
                         Picker("テーマ", selection: $appTheme) {
                             ForEach(AppTheme.allCases) { theme in
@@ -62,7 +100,29 @@ struct SettingView: View {
                             .foregroundStyle(Color.appTextSecondary)
                     })
 
+                    SendHistorySettingsSection()
+
                     Section(content: {
+                        Button {
+                            isOnboardingPresented = true
+                        } label: {
+                            HStack {
+                                Text("アプリの使い方")
+                                    .foregroundStyle(Color.appTextPrimary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color.appTextSecondary)
+                            }
+                        }
+                        .listRowBackground(Color.appSurface)
+                        .fullScreenCover(isPresented: $isOnboardingPresented) {
+                            OnboardingView {
+                                isOnboardingPresented = false
+                            }
+                        }
+
                         Text("このアプリについて")
                             .addComingSoon()
                             .foregroundStyle(Color.appTextPrimary)
@@ -137,21 +197,90 @@ struct SettingView: View {
                             .foregroundStyle(Color.appTextSecondary)
                     })
 
-                    if let nativeAd = model.nativeAd {
+                    // ペイウォールの特典「広告を非表示」に合わせ、Pro 購読中はネイティブ広告も出さない
+                    if let nativeAd = model.nativeAd, !purchaseManager.isPro {
                         NativeAdView(nativeAd: nativeAd)
                             .aspectRatio(4 / 3, contentMode: .fit)
                             .listRowInsets(EdgeInsets())
                     }
                 }
                 .onAppear(perform: loadAd)
+                .onChange(of: adConsent.canRequestAds) { _ in
+                    // 設定画面を開いている間に同意が得られた場合も広告を読み込む
+                    loadAd()
+                }
                 .scrollContentBackground(.hidden)
                 .background(.clear)
             }
         }
     }
 
+    /// 機種変更・再インストール後に、ペイウォールを開かなくても購入を復元できるようにする
+    private var restorePurchasesRow: some View {
+        Button {
+            Task {
+                await restorePurchases()
+            }
+        } label: {
+            HStack {
+                Text("購入を復元")
+                    .foregroundStyle(Color.appTextPrimary)
+
+                Spacer()
+
+                if isRestoring {
+                    ProgressView()
+                }
+            }
+        }
+        .disabled(isRestoring)
+        .listRowBackground(Color.appSurface)
+        .alert(
+            "購入を復元",
+            isPresented: Binding(
+                get: { restoreResultMessage != nil },
+                set: { if !$0 { restoreResultMessage = nil } }
+            ),
+            actions: {
+                Button("OK", role: .cancel) {}
+            },
+            message: {
+                if let restoreResultMessage {
+                    Text(restoreResultMessage)
+                }
+            }
+        )
+    }
+
+    private func restorePurchases() async {
+        isRestoring = true
+        defer { isRestoring = false }
+        do {
+            try await purchaseManager.restore()
+            restoreResultMessage = purchaseManager.isPro ? "購入を復元しました" : "復元できる購入が見つかりませんでした"
+        } catch {
+            print("Failed to restore: \(error)")
+            restoreResultMessage = "購入を復元できませんでした。時間をおいてもう一度お試しください"
+        }
+    }
+
+    private var paywallSheet: some View {
+        NavigationStack {
+            PaywallView()
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("閉じる") {
+                            isPaywallPresented = false
+                        }
+                    }
+                }
+        }
+        // シートは別の View 階層になるため、Pro 状態を明示的に渡す
+        .environmentObject(purchaseManager)
+    }
+
     private func loadAd() {
-        guard AdConfiguration.isEnabled else { return }
+        guard AdConfiguration.isEnabled, adConsent.canRequestAds, !purchaseManager.isPro else { return }
 
         model.load(
             windowScene: sceneDelegate.windowScene,
