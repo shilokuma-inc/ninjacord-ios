@@ -242,6 +242,8 @@ extension SendMessageView {
                     }
                 }
         }
+        // シートは別の View 階層になるため、Pro 状態を明示的に渡す
+        .environmentObject(purchaseManager)
     }
 
     /// 保存済み URL から選んで URL 欄に反映するシート
