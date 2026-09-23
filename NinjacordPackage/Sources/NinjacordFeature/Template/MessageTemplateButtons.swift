@@ -75,6 +75,8 @@ struct MessageTemplateButtons: View {
 
     private func save() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        // 一覧シートで削除された分を反映してから追加する
+        store.reload()
         store.add(name: trimmedName.isEmpty ? MessageTemplate.defaultName(for: message) : trimmedName, message: message)
         onSave()
     }
