@@ -22,6 +22,7 @@ struct MessageTemplateButtons: View {
     @State private var isLimitAlertPresented = false
     @State private var isPaywallPresented = false
     @State private var name = ""
+    @ObservedObject private var rewardedAdManager = RewardedAdManager.shared
 
     var body: some View {
         HStack(spacing: 16.0) {
@@ -52,6 +53,7 @@ struct MessageTemplateButtons: View {
         .font(.system(size: 15, weight: .semibold))
         .tint(Color.appAccent)
         .frame(minHeight: 44.0)
+        .preloadsRewardedAd(when: !ProFeatureAccess.canUse(isPro: purchaseManager.isPro))
         .sheet(isPresented: $isListPresented) {
             listSheet
         }
@@ -67,6 +69,17 @@ struct MessageTemplateButtons: View {
         .alert("テンプレートは\(MessageTemplateStore.freeLimit)件までです", isPresented: $isLimitAlertPresented) {
             Button("Proを見る") {
                 isPaywallPresented = true
+            }
+            if rewardedAdManager.isReady {
+                Button(RewardedUnlock.watchAdTitle) {
+                    Task {
+                        if await rewardedAdManager.showForUnlock() {
+                            // 解放されたら、そのまま保存に進む
+                            name = ""
+                            isSaveAlertPresented = true
+                        }
+                    }
+                }
             }
             Button("キャンセル", role: .cancel) {}
         } message: {

@@ -100,6 +100,8 @@ struct EmbedEditorView: View {
         .background(Color.appBackground)
         .navigationTitle("埋め込み")
         .navigationBarTitleDisplayMode(.inline)
+        // Pro でない人に「広告を見て24時間使う」を出せるよう、リワード広告を読み込んでおく
+        .preloadsRewardedAd(when: !canUseProFeatures)
         .sheet(isPresented: $isPaywallPresented) {
             NavigationStack {
                 PaywallView()
@@ -129,6 +131,7 @@ struct EmbedEditorView: View {
             } label: {
                 Label("Ninjacord Proで色・フィールド・画像を使う", systemImage: "crown.fill")
             }
+            RewardedUnlockButton()
             if embed.usesProFeatures {
                 Button("Pro限定の項目を消す", role: .destructive) {
                     embed.removeProFeatures()
