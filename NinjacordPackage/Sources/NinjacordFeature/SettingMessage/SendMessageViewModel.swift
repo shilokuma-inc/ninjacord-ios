@@ -59,24 +59,46 @@ struct SendMessageViewModel {
 
 extension SendMessageViewModel {
     private func makeParameter(messageEntity: MessageEntity) -> Parameters {
-        var param: Parameters
-        if messageEntity.messageEmbedEntity.title.isEmpty {
-            param = [
-                "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
-                "avatar_url": messageEntity.avatarURL,
-                "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
-            ]
-        } else {
-            param = [
-                "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
-                "avatar_url": messageEntity.avatarURL,
-                "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content,
-                "embeds": [
-                    [
-                        "title": messageEntity.messageEmbedEntity.title
-                    ]
-                ]
-            ]
+        var param: Parameters = [
+            "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
+            "avatar_url": messageEntity.avatarURL,
+            "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
+        ]
+        if messageEntity.messageEmbedEntity.hasContent {
+            param["embeds"] = [makeEmbedParameter(messageEntity.messageEmbedEntity)]
+        }
+        return param
+    }
+
+    /// Discord の embed オブジェクトを組み立てる。空の項目は送らない
+    /// https://discord.com/developers/docs/resources/message#embed-object
+    private func makeEmbedParameter(_ embed: MessageEmbedEntity, sentAt: Date = Date()) -> [String: Any] {
+        var param: [String: Any] = [:]
+        if !embed.title.isEmpty {
+            param["title"] = embed.title
+        }
+        if !embed.description.isEmpty {
+            param["description"] = embed.description
+        }
+        if let color = embed.color {
+            param["color"] = color
+        }
+        // name と value が両方とも空の行は入力途中とみなして送らない
+        let fields = embed.fields.filter { !$0.name.isEmpty || !$0.value.isEmpty }
+        if !fields.isEmpty {
+            param["fields"] = fields.map { ["name": $0.name, "value": $0.value, "inline": $0.isInline] }
+        }
+        if !embed.footerText.isEmpty {
+            param["footer"] = ["text": embed.footerText]
+        }
+        if !embed.imageURL.isEmpty {
+            param["image"] = ["url": embed.imageURL]
+        }
+        if !embed.thumbnailURL.isEmpty {
+            param["thumbnail"] = ["url": embed.thumbnailURL]
+        }
+        if embed.includesTimestamp {
+            param["timestamp"] = ISO8601DateFormatter().string(from: sentAt)
         }
         return param
     }
@@ -126,13 +148,7 @@ extension SendMessageViewModel {
         if !isValidURL(trimmedURL) {
             return .invalidURL
         }
-        let messageFields = [
-            messageEntity.username,
-            messageEntity.avatarURL,
-            messageEntity.content,
-            messageEntity.messageEmbedEntity.title
-        ]
-        if messageFields.allSatisfy({ $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+        if !messageEntity.hasContent {
             return .emptyMessage
         }
         return nil
