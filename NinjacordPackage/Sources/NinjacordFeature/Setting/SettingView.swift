@@ -100,6 +100,8 @@ struct SettingView: View {
                             .foregroundStyle(Color.appTextSecondary)
                     })
 
+                    SendHistorySettingsSection()
+
                     Section(content: {
                         Button {
                             isOnboardingPresented = true
