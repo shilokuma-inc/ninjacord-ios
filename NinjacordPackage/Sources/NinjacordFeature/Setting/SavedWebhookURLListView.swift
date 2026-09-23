@@ -20,7 +20,7 @@ struct SavedWebhookURLListView: View {
     var body: some View {
         ZStack {
             Color.appBackground
-                .ignoresSafeArea(edges: [.top])
+                .ignoresSafeArea()
 
             if store.items.isEmpty {
                 Text("保存されたURLはありません")
