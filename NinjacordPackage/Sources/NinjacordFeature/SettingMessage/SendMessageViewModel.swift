@@ -115,6 +115,8 @@ enum SendMessageValidationError: LocalizedError {
     case emptyMessage
     /// 埋め込みが Discord の上限を超えているなど
     case invalidEmbed(EmbedValidationIssue)
+    /// Pro でないのに、埋め込みに Pro 限定の項目が入っている
+    case proEmbedFeatures
 
     var errorDescription: String? {
         switch self {
@@ -126,6 +128,8 @@ enum SendMessageValidationError: LocalizedError {
             return String(localized: "メッセージが入力されていません")
         case .invalidEmbed:
             return String(localized: "埋め込みの内容を確認してください")
+        case .proEmbedFeatures:
+            return String(localized: "Pro限定の項目が入っています")
         }
     }
 
@@ -139,13 +143,16 @@ enum SendMessageValidationError: LocalizedError {
             return String(localized: "名前・メッセージなど、いずれかの項目を入力してください")
         case .invalidEmbed(let issue):
             return issue.message
+        case .proEmbedFeatures:
+            return String(localized: "埋め込みの色・フィールド・画像・サムネイルはNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください")
         }
     }
 }
 
 extension SendMessageViewModel {
     /// 送信前に入力内容を検証する。問題がなければ nil を返す
-    func validate(url: String, messageEntity: MessageEntity) -> SendMessageValidationError? {
+    /// - Parameter canUseProFeatures: Pro 限定の項目を使えるか（Pro 購読中など）
+    func validate(url: String, messageEntity: MessageEntity, canUseProFeatures: Bool) -> SendMessageValidationError? {
         let trimmedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedURL.isEmpty {
             return .emptyURL
@@ -155,6 +162,9 @@ extension SendMessageViewModel {
         }
         if !messageEntity.hasContent {
             return .emptyMessage
+        }
+        if !canUseProFeatures && messageEntity.messageEmbedEntity.usesProFeatures {
+            return .proEmbedFeatures
         }
         // 最初の 1 件だけを示す（直して送り直せば次の誤りが分かる）
         if let issue = messageEntity.messageEmbedEntity.validationIssues().first {

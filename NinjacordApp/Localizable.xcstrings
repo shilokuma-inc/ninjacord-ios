@@ -180,6 +180,22 @@
         }
       }
     },
+    "Ninjacord Proで色・フィールド・画像を使う" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use colors, fields, and images with Ninjacord Pro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninjacord Proで色・フィールド・画像を使う"
+          }
+        }
+      }
+    },
     "Ninjacord Proなら、テンプレートを無制限に保存できます" : {
       "localizations" : {
         "en" : {
@@ -256,6 +272,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Proを購読する"
+          }
+        }
+      }
+    },
+    "Pro限定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro only"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro限定"
+          }
+        }
+      }
+    },
+    "Pro限定の項目が入っています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contains Pro features"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro限定の項目が入っています"
+          }
+        }
+      }
+    },
+    "Pro限定の項目が入っていると送信できません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can't send while Pro features are included."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro限定の項目が入っていると送信できません"
+          }
+        }
+      }
+    },
+    "Pro限定の項目を消す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Pro Features"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro限定の項目を消す"
           }
         }
       }
@@ -1328,6 +1408,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "埋め込みの文字数が合計%lld文字を超えています"
+          }
+        }
+      }
+    },
+    "埋め込みの色・フィールド・画像・サムネイルはNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Embed colors, fields, images, and thumbnails are Ninjacord Pro features. Remove them in the embed editor or upgrade to Pro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "埋め込みの色・フィールド・画像・サムネイルはNinjacord Pro限定です。埋め込みの編集から消すか、Proにしてください"
           }
         }
       }

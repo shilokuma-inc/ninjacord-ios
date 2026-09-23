@@ -9,6 +9,9 @@ import SwiftUI
 struct EmbedEditorView: View {
     @Binding var embed: MessageEmbedEntity
 
+    @EnvironmentObject private var purchaseManager: PurchaseManager
+    @State private var isPaywallPresented = false
+
     var body: some View {
         Form {
             Section("プレビュー") {
@@ -23,6 +26,10 @@ struct EmbedEditorView: View {
                 }
             }
             .listRowBackground(embed.hasContent ? Color.clear : Color.appSurface)
+
+            if !canUseProFeatures {
+                proSection
+            }
 
             Section {
                 // 入力欄と文字数を 1 行にまとめる（別の行にすると区切り線が増えて読みにくい）
@@ -42,18 +49,21 @@ struct EmbedEditorView: View {
             }
             .listRowBackground(Color.appSurface)
 
-            Section("色") {
+            Section {
                 Toggle("色を指定する", isOn: isColorEnabled)
                     .tint(Color.appAccent)
                 if embed.color != nil {
                     ColorPicker("左端の線の色", selection: color, supportsOpacity: false)
                 }
+            } header: {
+                proHeader("色")
             }
+            .disabled(!canUseProFeatures)
             .listRowBackground(Color.appSurface)
 
             fieldsSection
 
-            Section("画像") {
+            Section {
                 VStack(alignment: .leading, spacing: 4.0) {
                     TextField("画像のURL", text: $embed.imageURL)
                         .keyboardType(.URL)
@@ -68,7 +78,10 @@ struct EmbedEditorView: View {
                         .autocorrectionDisabled()
                     issueText(for: .invalidThumbnailURL)
                 }
+            } header: {
+                proHeader("画像")
             }
+            .disabled(!canUseProFeatures)
             .listRowBackground(Color.appSurface)
 
             Section("フッター") {
@@ -85,6 +98,61 @@ struct EmbedEditorView: View {
         .background(Color.appBackground)
         .navigationTitle("埋め込み")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isPaywallPresented) {
+            NavigationStack {
+                PaywallView()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("閉じる") {
+                                isPaywallPresented = false
+                            }
+                        }
+                    }
+            }
+            .environmentObject(purchaseManager)
+        }
+    }
+
+    /// 色・フィールド・画像は Pro 限定（Discussion #259 の決定。無料は title + description まで）
+    private var canUseProFeatures: Bool {
+        purchaseManager.isPro
+    }
+
+    /// Pro でない人向けの案内。Pro 限定の項目が入っていれば（解約した・テンプレートから呼び出した等）消せるようにする
+    private var proSection: some View {
+        Section {
+            Button {
+                isPaywallPresented = true
+            } label: {
+                Label("Ninjacord Proで色・フィールド・画像を使う", systemImage: "crown.fill")
+            }
+            if embed.usesProFeatures {
+                Button("Pro限定の項目を消す", role: .destructive) {
+                    embed.removeProFeatures()
+                }
+            }
+        } footer: {
+            if embed.usesProFeatures {
+                Text("Pro限定の項目が入っていると送信できません")
+            }
+        }
+        .listRowBackground(Color.appSurface)
+    }
+
+    /// Pro でない人には、セクション名の横に PRO の印を出す
+    private func proHeader(_ title: LocalizedStringKey) -> some View {
+        HStack(spacing: 6.0) {
+            Text(title)
+            if !canUseProFeatures {
+                Text("PRO")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 6.0)
+                    .padding(.vertical, 2.0)
+                    .background(Capsule().fill(Color.appAccent))
+                    .accessibilityLabel("Pro限定")
+            }
+        }
     }
 
     private var fieldsSection: some View {
@@ -112,10 +180,11 @@ struct EmbedEditorView: View {
             }
             .disabled(embed.fields.count >= EmbedLimit.fieldCount)
         } header: {
-            Text("フィールド")
+            proHeader("フィールド")
         } footer: {
             Text("\(embed.fields.count) / \(EmbedLimit.fieldCount)件・左にスワイプすると削除できます")
         }
+        .disabled(!canUseProFeatures)
         .listRowBackground(Color.appSurface)
     }
 
