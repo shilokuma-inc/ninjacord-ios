@@ -52,6 +52,70 @@
         }
       }
     },
+    "%lld / %lld件・左にスワイプすると削除できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld fields · Swipe left to delete."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld件・左にスワイプすると削除できます"
+          }
+        }
+      }
+    },
+    "%lld番目のフィールドの値は%lld文字までです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The value of field %1$lld can be up to %2$lld characters."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld番目のフィールドの値は%2$lld文字までです"
+          }
+        }
+      }
+    },
+    "%lld番目のフィールドの名前は%lld文字までです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The name of field %1$lld can be up to %2$lld characters."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld番目のフィールドの名前は%2$lld文字までです"
+          }
+        }
+      }
+    },
+    "%lld番目のフィールドは名前と値の両方を入力してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter both a name and a value for field %lld."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld番目のフィールドは名前と値の両方を入力してください"
+          }
+        }
+      }
+    },
     "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます" : {
       "localizations" : {
         "en" : {
@@ -628,6 +692,22 @@
         }
       }
     },
+    "サムネイルのURLは https:// から始めてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The thumbnail URL must start with https://"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サムネイルのURLは https:// から始めてください"
+          }
+        }
+      }
+    },
     "スキップ" : {
       "localizations" : {
         "en" : {
@@ -804,6 +884,22 @@
         }
       }
     },
+    "フィールドは%lld件までです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can add up to %lld fields."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィールドは%lld件までです"
+          }
+        }
+      }
+    },
     "フィールドを追加" : {
       "localizations" : {
         "en" : {
@@ -848,6 +944,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フッターのテキスト"
+          }
+        }
+      }
+    },
+    "フッターは%lld文字までです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The footer can be up to %lld characters."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フッターは%lld文字までです"
           }
         }
       }
@@ -1076,6 +1188,22 @@
         }
       }
     },
+    "合計 %lld / %lld文字" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total %1$lld / %2$lld characters"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合計 %1$lld / %2$lld文字"
+          }
+        }
+      }
+    },
     "名前" : {
       "localizations" : {
         "en" : {
@@ -1136,6 +1264,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "埋め込み"
+          }
+        }
+      }
+    },
+    "埋め込みのタイトルは%lld文字までです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The embed title can be up to %lld characters."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "埋め込みのタイトルは%lld文字までです"
+          }
+        }
+      }
+    },
+    "埋め込みの内容を確認してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the embed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "埋め込みの内容を確認してください"
+          }
+        }
+      }
+    },
+    "埋め込みの文字数が合計%lld文字を超えています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The embed exceeds %lld characters in total."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "埋め込みの文字数が合計%lld文字を超えています"
+          }
+        }
+      }
+    },
+    "埋め込みの説明は%lld文字までです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The embed description can be up to %lld characters."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "埋め込みの説明は%lld文字までです"
           }
         }
       }
@@ -1344,6 +1536,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画像のURL"
+          }
+        }
+      }
+    },
+    "画像のURLは https:// から始めてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The image URL must start with https://"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像のURLは https:// から始めてください"
           }
         }
       }

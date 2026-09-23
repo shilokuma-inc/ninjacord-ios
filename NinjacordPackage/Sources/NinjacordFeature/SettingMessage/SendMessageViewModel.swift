@@ -83,8 +83,7 @@ extension SendMessageViewModel {
         if let color = embed.color {
             param["color"] = color
         }
-        // name と value が両方とも空の行は入力途中とみなして送らない
-        let fields = embed.fields.filter { !$0.name.isEmpty || !$0.value.isEmpty }
+        let fields = embed.sendableFields
         if !fields.isEmpty {
             param["fields"] = fields.map { ["name": $0.name, "value": $0.value, "inline": $0.isInline] }
         }
@@ -114,6 +113,8 @@ enum SendMessageValidationError: LocalizedError {
     case invalidURL
     /// URL 以外の項目がすべて未入力
     case emptyMessage
+    /// 埋め込みが Discord の上限を超えているなど
+    case invalidEmbed(EmbedValidationIssue)
 
     var errorDescription: String? {
         switch self {
@@ -123,6 +124,8 @@ enum SendMessageValidationError: LocalizedError {
             return String(localized: "URLの形式が正しくありません")
         case .emptyMessage:
             return String(localized: "メッセージが入力されていません")
+        case .invalidEmbed:
+            return String(localized: "埋め込みの内容を確認してください")
         }
     }
 
@@ -134,6 +137,8 @@ enum SendMessageValidationError: LocalizedError {
             return String(localized: "https:// から始まるWebhook URLを入力してください")
         case .emptyMessage:
             return String(localized: "名前・メッセージなど、いずれかの項目を入力してください")
+        case .invalidEmbed(let issue):
+            return issue.message
         }
     }
 }
@@ -150,6 +155,10 @@ extension SendMessageViewModel {
         }
         if !messageEntity.hasContent {
             return .emptyMessage
+        }
+        // 最初の 1 件だけを示す（直して送り直せば次の誤りが分かる）
+        if let issue = messageEntity.messageEmbedEntity.validationIssues().first {
+            return .invalidEmbed(issue)
         }
         return nil
     }
