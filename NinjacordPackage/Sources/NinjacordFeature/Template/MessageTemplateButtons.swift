@@ -15,6 +15,7 @@ struct MessageTemplateButtons: View {
     let onSave: () -> Void
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
+    @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
     @StateObject private var store = MessageTemplateStore()
     @State private var isListPresented = false
     @State private var isSaveAlertPresented = false
@@ -35,7 +36,8 @@ struct MessageTemplateButtons: View {
             Button {
                 // 一覧シートで削除された分を反映してから上限を判定する
                 store.reload()
-                if store.canAdd(isPro: purchaseManager.isPro) {
+                // リワード広告の一時解放中も、Pro と同じく無制限に保存できる
+                if store.canAdd(isPro: ProFeatureAccess.canUse(isPro: purchaseManager.isPro)) {
                     name = ""
                     isSaveAlertPresented = true
                 } else {

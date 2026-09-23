@@ -10,6 +10,8 @@ struct EmbedEditorView: View {
     @Binding var embed: MessageEmbedEntity
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
+    /// リワード広告での一時解放や期限切れで描き直すために監視する
+    @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
     @State private var isPaywallPresented = false
 
     var body: some View {
@@ -113,9 +115,10 @@ struct EmbedEditorView: View {
         }
     }
 
-    /// 色・フィールド・画像は Pro 限定（Discussion #259 の決定。無料は title + description まで）
+    /// 色・フィールド・画像は Pro 限定（Discussion #259 の決定。無料は title + description まで）。
+    /// リワード広告の一時解放中も使える
     private var canUseProFeatures: Bool {
-        purchaseManager.isPro
+        ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
     }
 
     /// Pro でない人向けの案内。Pro 限定の項目が入っていれば（解約した・テンプレートから呼び出した等）消せるようにする

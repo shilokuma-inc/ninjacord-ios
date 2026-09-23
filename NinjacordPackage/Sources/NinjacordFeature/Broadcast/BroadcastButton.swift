@@ -10,12 +10,13 @@ struct BroadcastButton: View {
     @Binding var targets: [SavedWebhookURL]
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
+    @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
     @State private var isPickerPresented = false
     @State private var isPaywallPresented = false
 
     var body: some View {
         Button {
-            if purchaseManager.isPro {
+            if canUseBroadcast {
                 isPickerPresented = true
             } else {
                 isPaywallPresented = true
@@ -24,7 +25,7 @@ struct BroadcastButton: View {
             HStack(spacing: 4.0) {
                 Label("複数の宛先に送る", systemImage: "paperplane.circle")
                 // 一斉送信は Pro 限定（Discussion #260 の決定）
-                if !purchaseManager.isPro {
+                if !canUseBroadcast {
                     Text("PRO")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(.white)
@@ -65,5 +66,10 @@ struct BroadcastButton: View {
             }
             .environmentObject(purchaseManager)
         }
+    }
+
+    /// リワード広告の一時解放中も一斉送信できる
+    private var canUseBroadcast: Bool {
+        ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
     }
 }
