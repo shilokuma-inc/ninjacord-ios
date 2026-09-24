@@ -11,7 +11,7 @@ import SwiftUI
 struct SavedWebhookURLButton: View {
     @Binding var url: String
 
-    @State private var isPresented = false
+    @State private var isPresented = ScreenshotDemo.scene == .savedURLs
 
     var body: some View {
         Button(action: {

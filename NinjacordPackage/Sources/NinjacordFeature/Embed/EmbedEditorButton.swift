@@ -10,7 +10,7 @@ struct EmbedEditorButton: View {
     @Binding var embed: MessageEmbedEntity
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
-    @State private var isPresented = false
+    @State private var isPresented = ScreenshotDemo.scene == .embed
 
     var body: some View {
         Button(action: {

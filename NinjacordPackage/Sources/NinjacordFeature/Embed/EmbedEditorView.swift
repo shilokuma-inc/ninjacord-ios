@@ -148,11 +148,12 @@ struct EmbedEditorView: View {
         .listRowBackground(Color.appSurface)
     }
 
-    /// Pro でない人には、セクション名の横に PRO の印を出す
+    /// Pro でない人には、セクション名の横に PRO の印を出す。
+    /// App Store 用スクリーンショットでも、Pro 限定だと分かるよう出す（審査ガイドライン 2.3.2、Discussion #355）
     private func proHeader(_ title: LocalizedStringKey) -> some View {
         HStack(spacing: 6.0) {
             Text(title)
-            if !canUseProFeatures {
+            if !canUseProFeatures || ScreenshotDemo.isEnabled {
                 Text("PRO")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.white)

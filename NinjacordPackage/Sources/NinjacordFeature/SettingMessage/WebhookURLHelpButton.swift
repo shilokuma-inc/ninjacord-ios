@@ -7,7 +7,7 @@ import SwiftUI
 
 /// Webhook URL の取得方法を表示する「?」ボタン。保存済み URL ボタンと同じく 44pt 角の当たり判定にする
 struct WebhookURLHelpButton: View {
-    @State private var isPresented = false
+    @State private var isPresented = ScreenshotDemo.scene == .webhookHelp
 
     var body: some View {
         Button(action: {
