@@ -33,6 +33,7 @@ struct WebhookURLHelpButton: View {
                     }
             }
             .presentationDetents([.medium, .large])
+            .limitedDynamicTypeSize()
         }
     }
 }

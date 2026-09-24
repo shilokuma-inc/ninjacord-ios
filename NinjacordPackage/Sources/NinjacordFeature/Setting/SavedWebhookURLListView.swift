@@ -52,6 +52,7 @@ struct SavedWebhookURLListView: View {
             SavedWebhookURLFormView(initialURL: initialURL) { name, url in
                 store.add(name: name, url: url)
             }
+            .limitedDynamicTypeSize()
         }
         .onAppear {
             store.reload()

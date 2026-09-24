@@ -62,6 +62,7 @@ public struct MainView: View {
                 hasCompletedOnboarding = true
                 isOnboardingPresented = false
             }
+            .limitedDynamicTypeSize()
         })
         .environmentObject(purchaseManager)
         .limitedDynamicTypeSize()
