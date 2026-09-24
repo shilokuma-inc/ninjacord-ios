@@ -1,12 +1,13 @@
 {
   "_comment": [
     "App Store の英語（en-US）の説明文など。上限: description 4000 字 / keywords 合計 100 字（カンマ込み）/ promotionalText 170 字。",
-    "keywords には他社の商標やアプリ名を入れない（審査ガイドライン 2.3.7）。アプリ名とカテゴリ名はもともと検索対象なので入れなくてよい。",
+    "アプリ名とカテゴリ名はもともと検索対象なので keywords に入れなくてよい。「Discord」は現行のキーワードでも審査を通っているので入れている。",
     "promotionalText は省略できる（省略すると App Store Connect 側の値をそのまま残す）。"
   ],
   "promotionalText": "Post to your Discord channels via webhook with any name and avatar. Live embed preview, templates and broadcasts make announcements and alerts effortless.",
   "description": "Ninja Cord sends messages to Discord through webhooks. No bot to build and no server to run — just paste a webhook URL and post to a channel with any name and avatar you like.\n\n■ Send in seconds\n• Pick the sender name, avatar and message\n• Add an embed with a title and description, and see how it will look in Discord with a live preview\n• Attach one image (up to 10 MB)\n\n■ Built for repeat use\n• Save webhook URLs with a name and switch between them in one tap\n• Save messages you send often as templates, then pin and reorder them\n• Check what went through in the send history (stored only on this device, and you can turn it off)\n• Dark and light themes\n\n■ Ninja Cord Pro (monthly auto-renewing subscription)\n• No ads\n• Unlimited templates (the free plan keeps up to 3)\n• Embed color, fields, image, thumbnail, footer and timestamp\n• Broadcast the same message to several saved destinations at once\nWatch an ad to try every Pro feature except ad removal for 24 hours.\n\n■ Getting started\n1. In Discord, open Edit Channel → Integrations → Webhooks for the channel you want to post to\n2. Create a new webhook and tap Copy Webhook URL\n3. Paste it into the URL field in Ninja Cord and send\nYou need the Manage Webhooks permission on that server to create a webhook.\n\n■ Please note\n• Anyone who knows a webhook URL can post to that channel. Keep your URLs private.\n• Ninja Cord is not an official Discord app and is not affiliated with or endorsed by Discord Inc.\n\nTerms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\nPrivacy Policy: https://shilokuma-inc.github.io/iOS-Release-Sample/PrivacyPolicy/discord-bot-helper/PrivacyPolicy.html",
   "keywords": [
+    "discord",
     "webhook",
     "bot",
     "embed",
@@ -18,7 +19,6 @@
     "server",
     "channel",
     "post",
-    "anonymous",
-    "alert"
+    "anonymous"
   ]
 }
