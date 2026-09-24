@@ -100,6 +100,22 @@
         }
       }
     },
+    "%lld件まで" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld件まで"
+          }
+        }
+      }
+    },
     "%lld件中%lld件の送信に失敗しました" : {
       "localizations" : {
         "en" : {
@@ -288,6 +304,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します"
+          }
+        }
+      }
+    },
+    "Pro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
           }
         }
       }
@@ -676,6 +708,22 @@
         }
       }
     },
+    "なし" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なし"
+          }
+        }
+      }
+    },
     "はじめる" : {
       "localizations" : {
         "en" : {
@@ -864,6 +912,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タイトル"
+          }
+        }
+      }
+    },
+    "タイトル・説明のみ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title and description only"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトル・説明のみ"
           }
         }
       }
@@ -1232,6 +1296,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ライセンス一覧"
+          }
+        }
+      }
+    },
+    "一斉送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Broadcast"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一斉送信"
           }
         }
       }
@@ -1684,6 +1764,22 @@
         }
       }
     },
+    "広告の表示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ads"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告の表示"
+          }
+        }
+      }
+    },
     "広告を見て%lld時間使う" : {
       "localizations" : {
         "en" : {
@@ -1696,22 +1792,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "広告を見て%lld時間使う"
-          }
-        }
-      }
-    },
-    "広告を非表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No ads"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広告を非表示"
           }
         }
       }
@@ -1776,6 +1856,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "添付した画像"
+          }
+        }
+      }
+    },
+    "無制限" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlimited"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無制限"
+          }
+        }
+      }
+    },
+    "無料" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料"
           }
         }
       }
@@ -1920,6 +2032,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "色を指定する"
+          }
+        }
+      }
+    },
+    "色・フィールド・画像・フッターなども" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colors, fields, images, footers, and more"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色・フィールド・画像・フッターなども"
+          }
+        }
+      }
+    },
+    "表示あり" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shown"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示あり"
+          }
+        }
+      }
+    },
+    "複数のWebhookへ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To multiple webhooks"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複数のWebhookへ"
           }
         }
       }
@@ -2400,6 +2560,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選んだ宛先に、同じメッセージを1件ずつ順に送ります"
+          }
+        }
+      }
+    },
+    "非表示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hidden"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "非表示"
           }
         }
       }
