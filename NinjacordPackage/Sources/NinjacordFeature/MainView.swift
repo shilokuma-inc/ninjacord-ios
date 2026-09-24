@@ -64,6 +64,7 @@ public struct MainView: View {
             }
         })
         .environmentObject(purchaseManager)
+        .limitedDynamicTypeSize()
         .task {
             guard !isOnboardingPresented else { return }
             await gatherAdConsent()
