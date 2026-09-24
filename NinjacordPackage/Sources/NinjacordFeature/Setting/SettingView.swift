@@ -199,7 +199,14 @@ struct SettingView: View {
 
                     // ペイウォールの特典「広告を非表示」に合わせ、Pro 購読中はネイティブ広告も出さない
                     if let nativeAd = model.nativeAd, !purchaseManager.isPro {
+                        // 広告内側の余白と合わせて、他の行と同じ 16pt の余白になるようにする
                         NativeAdView(nativeAd: nativeAd)
+                            .listRowInsets(EdgeInsets(
+                                top: 16 - NativeAdView.contentInset,
+                                leading: 16 - NativeAdView.contentInset,
+                                bottom: 16 - NativeAdView.contentInset,
+                                trailing: 16 - NativeAdView.contentInset
+                            ))
                             .listRowBackground(Color.appSurface)
                     }
                 }

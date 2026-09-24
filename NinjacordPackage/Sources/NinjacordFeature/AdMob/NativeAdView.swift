@@ -11,6 +11,11 @@ import GoogleMobileAds
 /// ネイティブ広告の表示 View。
 /// 高さは内容から決まるため、呼び出し側でアスペクト比を固定しないこと。
 struct NativeAdView: UIViewRepresentable {
+    /// アセットと GADNativeAdView の境界の間に設ける余白。
+    /// 0 で端が境界と一致していると、実フレームが境界内に収まっていても
+    /// AdMob の validator に「Advertiser assets outside native ad view」と判定されるため設ける。
+    static let contentInset: CGFloat = 8
+
     let nativeAd: GADNativeAd
 
     func makeUIView(context: Context) -> GADNativeAdView {
@@ -39,11 +44,12 @@ struct NativeAdView: UIViewRepresentable {
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         nativeAdView.addSubview(stack)
+        let inset = Self.contentInset
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: nativeAdView.topAnchor),
-            stack.leadingAnchor.constraint(equalTo: nativeAdView.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: nativeAdView.trailingAnchor),
-            stack.bottomAnchor.constraint(equalTo: nativeAdView.bottomAnchor)
+            stack.topAnchor.constraint(equalTo: nativeAdView.topAnchor, constant: inset),
+            stack.leadingAnchor.constraint(equalTo: nativeAdView.leadingAnchor, constant: inset),
+            stack.trailingAnchor.constraint(equalTo: nativeAdView.trailingAnchor, constant: -inset),
+            stack.bottomAnchor.constraint(equalTo: nativeAdView.bottomAnchor, constant: -inset)
         ])
 
         nativeAdView.nativeAd = nativeAd
