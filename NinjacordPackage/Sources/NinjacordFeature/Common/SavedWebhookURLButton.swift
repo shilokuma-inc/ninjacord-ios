@@ -42,6 +42,7 @@ struct SavedWebhookURLButton: View {
                     }
                 }
             }
+            .limitedDynamicTypeSize()
         }
     }
 }
