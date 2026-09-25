@@ -9,15 +9,15 @@ import SwiftUI
 import GoogleMobileAds
 
 struct BannerView: UIViewControllerRepresentable {
-    @State private var viewWidth: CGFloat = .zero
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     /// 同意が得られたときに updateUIViewController を呼び直して読み込ませるため監視する
     @ObservedObject private var adConsent = AdConsentManager.shared
-    private let bannerView = GADBannerView()
     private let adUnitID = AdUnitIdProvider.banner
 
     func makeUIViewController(context: Context) -> some UIViewController {
         let bannerViewController = BannerViewController()
+        // struct は親の再描画のたびに作り直されるため、画面に載せる GADBannerView は Coordinator で保持する
+        let bannerView = context.coordinator.bannerView
         bannerView.adUnitID = adUnitID
         bannerView.rootViewController = bannerViewController
         bannerView.delegate = context.coordinator
@@ -38,28 +38,36 @@ struct BannerView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-        guard viewWidth != .zero, adConsent.canRequestAds else { return }
-
-        // Request a banner ad with the updated viewWidth.
-        bannerView.adSize = GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(viewWidth)
-        bannerView.load(GADRequest())
+        context.coordinator.canRequestAds = adConsent.canRequestAds
+        context.coordinator.loadAdIfNeeded()
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator()
     }
 
     class Coordinator: NSObject, BannerViewControllerWidthDelegate, GADBannerViewDelegate {
-        let parent: BannerView
+        let bannerView = GADBannerView()
+        /// parent の struct は作り直されると古くなるため、幅と同意状態は Coordinator 側で保持する
+        private var viewWidth: CGFloat = .zero
+        var canRequestAds = false
+        /// 同じ幅で再描画のたびに読み込み直さないよう、最後に読み込んだ幅を記録する
+        private var loadedWidth: CGFloat?
 
-        init(_ parent: BannerView) {
-            self.parent = parent
+        /// 幅と同意状態が揃っていて、まだその幅で読み込んでいないときだけ読み込む
+        func loadAdIfNeeded() {
+            guard viewWidth != .zero, canRequestAds, loadedWidth != viewWidth else { return }
+
+            loadedWidth = viewWidth
+            // Request a banner ad with the updated viewWidth.
+            bannerView.adSize = GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(viewWidth)
+            bannerView.load(GADRequest())
         }
 
         // MARK: - BannerViewControllerWidthDelegate methods
         func bannerViewController(_ bannerViewController: BannerViewController, didUpdate width: CGFloat) {
-
-            parent.viewWidth = width
+            viewWidth = width
+            loadAdIfNeeded()
         }
 
         // MARK: - GADBannerViewDelegate methods
