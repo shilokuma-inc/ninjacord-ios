@@ -452,6 +452,22 @@
         }
       }
     },
+    "URLを保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URLを保存"
+          }
+        }
+      }
+    },
     "URLを入れてください" : {
       "localizations" : {
         "en" : {
@@ -756,6 +772,22 @@
         }
       }
     },
+    "アプリのテーマ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Theme"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリのテーマ"
+          }
+        }
+      }
+    },
     "アプリの使い方" : {
       "localizations" : {
         "en" : {
@@ -932,6 +964,22 @@
         }
       }
     },
+    "ダーク" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダーク"
+          }
+        }
+      }
+    },
     "テンプレート" : {
       "localizations" : {
         "en" : {
@@ -1008,6 +1056,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "テンプレート名"
+          }
+        }
+      }
+    },
+    "テーマ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theme"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テーマ"
           }
         }
       }
@@ -1300,6 +1364,38 @@
         }
       }
     },
+    "ライセンス本文が見つかりませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "License text not found"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス本文が見つかりませんでした"
+          }
+        }
+      }
+    },
+    "ライト" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライト"
+          }
+        }
+      }
+    },
     "一斉送信" : {
       "localizations" : {
         "en" : {
@@ -1396,6 +1492,22 @@
         }
       }
     },
+    "保存されたURLはありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No saved URLs"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存されたURLはありません"
+          }
+        }
+      }
+    },
     "保存されたURLはありません。設定の「URL設定」か、送信画面のブックマークから保存してください" : {
       "localizations" : {
         "en" : {
@@ -1428,6 +1540,22 @@
         }
       }
     },
+    "保存済みURL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved URLs"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存済みURL"
+          }
+        }
+      }
+    },
     "値" : {
       "localizations" : {
         "en" : {
@@ -1440,6 +1568,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "値"
+          }
+        }
+      }
+    },
+    "入力をクリア" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入力をクリア"
           }
         }
       }
@@ -2560,6 +2704,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選んだ宛先に、同じメッセージを1件ずつ順に送ります"
+          }
+        }
+      }
+    },
+    "閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "閉じる"
           }
         }
       }
