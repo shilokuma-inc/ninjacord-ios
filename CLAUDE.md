@@ -21,7 +21,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 - アプリ本体のコードは **ローカル Swift Package `NinjacordPackage`**（`NinjacordPackage/Package.swift`）に置く。`NinjacordApp` ターゲットは `@main` と各種リソース（Assets / Info.plist / xcstrings 等）だけを持つ薄いシェル。
   - `.swift` ファイルの追加・削除は `NinjacordPackage/Sources/NinjacordFeature/` 配下で行う。**`.xcodeproj` に差分は出ない**（Issue #211）。
   - 外部依存（Firebase 等）も `Package.swift` の `dependencies` で管理する。バージョンのピンは従来どおり `NinjacordApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`。
-  - `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate`）だけ `public`。それ以外は internal のまま。
+  - `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate` / `AppTheme`）だけ `public`。それ以外は internal のまま。
 - Scheme は3つ:
   - `NinjacordApp` … 本番
   - `NinjacordApp-STG` … STG（開発確認はこちらを優先）
@@ -110,3 +110,15 @@ UI の見た目が変わる変更では、Before / After のスクリーンシ�
 - SwiftUI の作法は `ios-swiftui` スキルに従う（State 管理 / View 分割 / Swift Concurrency）。
 - リリース・署名・TestFlight は `ios-release` スキルを参照する。
 - 変更は最小限、周辺の既存コードのスタイル（命名・コメント密度）に合わせる。
+
+## コードレビュー観点
+
+Claude のセルフレビュー（`swiftui-reviewer`）と CodeRabbit の PR レビューは、どちらもこの観点に従う。`ios-swiftui` スキルの一般論と食い違う場合は、こちらを優先する。
+
+1. **正しさ**: ロジックの誤り、境界条件、Optional の強制アンラップ、既存挙動のリグレッション。
+2. **iOS 16 互換**: Deployment Target は iOS 16.0。`@Observable` / `@Bindable` / `@Entry` など iOS 17 以降の API を `#available` なしで使わない。
+3. **State 管理**: 状態を持つクラスは `ObservableObject` にする。生成する側は `@StateObject`、受け取る側は `@ObservedObject` を使う。`@State` には値型だけを入れる。子 View で `@StateObject` を作り直さない。
+4. **Concurrency**: UI を更新するクラスには `@MainActor` を付ける。View のライフサイクルに連動する非同期処理は `Task { }` より `.task { }` を優先する。
+5. **SwiftUI の作法**: 画面遷移は `NavigationStack`（`NavigationView` は使わない）。Preview は `#Preview` マクロで書く。
+6. **アクセス修飾子**: `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate` / `AppTheme`）以外は internal のままにする。
+7. **スタイル**: 既存コードとの一貫性、SwiftLint 違反。

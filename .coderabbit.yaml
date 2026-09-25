@@ -23,12 +23,9 @@ reviews:
     - "!DerivedData/**"
   path_instructions:
     - path: "NinjacordPackage/Sources/**/*.swift"
+      # 観点の本文は CLAUDE.md に一元化している（Claude のセルフレビューと共通）
       instructions: |
-        SwiftUI / Swift Concurrency の観点でレビューしてください。
-        - Deployment Target は iOS 16.0。iOS 17 以降の API (@Observable 等) は #available なしで使わないこと
-        - State 管理 (@State / @StateObject / @ObservedObject / @Binding) の使い分けが適切か
-        - MainActor 分離や Sendable の問題がないか
-        - NinjacordApp ターゲットから参照する型 (MainView / AppDelegate) 以外は internal のままにする
+        リポジトリ直下の CLAUDE.md にある「コードレビュー観点」に従ってレビューしてください。
   tools:
     swiftlint:
       enabled: true
