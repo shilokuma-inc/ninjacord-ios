@@ -61,7 +61,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 ## 開発ワークフロー（Claude Code）
 
 1. `/dev-issue <番号>` … Issue を取得 → 実装 → Simulator ビルド&起動 → 手元で確認
-2. 手元確認で問題なければ `/ship <番号>` … PR 作成 → レビュー → マージ
+2. 手元確認で問題なければ `/ship <番号>` … PR 作成 → セルフレビュー → CodeRabbit の指摘対応 → マージ
 3. `develop` マージ後は Actions が自動で App Store Connect アップロードまで実施
 
 ## コミット / PR 規約
