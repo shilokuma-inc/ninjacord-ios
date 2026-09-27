@@ -8,6 +8,14 @@ App Store Connect API で言語ごとにアップロードする。
         --screenshots-dir build/screenshots/APP_IPHONE_67 \\
         --display-type APP_IPHONE_67
 
+`--languages` を省くと languages.json の全言語を反映する。一部の言語だけ撮り直したときは、
+残っている古い画像まで反映しないよう、撮った言語に絞る。
+
+    python3 Tools/upload_screenshots.py \\
+        --screenshots-dir build/screenshots/APP_IPHONE_67 \\
+        --display-type APP_IPHONE_67 \\
+        --languages ja
+
 認証は App Store Connect API Key（.p8）。次の環境変数でも渡せる。
 
     APP_STORE_CONNECT_KEY_ID / APP_STORE_CONNECT_ISSUER_ID / APP_STORE_CONNECT_PRIVATE_KEY_PATH
