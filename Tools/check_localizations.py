@@ -61,13 +61,16 @@ def relative(path: str) -> str:
         return path
 
 
-def find_stringsdata(derived_data: Path) -> list[Path]:
+def find_stringsdata(derived_data: Path) -> dict[str, list[Path]]:
+    """ターゲット名 → そのターゲットの `.stringsdata`"""
     intermediates = derived_data / "Build" / "Intermediates.noindex"
-    files = []
+    files: dict[str, list[Path]] = {}
     for target in TARGETS:
+        target_files: list[Path] = []
         for build_dir in ("{}.build", "{}-t.build"):
-            files += intermediates.glob(f"**/{build_dir.format(target)}/**/*.stringsdata")
-    return sorted(f for f in set(files) if f.name not in IGNORED_STRINGSDATA)
+            target_files += intermediates.glob(f"**/{build_dir.format(target)}/**/*.stringsdata")
+        files[target] = sorted(f for f in set(target_files) if f.name not in IGNORED_STRINGSDATA)
+    return files
 
 
 def collect_keys(files: list[Path]) -> dict[str, dict[str, set[Location]]]:
@@ -112,11 +115,17 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    files = find_stringsdata(args.derived_data)
-    if not files:
-        # ビルドし忘れ・フラグの付け忘れで素通りしないよう、見つからなければ落とす
-        report("error", f"{args.derived_data} に .stringsdata がありません。SWIFT_EMIT_LOC_STRINGS=YES でビルドしてください")
+    files_by_target = find_stringsdata(args.derived_data)
+    # ビルドし忘れ・フラグの付け忘れで素通りしないよう、どれかのターゲットで見つからなければ落とす
+    missing_targets = [target for target in TARGETS if not files_by_target[target]]
+    if missing_targets:
+        report(
+            "error",
+            f"{args.derived_data} に {', '.join(missing_targets)} の .stringsdata がありません。"
+            "SWIFT_EMIT_LOC_STRINGS=YES でビルドしてください",
+        )
         return 1
+    files = [file for target in TARGETS for file in files_by_target[target]]
 
     tables = collect_keys(files)
     missing_count = 0
