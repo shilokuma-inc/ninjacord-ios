@@ -149,7 +149,7 @@ struct PaywallView: View {
             .frame(minHeight: 44.0)
             .disabled(isProcessing)
         }
-        // 管理シートで解約・失効するとボタンは消えるため、常にある親に付ける
+        // 返金・失効で isPro が false になるとボタンは消えるため、常にある親に付ける（解約しても期間中は isPro のまま）
         .manageSubscriptionsSheet(isPresented: $isManageSubscriptionsPresented)
         .onChange(of: isManageSubscriptionsPresented) { isPresented in
             // 返金・プラン変更などで変わった状態を、シートを閉じた時点で反映する

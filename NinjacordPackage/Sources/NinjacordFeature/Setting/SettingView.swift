@@ -60,7 +60,7 @@ struct SettingView: View {
                         .sheet(isPresented: $isPaywallPresented) {
                             paywallSheet
                         }
-                        // 管理シートで解約・失効すると「サブスクリプションを管理」行は消えるため、常にある行に付ける
+                        // 返金・失効で isPro が false になると「サブスクリプションを管理」行は消えるため、常にある行に付ける（解約しても期間中は isPro のまま）
                         .manageSubscriptionsSheet(isPresented: $isManageSubscriptionsPresented)
                         .onChange(of: isManageSubscriptionsPresented) { isPresented in
                             // 返金・プラン変更などで変わった状態を、シートを閉じた時点で反映する
