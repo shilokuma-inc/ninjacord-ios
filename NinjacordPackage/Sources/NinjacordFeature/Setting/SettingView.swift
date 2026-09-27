@@ -222,6 +222,19 @@ struct SettingView: View {
         }
     }
 
+    private func loadAd() {
+        guard AdConfiguration.isEnabled, adConsent.canRequestAds, !purchaseManager.isPro else { return }
+
+        model.load(
+            windowScene: sceneDelegate.windowScene,
+            rootViewController: sceneDelegate.window?.rootViewController
+        )
+    }
+}
+
+// MARK: - Pro プラン
+
+extension SettingView {
     /// 機種変更・再インストール後に、ペイウォールを開かなくても購入を復元できるようにする
     private var restorePurchasesRow: some View {
         Button {
@@ -285,14 +298,5 @@ struct SettingView: View {
         // シートは別の View 階層になるため、Pro 状態を明示的に渡す
         .environmentObject(purchaseManager)
         .limitedDynamicTypeSize()
-    }
-
-    private func loadAd() {
-        guard AdConfiguration.isEnabled, adConsent.canRequestAds, !purchaseManager.isPro else { return }
-
-        model.load(
-            windowScene: sceneDelegate.windowScene,
-            rootViewController: sceneDelegate.window?.rootViewController
-        )
     }
 }
