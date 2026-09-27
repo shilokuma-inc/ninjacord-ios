@@ -4,22 +4,6 @@
     "" : {
 
     },
-    " (近日公開)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " (Coming Soon)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " (近日公開)"
-          }
-        }
-      }
-    },
     "%@ / 月" : {
       "localizations" : {
         "en" : {
@@ -676,22 +660,6 @@
         }
       }
     },
-    "このアプリについて" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About this App"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このアプリについて"
-          }
-        }
-      }
-    },
     "このアプリのURL欄に貼り付けます" : {
       "localizations" : {
         "en" : {
@@ -880,6 +848,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "コピーしたURLを貼り付けて、メッセージを入力したら「メッセージを送信！」を押すだけです"
+          }
+        }
+      }
+    },
+    "サブスクリプションを管理" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Subscription"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サブスクリプションを管理"
           }
         }
       }

@@ -14,6 +14,7 @@ struct PaywallView: View {
 
     @State private var loadState: LoadState = .loading
     @State private var isProcessing = false
+    @State private var isManageSubscriptionsPresented = false
     @State private var alertMessage: LocalizedStringKey?
 
     /// Apple 標準の利用規約（EULA）
@@ -129,6 +130,15 @@ struct PaywallView: View {
                 }
             }
 
+            if purchaseManager.isPro {
+                Button("サブスクリプションを管理") {
+                    isManageSubscriptionsPresented = true
+                }
+                .font(.system(size: 15))
+                .foregroundStyle(Color.appAccent)
+                .frame(minHeight: 44.0)
+            }
+
             Button("購入を復元") {
                 Task {
                     await restore()
@@ -138,6 +148,15 @@ struct PaywallView: View {
             .foregroundStyle(Color.appAccent)
             .frame(minHeight: 44.0)
             .disabled(isProcessing)
+        }
+        // 返金・失効で isPro が false になるとボタンは消えるため、常にある親に付ける（解約しても期間中は isPro のまま）
+        .manageSubscriptionsSheet(isPresented: $isManageSubscriptionsPresented)
+        .onChange(of: isManageSubscriptionsPresented) { isPresented in
+            // 返金・プラン変更などで変わった状態を、シートを閉じた時点で反映する
+            guard !isPresented else { return }
+            Task {
+                await purchaseManager.refreshPurchasedProducts()
+            }
         }
     }
 
