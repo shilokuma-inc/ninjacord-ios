@@ -22,6 +22,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
   - `.swift` ファイルの追加・削除は `NinjacordPackage/Sources/NinjacordFeature/` 配下で行う。**`.xcodeproj` に差分は出ない**（Issue #211）。
   - 外部依存（Firebase 等）も `Package.swift` の `dependencies` で管理する。バージョンのピンは従来どおり `NinjacordApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`。
   - `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate` / `AppTheme`）だけ `public`。それ以外は internal のまま。
+  - 文言は `NinjacordApp/Localizable.xcstrings` に**自動で抽出されない**ので、`Text("…")` などを足したら手で登録する（翻訳しないブランド名は `shouldTranslate: false`）。載せ忘れは Build ワークフローの `Check localizations`（`Tools/check_localizations.py`）が落とす。手元で確かめるなら `SWIFT_EMIT_LOC_STRINGS=YES -derivedDataPath build/DerivedData` を付けてビルドし、`python3 Tools/check_localizations.py --derived-data build/DerivedData`。
 - Scheme は3つ:
   - `NinjacordApp` … 本番
   - `NinjacordApp-STG` … STG（開発確認はこちらを優先）

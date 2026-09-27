@@ -35,9 +35,15 @@ jobs:
       - name: Resolve package dependencies
         run: |
           set -euo pipefail
-          xcodebuild -resolvePackageDependencies -project "$PROJECT" -scheme "$SCHEME"
+          xcodebuild -resolvePackageDependencies -project "$PROJECT" -scheme "$SCHEME" -derivedDataPath "$RUNNER_TEMP/DerivedData"
 
+      # SWIFT_EMIT_LOC_STRINGS=YES で、ローカライズ対象の文言を .stringsdata に書き出す（次の Check localizations で使う）
       - name: Build
         run: |
           set -euo pipefail
-          xcodebuild build-for-testing -project "$PROJECT" -scheme "$SCHEME" -destination "generic/platform=iOS Simulator"
+          xcodebuild build-for-testing -project "$PROJECT" -scheme "$SCHEME" -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" SWIFT_EMIT_LOC_STRINGS=YES
+
+      # アプリのコードは Swift Package にあり、文言が String Catalog に自動で抽出されないため、載せ忘れをここで落とす
+      - name: Check localizations
+        run: python3 Tools/check_localizations.py --derived-data "$RUNNER_TEMP/DerivedData"
