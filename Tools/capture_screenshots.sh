@@ -166,6 +166,9 @@ capture_when_settled() {
     return 1
 }
 
+# プロセス置換の中で失敗しても set -e では止まらず、前回の撮影結果のまま検証を通ってしまうので、先に取り出しておく
+LANGUAGE_LIST="$($CONFIG languages "$LANGUAGES")"
+
 # simctl が標準入力を読んでしまわないよう、一覧は別のファイル記述子から読む
 while IFS=$'\t' read -r -u 3 language apple_language apple_locale store_locale; do
     destination="$SCREENSHOTS_DIR/$DISPLAY_TYPE/$language"
@@ -184,7 +187,7 @@ while IFS=$'\t' read -r -u 3 language apple_language apple_locale store_locale; 
         echo "  $file.png"
     done 4< <($CONFIG scenes)
     echo "::endgroup::"
-done 3< <($CONFIG languages "$LANGUAGES")
+done 3< <(printf '%s\n' "$LANGUAGE_LIST")
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 
 # MARK: - 仕上げと検証
