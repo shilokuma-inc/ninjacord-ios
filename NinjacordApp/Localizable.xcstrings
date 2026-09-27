@@ -4,22 +4,6 @@
     "" : {
 
     },
-    " (近日公開)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " (Coming Soon)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " (近日公開)"
-          }
-        }
-      }
-    },
     "%@ / 月" : {
       "localizations" : {
         "en" : {
@@ -678,22 +662,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "お支払いは購入の確定時にApple IDに請求されます。サブスクリプションは、現在の期間が終了する24時間前までに自動更新をオフにしない限り、自動的に更新されます。自動更新はApp Storeのアカウント設定から管理・解約できます。"
-          }
-        }
-      }
-    },
-    "このアプリについて" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About this App"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このアプリについて"
           }
         }
       }
