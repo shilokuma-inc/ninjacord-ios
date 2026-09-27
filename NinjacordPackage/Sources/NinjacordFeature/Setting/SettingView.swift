@@ -5,6 +5,7 @@
 //  Created by 村石 拓海 on 2024/04/30.
 //
 
+import StoreKit
 import SwiftUI
 
 struct SettingView: View {
@@ -21,6 +22,7 @@ struct SettingView: View {
     @State private var isContactPresented = false
     @State private var isOnboardingPresented = false
     @State private var isPaywallPresented = false
+    @State private var isManageSubscriptionsPresented = false
     @State private var isRestoring = false
     @State private var restoreResultMessage: LocalizedStringKey?
 
@@ -57,6 +59,19 @@ struct SettingView: View {
                         .listRowBackground(Color.appSurface)
                         .sheet(isPresented: $isPaywallPresented) {
                             paywallSheet
+                        }
+                        // 返金・失効で isPro が false になると「サブスクリプションを管理」行は消えるため、常にある行に付ける（解約しても期間中は isPro のまま）
+                        .manageSubscriptionsSheet(isPresented: $isManageSubscriptionsPresented)
+                        .onChange(of: isManageSubscriptionsPresented) { isPresented in
+                            // 返金・プラン変更などで変わった状態を、シートを閉じた時点で反映する
+                            guard !isPresented else { return }
+                            Task {
+                                await purchaseManager.refreshPurchasedProducts()
+                            }
+                        }
+
+                        if purchaseManager.isPro {
+                            manageSubscriptionsRow
                         }
 
                         restorePurchasesRow
@@ -222,6 +237,37 @@ struct SettingView: View {
         }
     }
 
+    private func loadAd() {
+        guard AdConfiguration.isEnabled, adConsent.canRequestAds, !purchaseManager.isPro else { return }
+
+        model.load(
+            windowScene: sceneDelegate.windowScene,
+            rootViewController: sceneDelegate.window?.rootViewController
+        )
+    }
+}
+
+// MARK: - Pro プラン
+
+extension SettingView {
+    /// Pro 購読中の人が、App Store の設定を探さなくてもアプリ内から解約・プラン変更できるようにする
+    private var manageSubscriptionsRow: some View {
+        Button {
+            isManageSubscriptionsPresented = true
+        } label: {
+            HStack {
+                Text("サブスクリプションを管理")
+                    .foregroundStyle(Color.appTextPrimary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(Color.appTextSecondary)
+            }
+        }
+        .listRowBackground(Color.appSurface)
+    }
+
     /// 機種変更・再インストール後に、ペイウォールを開かなくても購入を復元できるようにする
     private var restorePurchasesRow: some View {
         Button {
@@ -285,14 +331,5 @@ struct SettingView: View {
         // シートは別の View 階層になるため、Pro 状態を明示的に渡す
         .environmentObject(purchaseManager)
         .limitedDynamicTypeSize()
-    }
-
-    private func loadAd() {
-        guard AdConfiguration.isEnabled, adConsent.canRequestAds, !purchaseManager.isPro else { return }
-
-        model.load(
-            windowScene: sceneDelegate.windowScene,
-            rootViewController: sceneDelegate.window?.rootViewController
-        )
     }
 }
