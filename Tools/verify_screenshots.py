@@ -62,6 +62,10 @@ def main() -> int:
         missing = [name for name in expected_files if name not in files]
         if missing:
             problems.append(f"{language_dir.name}: 撮れていない画面があります: {', '.join(missing)}")
+        # 設定に無い画像もアップロードの対象になってしまうので、多すぎる場合も止める
+        unexpected = [name for name in files if name not in expected_files]
+        if unexpected:
+            problems.append(f"{language_dir.name}: 設定に無い画面があります: {', '.join(unexpected)}")
         for name in files:
             path = language_dir / name
             try:
