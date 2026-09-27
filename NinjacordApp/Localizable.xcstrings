@@ -244,6 +244,9 @@
         }
       }
     },
+    "Ninjacord Pro" : {
+      "shouldTranslate" : false
+    },
     "Ninjacord Proで色・フィールド・画像・フッターを使う" : {
       "localizations" : {
         "en" : {
@@ -307,6 +310,9 @@
           }
         }
       }
+    },
+    "PRO" : {
+      "shouldTranslate" : false
     },
     "Pro" : {
       "localizations" : {
