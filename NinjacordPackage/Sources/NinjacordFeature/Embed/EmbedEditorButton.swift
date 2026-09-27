@@ -35,6 +35,7 @@ struct EmbedEditorButton: View {
             }
             // シートは別の View 階層になるため、Pro 状態を明示的に渡す
             .environmentObject(purchaseManager)
+            .limitedDynamicTypeSize()
         }
     }
 }

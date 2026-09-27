@@ -121,6 +121,7 @@ struct SettingView: View {
                             OnboardingView {
                                 isOnboardingPresented = false
                             }
+                            .limitedDynamicTypeSize()
                         }
 
                         Text("このアプリについて")
@@ -283,6 +284,7 @@ struct SettingView: View {
         }
         // シートは別の View 階層になるため、Pro 状態を明示的に渡す
         .environmentObject(purchaseManager)
+        .limitedDynamicTypeSize()
     }
 
     private func loadAd() {
