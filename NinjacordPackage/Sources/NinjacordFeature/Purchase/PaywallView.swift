@@ -73,16 +73,14 @@ struct PaywallView: View {
         .padding(.top, 16.0)
     }
 
+    /// 無料 / Pro の対比表。1 行を「項目・無料・Pro」の 3 列で並べる
     private var benefits: some View {
         VStack(alignment: .leading, spacing: 12.0) {
-            Label {
-                Text("広告を非表示")
-                    .foregroundStyle(Color.appTextPrimary)
-            } icon: {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(Color.appAccent)
+            BenefitComparisonHeader()
+            ForEach(Self.comparisonItems) { item in
+                Divider()
+                BenefitComparisonRow(item: item)
             }
-            .font(.system(size: 17, weight: .semibold))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16.0)
@@ -91,6 +89,23 @@ struct PaywallView: View {
                 .fill(Color.appSurface)
         )
     }
+
+    private static let comparisonItems: [BenefitComparisonItem] = [
+        BenefitComparisonItem(id: "ads", title: "広告の表示", free: "表示あり", pro: "非表示"),
+        BenefitComparisonItem(
+            id: "templates",
+            title: "テンプレート",
+            free: "\(MessageTemplateStore.freeLimit)件まで",
+            pro: "無制限"
+        ),
+        BenefitComparisonItem(
+            id: "embed",
+            title: "埋め込み",
+            free: "タイトル・説明のみ",
+            pro: "色・フィールド・画像・フッターなども"
+        ),
+        BenefitComparisonItem(id: "broadcast", title: "一斉送信", free: nil, pro: "複数のWebhookへ")
+    ]
 
     @ViewBuilder
     private var purchaseSection: some View {
@@ -167,6 +182,87 @@ struct PaywallView: View {
             }
             .font(.system(size: 13))
             .foregroundStyle(Color.appAccent)
+        }
+    }
+}
+
+/// 対比表の 1 行分。`free` が nil の項目は無料プランでは使えない
+private struct BenefitComparisonItem: Identifiable {
+    let id: String
+    let title: LocalizedStringKey
+    let free: LocalizedStringKey?
+    let pro: LocalizedStringKey
+}
+
+/// 対比表の列見出し（無料・Pro）
+private struct BenefitComparisonHeader: View {
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12.0) {
+            Text("無料")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.appTextSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 4.0) {
+                Image(systemName: "crown.fill")
+                    .foregroundStyle(.yellow)
+                    .accessibilityHidden(true)
+                Text("Pro")
+                    .foregroundStyle(Color.appAccent)
+            }
+            .font(.system(size: 13, weight: .bold))
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        // 列名は各行の読み上げに含めるので、見出し行は読ませない
+        .accessibilityHidden(true)
+    }
+}
+
+/// 対比表の 1 行。項目名の下に無料 / Pro を 2 列で並べる
+private struct BenefitComparisonRow: View {
+    let item: BenefitComparisonItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6.0) {
+            Text(item.title)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Color.appTextPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(alignment: .firstTextBaseline, spacing: 12.0) {
+                freeCell
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.appTextSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                HStack(alignment: .firstTextBaseline, spacing: 4.0) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .accessibilityHidden(true)
+                    Text(item.pro)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.appAccent)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
+    }
+
+    /// 見出し行を読まなくても列が分かるよう「項目、無料 ○○、Pro ○○」の形で読み上げる
+    private var accessibilityText: Text {
+        Text(item.title) + Text(verbatim: ", ")
+            + Text("無料") + Text(verbatim: " ") + Text(item.free ?? "なし") + Text(verbatim: ", ")
+            + Text("Pro") + Text(verbatim: " ") + Text(item.pro)
+    }
+
+    @ViewBuilder private var freeCell: some View {
+        if let free = item.free {
+            Text(free)
+                .fixedSize(horizontal: false, vertical: true)
+        } else {
+            Image(systemName: "minus")
         }
     }
 }

@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit の設定: https://docs.coderabbit.ai/reference/configuration
+language: ja-JP
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+    # デフォルトブランチ (develop) 以外に向けた PR もレビューする
+    base_branches:
+      - "release/.*"
+      - "master"
+  path_filters:
+    # 自動生成・バイナリ系はレビュー対象外
+    - "!**/*.xcassets/**"
+    - "!**/Package.resolved"
+    - "!**/*.pbxproj"
+    - "!DerivedData/**"
+  path_instructions:
+    - path: "NinjacordPackage/Sources/**/*.swift"
+      # 観点の本文は CLAUDE.md に一元化している（Claude のセルフレビューと共通）
+      instructions: |
+        リポジトリ直下の CLAUDE.md にある「コードレビュー観点」に従ってレビューしてください。
+  tools:
+    swiftlint:
+      enabled: true
+      config_file: ".swiftlint.yml"
+
+chat:
+  auto_reply: true
