@@ -11,8 +11,11 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-    # デフォルトブランチ (develop) 以外に向けた PR もレビューする
+    # デフォルトブランチ (develop) 以外に向けた PR もレビューする。
+    # ralph-loop の PR は epic/** 宛に出るため、ここに入れないと
+    # ループの生成物が 1 本もレビューされないまま統合される。
     base_branches:
+      - "epic/.*"
       - "release/.*"
       - "master"
   path_filters:
