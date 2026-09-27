@@ -44,6 +44,9 @@ EDITABLE_STATES = {
 #: アップロード後、Apple 側の取り込みが終わるのを待つ上限（秒）
 DELIVERY_TIMEOUT = 300
 
+#: 1 リクエストあたりの待ち時間の上限（秒）。指定しないと応答が無いときに無期限に待つ
+REQUEST_TIMEOUT = 60
+
 #: トークンの有効期限（秒）。App Store Connect の上限は 20 分
 TOKEN_LIFETIME = 15 * 60
 
@@ -82,7 +85,7 @@ class AppStoreConnect:
         if body is not None:
             request.add_header("Content-Type", "application/json")
         try:
-            with urllib.request.urlopen(request) as response:
+            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:
                 raw = response.read()
         except urllib.error.HTTPError as error:
             detail = error.read().decode(errors="replace")
@@ -252,7 +255,7 @@ class AppStoreConnect:
             for header in operation.get("requestHeaders", []):
                 request.add_header(header["name"], header["value"])
             try:
-                with urllib.request.urlopen(request):
+                with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT):
                     pass
             except urllib.error.HTTPError as error:
                 detail = error.read().decode(errors="replace")
