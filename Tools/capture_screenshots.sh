@@ -160,9 +160,10 @@ capture_when_settled() {
         fi
         mv "$work/current.png" "$work/previous.png"
     done
-    echo "::warning::$(basename "$output") は ${SETTLE_TIMEOUT} 秒たっても画面が落ち着かなかったため、最後の状態を使います"
-    mv "$work/previous.png" "$output"
+    # 動いている途中の画面を正常な撮影結果として残すと、検証を通ってそのままアップロードされてしまう
+    echo "::error::$(basename "$output") は ${SETTLE_TIMEOUT} 秒たっても画面が落ち着きませんでした"
     rm -rf "$work"
+    return 1
 }
 
 # simctl が標準入力を読んでしまわないよう、一覧は別のファイル記述子から読む
