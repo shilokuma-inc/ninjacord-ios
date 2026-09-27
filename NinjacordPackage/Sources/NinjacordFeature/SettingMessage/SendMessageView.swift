@@ -40,12 +40,17 @@ struct SendMessageView: View {
     private static let reviewRequestSendCount = 3
 
     init() {
-        guard ProcessInfo.processInfo.arguments.contains("-screenshot-demo") else { return }
-        _inputURL = State(initialValue: "https://discord.com/api/webhooks/example")
-        _inputUsername = State(initialValue: "Ninja Cord")
-        _inputAvatarURL = State(initialValue: "https://example.com/avatar.png")
-        _inputContext = State(initialValue: "Discordへかんたん送信")
-        _inputEmbed = State(initialValue: MessageEmbedEntity(title: "お知らせ"))
+        guard ScreenshotDemo.isEnabled else { return }
+        let content = ScreenshotDemo.content
+        _inputURL = State(initialValue: content.url)
+        _inputUsername = State(initialValue: content.message.username)
+        _inputAvatarURL = State(initialValue: content.message.avatarURL)
+        _inputContext = State(initialValue: content.message.content)
+        _inputEmbed = State(initialValue: content.message.messageEmbedEntity)
+        _attachment = State(initialValue: ScreenshotDemo.attachment)
+        if ScreenshotDemo.scene == .broadcast {
+            _broadcastTargets = State(initialValue: ScreenshotDemo.broadcastTargets)
+        }
     }
 
     var body: some View {

@@ -17,7 +17,7 @@ struct MessageTemplateButtons: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
     @StateObject private var store = MessageTemplateStore()
-    @State private var isListPresented = false
+    @State private var isListPresented = ScreenshotDemo.scene == .templates
     @State private var isSaveAlertPresented = false
     @State private var isLimitAlertPresented = false
     @State private var isPaywallPresented = false

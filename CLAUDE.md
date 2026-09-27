@@ -42,6 +42,8 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
     - `AdMob/` … 広告
     - `Extension/`, `Common/` … 共通部品
 - `ci_scripts/ci_post_clone.sh` … CI 前処理（SwiftLint 導入等）
+- `AppStore/` … App Store の掲載情報（言語・撮影する画面・説明文などの JSON）
+- `Tools/` … App Store 用スクリーンショットの撮影と App Store Connect への反映スクリプト
 - `.github/workflows/` … build / archive / upload（発火するブランチは「ブランチ運用」参照）
 
 ## ブランチ運用
@@ -57,6 +59,20 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
   | `master` | Build/master のみ（upload は走らない） |
 
 - PR のマージ先は原則 `develop`。
+
+## App Store の掲載情報
+
+手動で発火する GitHub Actions で、編集中のバージョンに反映する（審査中・配信済みのバージョンには触らない）。
+
+| ワークフロー | 反映するもの | 元ネタ |
+| --- | --- | --- |
+| `Screenshots/App Store` | スクリーンショット（iPhone 6.9 inch / iPad 13 inch × ja / en-US） | `AppStore/screenshots.json` / `AppStore/languages.json` |
+| `Metadata/App Store` | 説明文・キーワード・プロモーションテキスト・URL（既定は dry-run） | `AppStore/metadata/*.json` |
+
+- 撮る画面・枚数・並び順は Discussion #355 で決めた。変えるときは `AppStore/screenshots.json` と `ScreenshotDemo.Scene` を合わせて直す。
+- 撮影はアプリの撮影モード（起動引数 `-screenshot-demo -screenshot-scene <名前>`、`Screenshot/ScreenshotDemo.swift`）で行う。デモの文言は言語ごとに `ScreenshotDemoContent` に持つ。
+- 手元で撮るなら `Tools/capture_screenshots.sh APP_IPHONE_67`（出力は `build/screenshots/`）。
+- 対応言語を増やしたら `AppStore/languages.json` と `AppStore/metadata/<言語>.json`、`ScreenshotDemoContent` に足す。
 
 ## 開発ワークフロー（Claude Code）
 

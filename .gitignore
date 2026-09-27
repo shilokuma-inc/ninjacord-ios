@@ -82,6 +82,10 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
+# App Store Connect 連携（Tools/upload_*.py）の実行時にだけ作るもの
+private_keys/
+.venv/
+
 # Code Injection
 #
 # After new code Injection tools there's a generated folder /iOSInjectionProject

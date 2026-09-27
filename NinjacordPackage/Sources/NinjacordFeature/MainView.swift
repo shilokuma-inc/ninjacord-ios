@@ -20,13 +20,11 @@ public struct MainView: View {
     static let hasCompletedOnboardingKey = "hasCompletedOnboarding"
 
     public init() {
-        if ProcessInfo.processInfo.arguments.contains("-screenshot-settings") {
-            _selection = State(initialValue: 2)
-        }
+        // 各画面がストアを読み込む前に、撮影用のデモデータを入れておく
+        ScreenshotDemo.prepare()
         // App Store 用スクリーンショットにオンボーディングを写り込ませない
-        let isScreenshotDemo = ProcessInfo.processInfo.arguments.contains("-screenshot-demo")
         let hasCompleted = UserDefaults.standard.bool(forKey: Self.hasCompletedOnboardingKey)
-        _isOnboardingPresented = State(initialValue: !hasCompleted && !isScreenshotDemo)
+        _isOnboardingPresented = State(initialValue: !hasCompleted && !ScreenshotDemo.isEnabled)
     }
 
     public var body: some View {

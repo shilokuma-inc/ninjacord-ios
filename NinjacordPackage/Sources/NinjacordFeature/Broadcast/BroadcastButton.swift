@@ -11,7 +11,7 @@ struct BroadcastButton: View {
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
-    @State private var isPickerPresented = false
+    @State private var isPickerPresented = ScreenshotDemo.scene == .broadcast
     @State private var isPaywallPresented = false
     @State private var isUpsellPresented = false
     @ObservedObject private var rewardedAdManager = RewardedAdManager.shared
@@ -29,8 +29,9 @@ struct BroadcastButton: View {
         } label: {
             HStack(spacing: 4.0) {
                 Label("複数の宛先に送る", systemImage: "paperplane.circle")
-                // 一斉送信は Pro 限定（Discussion #260 の決定）
-                if !canUseBroadcast {
+                // 一斉送信は Pro 限定（Discussion #260 の決定）。
+                // App Store 用スクリーンショットでも、Pro 限定だと分かるよう出す（Discussion #355）
+                if !canUseBroadcast || ScreenshotDemo.isEnabled {
                     Text("PRO")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(.white)
