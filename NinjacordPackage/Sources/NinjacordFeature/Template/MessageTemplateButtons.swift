@@ -97,6 +97,7 @@ struct MessageTemplateButtons: View {
                     }
             }
             .environmentObject(purchaseManager)
+            .limitedDynamicTypeSize()
         }
     }
 
@@ -118,6 +119,7 @@ struct MessageTemplateButtons: View {
         }
         // シートは別の View 階層になるため、Pro 状態を明示的に渡す
         .environmentObject(purchaseManager)
+        .limitedDynamicTypeSize()
     }
 
     private func save() {

@@ -72,6 +72,7 @@ struct BroadcastButton: View {
                         }
                     }
             }
+            .limitedDynamicTypeSize()
         }
         .sheet(isPresented: $isPaywallPresented) {
             NavigationStack {
@@ -85,6 +86,7 @@ struct BroadcastButton: View {
                     }
             }
             .environmentObject(purchaseManager)
+            .limitedDynamicTypeSize()
         }
     }
 

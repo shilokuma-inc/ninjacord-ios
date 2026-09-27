@@ -117,6 +117,7 @@ struct EmbedEditorView: View {
                     }
             }
             .environmentObject(purchaseManager)
+            .limitedDynamicTypeSize()
         }
     }
 

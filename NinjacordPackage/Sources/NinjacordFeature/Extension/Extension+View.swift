@@ -25,3 +25,12 @@ extension View {
         }
     }
 }
+
+extension View {
+    /// 文字サイズ（Dynamic Type）を通常サイズの上限（xxxLarge）までに抑える。
+    /// 送信画面などスクロールしない固定レイアウトの画面が、アクセシビリティ用の文字サイズで崩れるのを防ぐ。
+    /// シートや全画面表示は別の階層になり上限が引き継がれないため、その中身にも付ける
+    func limitedDynamicTypeSize() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+    }
+}
