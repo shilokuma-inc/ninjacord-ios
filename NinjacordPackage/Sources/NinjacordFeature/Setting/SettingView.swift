@@ -5,6 +5,7 @@
 //  Created by 村石 拓海 on 2024/04/30.
 //
 
+import StoreKit
 import SwiftUI
 
 struct SettingView: View {
@@ -21,6 +22,7 @@ struct SettingView: View {
     @State private var isContactPresented = false
     @State private var isOnboardingPresented = false
     @State private var isPaywallPresented = false
+    @State private var isManageSubscriptionsPresented = false
     @State private var isRestoring = false
     @State private var restoreResultMessage: LocalizedStringKey?
 
@@ -57,6 +59,19 @@ struct SettingView: View {
                         .listRowBackground(Color.appSurface)
                         .sheet(isPresented: $isPaywallPresented) {
                             paywallSheet
+                        }
+                        // 管理シートで解約・失効すると「サブスクリプションを管理」行は消えるため、常にある行に付ける
+                        .manageSubscriptionsSheet(isPresented: $isManageSubscriptionsPresented)
+                        .onChange(of: isManageSubscriptionsPresented) { isPresented in
+                            // 返金・プラン変更などで変わった状態を、シートを閉じた時点で反映する
+                            guard !isPresented else { return }
+                            Task {
+                                await purchaseManager.refreshPurchasedProducts()
+                            }
+                        }
+
+                        if purchaseManager.isPro {
+                            manageSubscriptionsRow
                         }
 
                         restorePurchasesRow
@@ -235,6 +250,24 @@ struct SettingView: View {
 // MARK: - Pro プラン
 
 extension SettingView {
+    /// Pro 購読中の人が、App Store の設定を探さなくてもアプリ内から解約・プラン変更できるようにする
+    private var manageSubscriptionsRow: some View {
+        Button {
+            isManageSubscriptionsPresented = true
+        } label: {
+            HStack {
+                Text("サブスクリプションを管理")
+                    .foregroundStyle(Color.appTextPrimary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(Color.appTextSecondary)
+            }
+        }
+        .listRowBackground(Color.appSurface)
+    }
+
     /// 機種変更・再インストール後に、ペイウォールを開かなくても購入を復元できるようにする
     private var restorePurchasesRow: some View {
         Button {
