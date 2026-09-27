@@ -139,11 +139,6 @@ struct SettingView: View {
                             .limitedDynamicTypeSize()
                         }
 
-                        Text("このアプリについて")
-                            .addComingSoon()
-                            .foregroundStyle(Color.appTextPrimary)
-                            .listRowBackground(Color.appSurface)
-
                         Button {
                             isPrivacyPolicyPresented = true
                         } label: {
