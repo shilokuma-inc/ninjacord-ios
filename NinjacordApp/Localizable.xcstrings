@@ -1882,22 +1882,6 @@
         }
       }
     },
-    "左にスワイプすると削除できます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Swipe left to delete."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "左にスワイプすると削除できます"
-          }
-        }
-      }
-    },
     "左端の線の色" : {
       "localizations" : {
         "en" : {
@@ -2278,22 +2262,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定"
-          }
-        }
-      }
-    },
-    "設定完了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Setting complete"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定完了"
           }
         }
       }
