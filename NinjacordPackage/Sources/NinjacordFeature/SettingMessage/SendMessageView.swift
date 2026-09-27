@@ -298,12 +298,13 @@ extension SendMessageView {
     private func handleSendSucceeded() async {
         let didRequestTracking = await TrackingAuthorization.requestIfNeeded()
         // 成功回数は ViewModel で記録済み。ちょうど 3 回目の送信のときだけ依頼する
-        let shouldRequestReview = SendSuccessCounter().count == Self.reviewRequestSendCount
-        if shouldRequestReview {
+        let sendSuccessCount = SendSuccessCounter().count
+        if sendSuccessCount == Self.reviewRequestSendCount {
             requestReview()
         }
-        // ATT やレビュー依頼のダイアログに続けて全画面広告を出すと体験を損なうため、その送信では出さない
-        if !didRequestTracking && !shouldRequestReview {
+        // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す。
+        // ATT のダイアログに続けて出すと体験を損なうため、ATT を尋ねた送信でも出さない
+        if !didRequestTracking && sendSuccessCount > Self.reviewRequestSendCount {
             // 成功のトーストを見てもらってから表示する
             try? await Task.sleep(for: .seconds(1))
             InterstitialAdManager.shared.showIfAllowed(from: sceneDelegate.window?.rootViewController)
