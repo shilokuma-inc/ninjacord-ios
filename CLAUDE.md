@@ -54,11 +54,12 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 
   | push 先 | 発火するワークフロー |
   | --- | --- |
-  | フィーチャーブランチ | Build / Archive |
+  | フィーチャーブランチ | Build（Archive は develop / release の Upload で確認する） |
   | `develop` | Build/develop / Upload/develop（App Store Connect へアップロード） |
   | `release/**` | Build / Upload/release（App Store Connect へアップロード） |
   | `master` | Build/master のみ（upload は走らない） |
 
+- Build 系のワークフローは、同じブランチへの連続 push で古い実行をキャンセルする。SPM の依存は `Package.resolved` をキーにキャッシュしている。
 - PR のマージ先は原則 `develop`。
 
 ## App Store の掲載情報
