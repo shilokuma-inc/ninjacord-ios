@@ -254,7 +254,7 @@ extension SendMessageView {
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
-                await handleSendSucceeded()
+                await handleSendSucceeded(usedProFeatures: messageEntity.messageEmbedEntity.usesProFeatures)
             case .failure(let error):
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
             }
@@ -289,16 +289,20 @@ extension SendMessageView {
                 toast = Toast(style: .failure, message: "\(results.count)件中\(failureCount)件の送信に失敗しました")
             }
             if failureCount < results.count {
-                await handleSendSucceeded()
+                // 一斉送信そのものが Pro 機能
+                await handleSendSucceeded(usedProFeatures: true)
             }
         }
     }
 
     /// 送信に成功したあとのリワード広告の解放の消費・ATT の許可・レビュー依頼・インタースティシャル広告
-    private func handleSendSucceeded() async {
-        // リワード広告の一時解放は 1 回の送信で使い切る（Discussion #386）。
+    /// - Parameter usedProFeatures: 埋め込みの Pro 限定の項目や一斉送信など、Pro 機能を使った送信か
+    private func handleSendSucceeded(usedProFeatures: Bool) async {
+        // リワード広告の一時解放は、Pro 機能を使った 1 回の送信で使い切る（Discussion #386・判断ログ #389）。
         // 一斉送信は宛先の数ではなく 1 回の操作で 1 回と数え、1 件でも成功していれば使い切る
-        RewardedUnlockState.shared.consumeIfUnlocked()
+        if usedProFeatures {
+            RewardedUnlockState.shared.consumeIfUnlocked()
+        }
         let didRequestTracking = await TrackingAuthorization.requestIfNeeded()
         // 成功回数は ViewModel で記録済み。ちょうど 3 回目の送信のときだけ依頼する
         let sendSuccessCount = SendSuccessCounter().count
