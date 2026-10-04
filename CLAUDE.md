@@ -59,6 +59,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
   | `release/**` | Build / Upload/release（App Store Connect へアップロード） |
   | `master` | Build/master のみ（upload は走らない） |
 
+- Build 系のワークフローは、ドキュメントだけの変更（`*.md`、`docs/**`）では実行しない。Upload 系は実行する。
 - Build 系のワークフローは、同じブランチへの連続 push で古い実行をキャンセルする。SPM の依存は `Package.resolved` をキーにキャッシュしている。
 - PR のマージ先は原則 `develop`。
 
