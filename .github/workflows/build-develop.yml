@@ -2,6 +2,10 @@ name: Build/develop
 
 on:
   push:
+    # ドキュメントだけの変更では、macOS ランナーの枠を使わないよう Build を実行しない
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
     branches: develop
 
 # 同じブランチへの連続 push では古い実行をキャンセルする
