@@ -9,6 +9,16 @@ import SwiftUI
 /// Pro プラン（月額サブスクリプション）の購入画面。
 /// App Store 審査ガイドライン 3.1.2 に従い、価格・期間・自動更新の説明・利用規約・プライバシーポリシー・復元を載せる
 struct PaywallView: View {
+    /// ペイウォールを開いた場所。Analytics で表示元を区別するのに使う
+    enum Source: String {
+        case settings
+        case embed
+        case templates
+        case broadcast
+    }
+
+    let source: Source
+
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @Environment(\.dismiss) private var dismiss
 
@@ -17,6 +27,8 @@ struct PaywallView: View {
     @State private var isManageSubscriptionsPresented = false
     @State private var alertMessage: LocalizedStringKey?
 
+    private let analytics = FirebaseAnalytics()
+
     /// Apple 標準の利用規約（EULA）
     private static let termsOfUseURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
 
@@ -24,6 +36,10 @@ struct PaywallView: View {
         case loading
         case loaded(Product)
         case failed
+    }
+
+    init(source: Source) {
+        self.source = source
     }
 
     var body: some View {
@@ -40,6 +56,9 @@ struct PaywallView: View {
                 }
                 .padding(24.0)
             }
+        }
+        .onAppear {
+            analytics.sendPaywallViewEvent(source: source.rawValue)
         }
         .task {
             await loadProduct()
@@ -308,14 +327,17 @@ extension PaywallView {
         do {
             switch try await purchaseManager.purchase(product) {
             case .purchased:
+                analytics.sendPaywallPurchaseEvent(source: source.rawValue, result: "success")
                 dismiss()
             case .pending:
+                analytics.sendPaywallPurchaseEvent(source: source.rawValue, result: "pending")
                 alertMessage = "購入の承認待ちです。承認されると自動でProが有効になります"
             case .cancelled:
-                break
+                analytics.sendPaywallPurchaseEvent(source: source.rawValue, result: "cancelled")
             }
         } catch {
             print("Failed to purchase: \(error)")
+            analytics.sendPaywallPurchaseEvent(source: source.rawValue, result: "failed")
             alertMessage = "購入できませんでした。時間をおいてもう一度お試しください"
         }
     }
@@ -325,15 +347,20 @@ extension PaywallView {
         defer { isProcessing = false }
         do {
             try await purchaseManager.restore()
+            analytics.sendPaywallRestoreEvent(
+                source: source.rawValue,
+                result: purchaseManager.isPro ? "restored" : "not_found"
+            )
             alertMessage = purchaseManager.isPro ? "購入を復元しました" : "復元できる購入が見つかりませんでした"
         } catch {
             print("Failed to restore: \(error)")
+            analytics.sendPaywallRestoreEvent(source: source.rawValue, result: "failed")
             alertMessage = "購入を復元できませんでした。時間をおいてもう一度お試しください"
         }
     }
 }
 
 #Preview {
-    PaywallView()
+    PaywallView(source: .settings)
         .environmentObject(PurchaseManager.shared)
 }
