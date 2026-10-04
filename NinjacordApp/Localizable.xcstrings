@@ -1898,18 +1898,18 @@
         }
       }
     },
-    "広告を見て%lld時間使う" : {
+    "広告を見て次の1回の送信で使う" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Watch an ad to use for %lld hours"
+            "value" : "Watch an ad to use for your next send"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "広告を見て%lld時間使う"
+            "value" : "広告を見て次の1回の送信で使う"
           }
         }
       }

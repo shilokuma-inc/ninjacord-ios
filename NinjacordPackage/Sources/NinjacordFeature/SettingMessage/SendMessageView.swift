@@ -294,8 +294,11 @@ extension SendMessageView {
         }
     }
 
-    /// 送信に成功したあとの ATT の許可・レビュー依頼・インタースティシャル広告
+    /// 送信に成功したあとのリワード広告の解放の消費・ATT の許可・レビュー依頼・インタースティシャル広告
     private func handleSendSucceeded() async {
+        // リワード広告の一時解放は 1 回の送信で使い切る（Discussion #386）。
+        // 一斉送信は宛先の数ではなく 1 回の操作で 1 回と数え、1 件でも成功していれば使い切る
+        RewardedUnlockState.shared.consumeIfUnlocked()
         let didRequestTracking = await TrackingAuthorization.requestIfNeeded()
         // 成功回数は ViewModel で記録済み。ちょうど 3 回目の送信のときだけ依頼する
         let sendSuccessCount = SendSuccessCounter().count

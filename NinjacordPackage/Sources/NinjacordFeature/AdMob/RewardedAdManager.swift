@@ -61,7 +61,8 @@ final class RewardedAdManager: NSObject, ObservableObject {
             dismissContinuation = continuation
             rewardedAd.present(fromRootViewController: viewController) {
                 didEarnReward = true
-                // 閉じる前にアプリが終了しても報酬を失わないよう、閉じるのを待たずにその場で解放する
+                // 閉じる前にアプリが終了しても報酬を失わないよう、閉じるのを待たずにその場で解放する。
+                // 解放中にもう一度視聴しても、使えるのは次の 1 回の送信のまま
                 unlock.grant()
             }
         }
