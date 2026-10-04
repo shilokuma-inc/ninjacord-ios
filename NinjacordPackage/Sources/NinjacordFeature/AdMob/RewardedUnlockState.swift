@@ -33,7 +33,7 @@ final class RewardedUnlockState: ObservableObject {
     }
 }
 
-/// 広告以外の Pro 機能（テンプレート無制限・embed の Pro 項目・一斉送信）を使えるか。
+/// 広告とテンプレート無制限以外の Pro 機能（embed の Pro 項目・一斉送信）を使えるか。
 /// Discussion #261 の決定により、リワード広告の一時解放でも使える（広告の非表示は Pro 購読のみ）。
 /// 一時解放で使えるのは、Pro 機能を使った 1 回の送信まで（Discussion #386・判断ログ #389）。
 /// App Store 用スクリーンショットでは、Pro 機能を使っている画面を撮るため解放する（Discussion #355）
@@ -41,5 +41,11 @@ enum ProFeatureAccess {
     @MainActor
     static func canUse(isPro: Bool) -> Bool {
         isPro || RewardedUnlockState.shared.isUnlocked || ScreenshotDemo.isEnabled
+    }
+
+    /// テンプレートを無制限に保存できるか。リワード広告の一時解放の対象外で、Pro 購読のみ（PR #398 の回答）。
+    /// App Store 用スクリーンショットでは、他の Pro 機能と同じく解放する（Discussion #355）
+    static func canUseUnlimitedTemplates(isPro: Bool) -> Bool {
+        isPro || ScreenshotDemo.isEnabled
     }
 }

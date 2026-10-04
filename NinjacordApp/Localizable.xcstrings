@@ -247,18 +247,18 @@
         }
       }
     },
-    "Ninjacord Proなら、テンプレートを無制限に保存できます" : {
+    "Ninjacord Proなら、テンプレートを無制限に保存できます（広告を見て使える機能には含まれません）" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "With Ninjacord Pro, you can save unlimited templates."
+            "value" : "With Ninjacord Pro, you can save unlimited templates. This isn't included in what you can unlock by watching an ad."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ninjacord Proなら、テンプレートを無制限に保存できます"
+            "value" : "Ninjacord Proなら、テンプレートを無制限に保存できます（広告を見て使える機能には含まれません）"
           }
         }
       }
