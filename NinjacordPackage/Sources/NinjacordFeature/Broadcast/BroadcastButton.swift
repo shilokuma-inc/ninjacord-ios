@@ -76,7 +76,7 @@ struct BroadcastButton: View {
         }
         .sheet(isPresented: $isPaywallPresented) {
             NavigationStack {
-                PaywallView()
+                PaywallView(source: .broadcast)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("閉じる") {

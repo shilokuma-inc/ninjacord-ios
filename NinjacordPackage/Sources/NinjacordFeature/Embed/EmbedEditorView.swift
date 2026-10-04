@@ -103,11 +103,11 @@ struct EmbedEditorView: View {
         .background(Color.appBackground)
         .navigationTitle("埋め込み")
         .navigationBarTitleDisplayMode(.inline)
-        // Pro でない人に「広告を見て24時間使う」を出せるよう、リワード広告を読み込んでおく
+        // Pro でない人に「広告を見て1回の送信で使う」を出せるよう、リワード広告を読み込んでおく
         .preloadsRewardedAd(when: !canUseProFeatures)
         .sheet(isPresented: $isPaywallPresented) {
             NavigationStack {
-                PaywallView()
+                PaywallView(source: .embed)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("閉じる") {

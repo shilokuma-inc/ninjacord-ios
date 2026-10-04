@@ -11,7 +11,6 @@ struct MessageTemplateListView: View {
     let onSelect: (MessageTemplate) -> Void
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
-    @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
     @StateObject private var store = MessageTemplateStore()
 
     var body: some View {
@@ -53,7 +52,7 @@ struct MessageTemplateListView: View {
                         store.move(fromOffsets: source, toOffset: destination)
                     }
 
-                    if !ProFeatureAccess.canUse(isPro: purchaseManager.isPro) {
+                    if !ProFeatureAccess.canUseUnlimitedTemplates(isPro: purchaseManager.isPro) {
                         Section {
                         } footer: {
                             let limit = MessageTemplateStore.freeLimit
