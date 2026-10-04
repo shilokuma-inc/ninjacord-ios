@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// 「広告を見て次の1回の送信で使う」ボタン。リワード広告を読み込めたときだけ表示する。
+/// 「広告を見て1回の送信で使う」ボタン。リワード広告を読み込めたときだけ表示する。
 /// 読み込み前は中身が空になり onAppear が呼ばれないため、先読みは置き場所の画面で `preloadsRewardedAd` を使って行う
 struct RewardedUnlockButton: View {
     /// 最後まで視聴して一時解放されたとき
@@ -34,9 +34,9 @@ struct RewardedUnlockButton: View {
 }
 
 extension RewardedUnlock {
-    /// 「広告を見て次の1回の送信で使う」の文言。解放は次の 1 回の送信で使い切る（Discussion #386）
+    /// 「広告を見て1回の送信で使う」の文言。解放は Pro 機能を使った 1 回の送信で使い切る（Discussion #386・判断ログ #389）
     static var watchAdTitle: String {
-        String(localized: "広告を見て次の1回の送信で使う")
+        String(localized: "広告を見て1回の送信で使う")
     }
 }
 
