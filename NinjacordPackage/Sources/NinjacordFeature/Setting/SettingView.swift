@@ -314,7 +314,7 @@ extension SettingView {
 
     private var paywallSheet: some View {
         NavigationStack {
-            PaywallView()
+            PaywallView(source: .settings)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("閉じる") {

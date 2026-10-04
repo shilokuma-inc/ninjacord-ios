@@ -107,7 +107,7 @@ struct EmbedEditorView: View {
         .preloadsRewardedAd(when: !canUseProFeatures)
         .sheet(isPresented: $isPaywallPresented) {
             NavigationStack {
-                PaywallView()
+                PaywallView(source: .embed)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("閉じる") {

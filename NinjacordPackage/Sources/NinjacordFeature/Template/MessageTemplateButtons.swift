@@ -87,7 +87,7 @@ struct MessageTemplateButtons: View {
         }
         .sheet(isPresented: $isPaywallPresented) {
             NavigationStack {
-                PaywallView()
+                PaywallView(source: .templates)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("閉じる") {
