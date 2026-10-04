@@ -68,7 +68,8 @@ if ! RUNTIME_ID="$(latest_ios_runtime)"; then
     xcodebuild -downloadPlatform iOS
     RUNTIME_ID="$(latest_ios_runtime)"
 fi
-# 変数名の直後に全角文字が続くと、UTF-8 でないロケールの bash 3.2 は変数名の一部と見なす（unbound variable）ので、必ず波括弧で閉じる
+# 変数名の直後に全角文字が続くと、macOS の bash 3.2 はロケールによって全角文字の先頭バイトを変数名の一部と見なす
+# （unbound variable になる。GitHub Actions のランナーで再現）ので、必ず波括弧で閉じる
 echo "ランタイム: ${RUNTIME_ID}（SDK ${SDK_VERSION}）"
 
 UDID=""
