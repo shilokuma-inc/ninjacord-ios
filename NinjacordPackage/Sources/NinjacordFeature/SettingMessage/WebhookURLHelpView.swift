@@ -14,6 +14,12 @@ struct WebhookURLHelpView: View {
     private static let discordAppStoreURL = URL(string: "https://apps.apple.com/app/id985746746")!
     /// Discord の Web 版。ログインするとそのままクライアントに入れる
     private static let discordWebURL = URL(string: "https://discord.com/app")!
+    /// Discord の Webhook URL の形。`discordapp.com` や `ptb.` / `canary.`、API のバージョン付き、`?thread_id=` などのクエリ付きも受け付ける
+    private static let webhookURLPattern = #"^https://((ptb|canary)\.)?discord(app)?\.com"#
+        + #"/api(/v[0-9]+)?/webhooks/[0-9]+/[A-Za-z0-9_-]+/?(\?.*)?$"#
+
+    /// 貼り付けた Webhook URL を受け取る。送信画面の URL 欄に入れてシートを閉じる
+    var onPasteWebhookURL: (String) -> Void = { _ in }
 
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
@@ -21,6 +27,9 @@ struct WebhookURLHelpView: View {
     // 撮影用の Simulator には Discord が入っていないので、撮影モードではインストール済みの表示に固定する
     @State private var canOpenDiscord: Bool? = ScreenshotDemo.scene == .webhookHelp ? true : nil
     @State private var isBrowserPresented = false
+    // Discord（アプリ / App Store / ブラウザ）を開いたら、戻ってきたときに貼り付けの導線を出す
+    @State private var hasOpenedDiscord = false
+    @State private var isInvalidPaste = false
 
     private let steps: [LocalizedStringKey] = [
         "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます",
@@ -50,6 +59,10 @@ struct WebhookURLHelpView: View {
                                 .foregroundStyle(Color.appTextPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                    }
+
+                    if hasOpenedDiscord {
+                        pasteWebhookURLSection
                     }
 
                     switch canOpenDiscord {
@@ -91,6 +104,7 @@ extension WebhookURLHelpView {
     private var openDiscordButton: some View {
         Button(action: {
             guard !ScreenshotDemo.isEnabled else { return }
+            hasOpenedDiscord = true
             openURL(Self.discordAppURL)
         }, label: {
             actionLabel("Discordアプリを開く", systemImage: "arrow.up.forward.app", isProminent: true)
@@ -116,6 +130,7 @@ extension WebhookURLHelpView {
     private var appStoreButton: some View {
         Button(action: {
             guard !ScreenshotDemo.isEnabled else { return }
+            hasOpenedDiscord = true
             openURL(Self.discordAppStoreURL)
         }, label: {
             actionLabel("App Storeで入手", systemImage: "arrow.down.app", isProminent: true)
@@ -125,10 +140,52 @@ extension WebhookURLHelpView {
     private var browserButton: some View {
         Button(action: {
             guard !ScreenshotDemo.isEnabled else { return }
+            hasOpenedDiscord = true
             isBrowserPresented = true
         }, label: {
             actionLabel("ブラウザで開く", systemImage: "safari", isProminent: false)
         })
+    }
+
+    /// コピーした Webhook URL を URL 欄に入れる導線。手順 4 を読んだ流れで押せるよう手順の直後に置く。
+    /// PasteButton は押したときだけクリップボードを読むので、「ペーストを許可」の確認が出ない
+    private var pasteWebhookURLSection: some View {
+        VStack(alignment: .leading, spacing: 12.0) {
+            Text("コピーしたWebhook URLをURL欄に入れられます")
+                .font(.system(size: 15))
+                .foregroundStyle(Color.appTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            PasteButton(payloadType: String.self) { strings in
+                guard let string = strings.first else { return }
+                // 貼り付けの処理はメインスレッド以外から呼ばれることがある
+                Task { @MainActor in
+                    pasteWebhookURL(string)
+                }
+            }
+            .labelStyle(.titleAndIcon)
+            .buttonBorderShape(.roundedRectangle(radius: 12.0))
+            .controlSize(.large)
+            .tint(Color.appAccent)
+
+            if isInvalidPaste {
+                Text("コピーされている内容はWebhook URLではありません")
+                    .font(.system(size: 15))
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    /// Discord の Webhook URL だけを URL 欄に入れる。それ以外は入れずに知らせる
+    private func pasteWebhookURL(_ string: String) {
+        let url = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard url.range(of: Self.webhookURLPattern, options: .regularExpression) != nil else {
+            isInvalidPaste = true
+            return
+        }
+        isInvalidPaste = false
+        onPasteWebhookURL(url)
     }
 
     /// シート内のボタンの見た目。isProminent なら塗り、そうでなければ枠線にする
