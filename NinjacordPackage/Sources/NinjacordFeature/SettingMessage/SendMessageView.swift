@@ -39,6 +39,9 @@ struct SendMessageView: View {
     /// 何回目の送信成功でレビューを依頼するか
     private static let reviewRequestSendCount = 3
 
+    /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
+    private static let contentMaxWidth: CGFloat = 600.0
+
     init() {
         guard ScreenshotDemo.isEnabled else { return }
         let content = ScreenshotDemo.content
@@ -132,6 +135,9 @@ struct SendMessageView: View {
                     }
                 }
                 .padding(.horizontal)
+                // iPad では入力欄が画面幅いっぱいに伸びて間延びするため、最大幅を設けて中央に寄せる。
+                // 縦の余白の配分が変わらないよう、入力欄をまとめて包まずにブロックごとに付ける
+                .frame(maxWidth: Self.contentMaxWidth)
 
                 Spacer()
                     .frame(height: 24.0)
@@ -149,6 +155,7 @@ struct SendMessageView: View {
                     EmbedEditorButton(embed: $inputEmbed)
                 }
                 .padding(.horizontal)
+                .frame(maxWidth: Self.contentMaxWidth)
 
                 Spacer()
                     .frame(height: 48.0)
