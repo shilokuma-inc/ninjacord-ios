@@ -890,6 +890,22 @@
         }
       }
     },
+    "コピーされている内容はWebhook URLではありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copied text is not a Webhook URL."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーされている内容はWebhook URLではありません"
+          }
+        }
+      }
+    },
     "コピーしたURLを貼り付けて、メッセージを入力したら「メッセージを送信！」を押すだけです" : {
       "localizations" : {
         "en" : {
@@ -902,6 +918,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "コピーしたURLを貼り付けて、メッセージを入力したら「メッセージを送信！」を押すだけです"
+          }
+        }
+      }
+    },
+    "コピーしたWebhook URLをURL欄に入れられます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can put the copied Webhook URL into the URL field."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしたWebhook URLをURL欄に入れられます"
           }
         }
       }
