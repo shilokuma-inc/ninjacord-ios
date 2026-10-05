@@ -39,7 +39,7 @@ jobs:
       # 依存の取得（Firebase などの clone）に毎回 1 分以上かかるため、SourcePackages ごと保存する。
       # Build 系のワークフローで同じパス・キーにして、キャッシュを共有する
       - name: Cache Swift packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/DerivedData/SourcePackages
           # restore-keys は付けない。依存が変わったときに古い依存入りのキャッシュを復元し、そのまま保存し直して肥大化するため
