@@ -164,6 +164,22 @@
         }
       }
     },
+    "App Storeで入手" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get on App Store"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Storeで入手"
+          }
+        }
+      }
+    },
     "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます" : {
       "localizations" : {
         "en" : {
@@ -224,6 +240,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discordへかんたん送信"
+          }
+        }
+      }
+    },
+    "Discordアプリが見つかりません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord app not found"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordアプリが見つかりません"
           }
         }
       }
@@ -1222,6 +1254,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フッターは%lld文字までです"
+          }
+        }
+      }
+    },
+    "ブラウザで開く" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in Browser"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブラウザで開く"
           }
         }
       }
