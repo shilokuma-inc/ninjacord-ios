@@ -10,11 +10,17 @@ import UIKit
 struct WebhookURLHelpView: View {
     /// Discord アプリのトップを開く URL。チャンネルの設定を直接開く公開のディープリンクは無い
     private static let discordAppURL = URL(string: "discord://")!
+    /// App Store の Discord のページ
+    private static let discordAppStoreURL = URL(string: "https://apps.apple.com/app/id985746746")!
+    /// Discord の Web 版。ログインするとそのままクライアントに入れる
+    private static let discordWebURL = URL(string: "https://discord.com/app")!
 
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
+    // 判定するまでは nil にして、どちらの表示も出さない（インストール済みの人に未インストールの表示がちらつかないように）。
     // 撮影用の Simulator には Discord が入っていないので、撮影モードではインストール済みの表示に固定する
-    @State private var canOpenDiscord = ScreenshotDemo.scene == .webhookHelp
+    @State private var canOpenDiscord: Bool? = ScreenshotDemo.scene == .webhookHelp ? true : nil
+    @State private var isBrowserPresented = false
 
     private let steps: [LocalizedStringKey] = [
         "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます",
@@ -46,8 +52,13 @@ struct WebhookURLHelpView: View {
                         }
                     }
 
-                    if canOpenDiscord {
+                    switch canOpenDiscord {
+                    case true?:
                         openDiscordButton
+                    case false?:
+                        discordNotInstalledLinks
+                    case nil:
+                        EmptyView()
                     }
 
                     Text("ウェブフックを作るには、そのサーバーで「ウェブフックの管理」の権限が必要です")
@@ -62,6 +73,10 @@ struct WebhookURLHelpView: View {
         }
         .onAppear {
             updateCanOpenDiscord()
+        }
+        .fullScreenCover(isPresented: $isBrowserPresented) {
+            SafariView(url: Self.discordWebURL)
+                .ignoresSafeArea()
         }
         .onChange(of: scenePhase) { phase in
             // App Store で入れて戻ってきた人にも出せるよう、アプリに戻るたびに取り直す
@@ -78,16 +93,61 @@ extension WebhookURLHelpView {
             guard !ScreenshotDemo.isEnabled else { return }
             openURL(Self.discordAppURL)
         }, label: {
-            Label("Discordアプリを開く", systemImage: "arrow.up.forward.app")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14.0)
-                .background(
-                    RoundedRectangle(cornerRadius: 12.0)
-                        .fill(Color.appAccent)
-                )
+            actionLabel("Discordアプリを開く", systemImage: "arrow.up.forward.app", isProminent: true)
         })
+    }
+
+    /// Discord アプリが入っていないときの代わりの導線。App Store で入れるか、Web 版をアプリ内ブラウザで開く。
+    /// シートの medium の高さでもスクロールせずに見えるよう横に並べる。文言が長い言語では折り返し、2 つの高さはそろえる
+    private var discordNotInstalledLinks: some View {
+        VStack(alignment: .leading, spacing: 12.0) {
+            Text("Discordアプリが見つかりません")
+                .font(.system(size: 15))
+                .foregroundStyle(Color.appTextSecondary)
+
+            HStack(spacing: 12.0) {
+                appStoreButton
+                browserButton
+            }
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var appStoreButton: some View {
+        Button(action: {
+            guard !ScreenshotDemo.isEnabled else { return }
+            openURL(Self.discordAppStoreURL)
+        }, label: {
+            actionLabel("App Storeで入手", systemImage: "arrow.down.app", isProminent: true)
+        })
+    }
+
+    private var browserButton: some View {
+        Button(action: {
+            guard !ScreenshotDemo.isEnabled else { return }
+            isBrowserPresented = true
+        }, label: {
+            actionLabel("ブラウザで開く", systemImage: "safari", isProminent: false)
+        })
+    }
+
+    /// シート内のボタンの見た目。isProminent なら塗り、そうでなければ枠線にする
+    private func actionLabel(_ title: LocalizedStringKey, systemImage: String, isProminent: Bool) -> some View {
+        Label(title, systemImage: systemImage)
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundStyle(isProminent ? Color.white : Color.appAccent)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 8.0)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.vertical, 14.0)
+            .background(
+                RoundedRectangle(cornerRadius: 12.0)
+                    .fill(isProminent ? Color.appAccent : Color.clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12.0)
+                    .stroke(Color.appAccent, lineWidth: isProminent ? 0.0 : 1.5)
+            )
     }
 
     /// Discord アプリが入っているかを取り直す。撮影モードでは固定した表示のまま変えない
