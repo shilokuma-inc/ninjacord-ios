@@ -68,7 +68,9 @@ if ! RUNTIME_ID="$(latest_ios_runtime)"; then
     xcodebuild -downloadPlatform iOS
     RUNTIME_ID="$(latest_ios_runtime)"
 fi
-echo "ランタイム: $RUNTIME_ID（SDK $SDK_VERSION）"
+# 変数名の直後に全角文字が続くと、macOS の bash 3.2 はロケールによって全角文字の先頭バイトを変数名の一部と見なす
+# （unbound variable になる。GitHub Actions のランナーで再現）ので、必ず波括弧で閉じる
+echo "ランタイム: ${RUNTIME_ID}（SDK ${SDK_VERSION}）"
 
 UDID=""
 DEVICE_NAME=""
@@ -175,7 +177,7 @@ while IFS=$'\t' read -r -u 3 language apple_language apple_locale store_locale; 
     # 撮り直しのたびに古い画像が混ざらないよう、言語ごとに作り直す
     rm -rf "$destination"
     mkdir -p "$destination"
-    echo "::group::$DISPLAY_TYPE / $language（$store_locale）"
+    echo "::group::$DISPLAY_TYPE / ${language}（${store_locale}）"
     while IFS=$'\t' read -r -u 4 file scene; do
         xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
         xcrun simctl launch "$UDID" "$BUNDLE_ID" \
