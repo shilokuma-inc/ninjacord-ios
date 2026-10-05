@@ -228,6 +228,22 @@
         }
       }
     },
+    "Discordアプリを開く" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the Discord App"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordアプリを開く"
+          }
+        }
+      }
+    },
     "Ninjacord Pro" : {
       "shouldTranslate" : false
     },
