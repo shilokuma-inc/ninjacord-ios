@@ -83,7 +83,7 @@ struct SendMessageView: View {
                                 self.isEditing = true
                             }
 
-                            WebhookURLHelpButton()
+                            WebhookURLHelpButton(url: $inputURL)
 
                             SavedWebhookURLButton(url: $inputURL)
                         }
