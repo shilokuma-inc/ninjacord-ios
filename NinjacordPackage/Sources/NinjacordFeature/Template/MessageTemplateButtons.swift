@@ -51,9 +51,6 @@ struct MessageTemplateButtons: View {
         .font(.system(size: 15, weight: .semibold))
         .tint(Color.appAccent)
         .frame(minHeight: 44.0)
-        .sheet(isPresented: $isListPresented) {
-            listSheet
-        }
         .alert("テンプレートとして保存", isPresented: $isSaveAlertPresented) {
             TextField("テンプレート名", text: $name)
             Button("保存") {
@@ -70,6 +67,12 @@ struct MessageTemplateButtons: View {
             Button("キャンセル", role: .cancel) {}
         } message: {
             Text("Ninjacord Proなら、テンプレートを無制限に保存できます（広告を見て使える機能には含まれません）")
+        }
+        // iOS 26 のアラートはボタン文字に周囲の tint（TabView の AppAccent）を使い読みにくいので、システム標準の青に戻す。
+        // ボタン本体には内側の .tint(Color.appAccent) が効いたまま
+        .tint(Color(uiColor: .systemBlue))
+        .sheet(isPresented: $isListPresented) {
+            listSheet
         }
         .sheet(isPresented: $isPaywallPresented) {
             NavigationStack {
