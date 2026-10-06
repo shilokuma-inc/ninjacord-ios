@@ -173,6 +173,8 @@ struct SendMessageView: View {
                 }
             }
         }
+        // iOS 26 のアラートはボタン文字に周囲の tint を使う。画面には AppAccent を付け直し、アラートだけシステム標準の青にする
+        .tint(Color.appAccent)
         .alert(isPresented: $isValidationAlertPresented, error: validationError) { _ in
             Button("OK", role: .cancel) {}
         } message: { error in
@@ -180,6 +182,7 @@ struct SendMessageView: View {
                 Text(recoverySuggestion)
             }
         }
+        .tint(Color(uiColor: .systemBlue))
         .toast($toast)
         .onAppear {
             InterstitialAdManager.shared.preload()
