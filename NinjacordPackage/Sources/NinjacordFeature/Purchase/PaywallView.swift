@@ -63,6 +63,8 @@ struct PaywallView: View {
         .task {
             await loadProduct()
         }
+        // iOS 26 のアラートはボタン文字に周囲の tint を使う。画面には AppAccent を付け直し、アラートだけシステム標準の青にする
+        .tint(Color.appAccent)
         .alert(
             "Ninjacord Pro",
             isPresented: Binding(
@@ -78,6 +80,7 @@ struct PaywallView: View {
                 }
             }
         )
+        .tint(Color(uiColor: .systemBlue))
     }
 
     private var header: some View {

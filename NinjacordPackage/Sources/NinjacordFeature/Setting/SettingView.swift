@@ -283,6 +283,8 @@ extension SettingView {
         }
         .disabled(isRestoring)
         .listRowBackground(Color.appSurface)
+        // iOS 26 のアラートはボタン文字に周囲の tint を使う。行には AppAccent を付け直し、アラートだけシステム標準の青にする
+        .tint(Color.appAccent)
         .alert(
             "購入を復元",
             isPresented: Binding(
@@ -298,6 +300,7 @@ extension SettingView {
                 }
             }
         )
+        .tint(Color(uiColor: .systemBlue))
     }
 
     private func restorePurchases() async {
