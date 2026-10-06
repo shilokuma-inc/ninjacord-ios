@@ -46,7 +46,7 @@ struct BroadcastButton: View {
         .tint(Color.appAccent)
         .frame(minHeight: 44.0)
         .preloadsRewardedAd(when: !canUseBroadcast)
-        .confirmationDialog("一斉送信はNinjacord Pro限定です", isPresented: $isUpsellPresented, titleVisibility: .visible) {
+        .alert("一斉送信はNinjacord Pro限定です", isPresented: $isUpsellPresented) {
             Button("Proを見る") {
                 isPaywallPresented = true
             }
@@ -59,6 +59,9 @@ struct BroadcastButton: View {
             }
             Button("キャンセル", role: .cancel) {}
         }
+        // iOS 26 のアラートはボタン文字に周囲の tint（TabView の AppAccent）を使い読みにくいので、システム標準の青に戻す。
+        // ボタン本体には内側の .tint(Color.appAccent) が効いたまま
+        .tint(Color(uiColor: .systemBlue))
         .sheet(isPresented: $isPickerPresented) {
             NavigationStack {
                 BroadcastTargetPickerView(selection: $targets)
