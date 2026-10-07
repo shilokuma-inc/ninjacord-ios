@@ -11,9 +11,9 @@ import SwiftUI
 struct SettingView: View {
     let appInfo = AppInfo()
 
-    @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @StateObject private var model = NativeAdModel()
-    @ObservedObject private var adConsent = AdConsentManager.shared
+    /// Pro セクションの直後に出す広告。最下部の広告と同じものが並ばないよう、別々に読み込む
+    @StateObject private var topAdModel = NativeAdModel()
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
     @State private var isURLSettingPresented = false
@@ -76,6 +76,8 @@ struct SettingView: View {
 
                         restorePurchasesRow
                     }
+
+                    NativeAdRow(model: topAdModel)
 
                     Section {
                         Picker("テーマ", selection: $appTheme) {
@@ -208,37 +210,14 @@ struct SettingView: View {
                             .foregroundStyle(Color.appTextSecondary)
                     })
 
-                    // ペイウォールの特典「広告を非表示」に合わせ、Pro 購読中はネイティブ広告も出さない
-                    if let nativeAd = model.nativeAd, !purchaseManager.isPro {
-                        // 広告内側の余白と合わせて、他の行と同じ 16pt の余白になるようにする
-                        NativeAdView(nativeAd: nativeAd)
-                            .listRowInsets(EdgeInsets(
-                                top: 16 - NativeAdView.contentInset,
-                                leading: 16 - NativeAdView.contentInset,
-                                bottom: 16 - NativeAdView.contentInset,
-                                trailing: 16 - NativeAdView.contentInset
-                            ))
-                            .listRowBackground(Color.appSurface)
-                    }
+                    NativeAdRow(model: model)
                 }
-                .onAppear(perform: loadAd)
-                .onChange(of: adConsent.canRequestAds) { _ in
-                    // 設定画面を開いている間に同意が得られた場合も広告を読み込む
-                    loadAd()
-                }
+                .loadsNativeAd(topAdModel)
+                .loadsNativeAd(model)
                 .scrollContentBackground(.hidden)
                 .background(.clear)
             }
         }
-    }
-
-    private func loadAd() {
-        guard AdConfiguration.isEnabled, adConsent.canRequestAds, !purchaseManager.isPro else { return }
-
-        model.load(
-            windowScene: sceneDelegate.windowScene,
-            rootViewController: sceneDelegate.window?.rootViewController
-        )
     }
 }
 

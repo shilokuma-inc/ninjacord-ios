@@ -12,6 +12,7 @@ struct MessageTemplateListView: View {
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @StateObject private var store = MessageTemplateStore()
+    @StateObject private var adModel = InlineBannerAdModel()
 
     var body: some View {
         ZStack {
@@ -25,31 +26,38 @@ struct MessageTemplateListView: View {
                     .padding()
             } else {
                 List {
-                    ForEach(store.items) { template in
-                        Button {
-                            onSelect(template)
-                        } label: {
-                            row(template)
-                        }
-                        .listRowBackground(Color.appSurface)
-                        .swipeActions(edge: .leading) {
+                    // 広告の行はスワイプでの削除・ピン留め・並び替えの対象にしないよう、ForEach の外の別 Section に置く
+                    Section {
+                        InlineBannerAdRow(model: adModel)
+                    }
+
+                    Section {
+                        ForEach(store.items) { template in
                             Button {
-                                store.togglePin(id: template.id)
+                                onSelect(template)
                             } label: {
-                                if template.isPinned {
-                                    Label("ピン留めを外す", systemImage: "pin.slash")
-                                } else {
-                                    Label("ピン留め", systemImage: "pin")
-                                }
+                                row(template)
                             }
-                            .tint(.orange)
+                            .listRowBackground(Color.appSurface)
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    store.togglePin(id: template.id)
+                                } label: {
+                                    if template.isPinned {
+                                        Label("ピン留めを外す", systemImage: "pin.slash")
+                                    } else {
+                                        Label("ピン留め", systemImage: "pin")
+                                    }
+                                }
+                                .tint(.orange)
+                            }
                         }
-                    }
-                    .onDelete { offsets in
-                        store.remove(at: offsets)
-                    }
-                    .onMove { source, destination in
-                        store.move(fromOffsets: source, toOffset: destination)
+                        .onDelete { offsets in
+                            store.remove(at: offsets)
+                        }
+                        .onMove { source, destination in
+                            store.move(fromOffsets: source, toOffset: destination)
+                        }
                     }
 
                     if !ProFeatureAccess.canUseUnlimitedTemplates(isPro: purchaseManager.isPro) {
@@ -61,6 +69,7 @@ struct MessageTemplateListView: View {
                         }
                     }
                 }
+                .loadsInlineBannerAd(adModel, when: !store.items.isEmpty)
                 .scrollContentBackground(.hidden)
                 .background(.clear)
             }
