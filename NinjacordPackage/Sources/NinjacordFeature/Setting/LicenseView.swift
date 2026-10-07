@@ -11,6 +11,7 @@ import LicenseList
 struct LicenseView: View {
     /// タップされたライブラリ。nil 以外になると詳細画面へ遷移する
     @State private var selectedLibrary: Library?
+    @StateObject private var adModel = InlineBannerAdModel()
 
     private var isDetailPresented: Binding<Bool> {
         Binding(
@@ -28,6 +29,10 @@ struct LicenseView: View {
             Color.appBackground
                 .ignoresSafeArea()
             List {
+                Section {
+                    InlineBannerAdRow(model: adModel)
+                }
+
                 Section(content: {
                     ForEach(Library.libraries, id: \.name) { library in
                         Button {
@@ -50,6 +55,7 @@ struct LicenseView: View {
                         .foregroundStyle(Color.appTextPrimary)
                 })
             }
+            .loadsInlineBannerAd(adModel, when: !Library.libraries.isEmpty)
             .scrollContentBackground(.hidden)
             .background(.clear)
             .navigationDestination(isPresented: isDetailPresented) {
@@ -101,4 +107,6 @@ private struct LicenseDetailView: View {
 
 #Preview {
     LicenseView()
+        // 広告の行が Pro かどうかを参照するため
+        .environmentObject(PurchaseManager.shared)
 }
