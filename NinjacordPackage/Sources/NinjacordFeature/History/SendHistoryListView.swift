@@ -8,6 +8,7 @@ import SwiftUI
 /// 送信履歴の一覧（新しい順・閲覧のみ）
 struct SendHistoryListView: View {
     @StateObject private var store = SendHistoryStore()
+    @StateObject private var adModel = InlineBannerAdModel()
 
     var body: some View {
         ZStack {
@@ -18,10 +19,19 @@ struct SendHistoryListView: View {
                 Text("送信履歴はありません")
                     .foregroundStyle(Color.appTextSecondary)
             } else {
-                List(store.items) { entry in
-                    row(entry)
-                        .listRowBackground(Color.appSurface)
+                List {
+                    Section {
+                        InlineBannerAdRow(model: adModel)
+                    }
+
+                    Section {
+                        ForEach(store.items) { entry in
+                            row(entry)
+                                .listRowBackground(Color.appSurface)
+                        }
+                    }
                 }
+                .loadsInlineBannerAd(adModel, when: !store.items.isEmpty)
                 .scrollContentBackground(.hidden)
                 .background(.clear)
             }
