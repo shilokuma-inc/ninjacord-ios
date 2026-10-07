@@ -12,6 +12,8 @@ struct SettingView: View {
     let appInfo = AppInfo()
 
     @StateObject private var model = NativeAdModel()
+    /// Pro セクションの直後に出す広告。最下部の広告と同じものが並ばないよう、別々に読み込む
+    @StateObject private var topAdModel = NativeAdModel()
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
     @State private var isURLSettingPresented = false
@@ -74,6 +76,8 @@ struct SettingView: View {
 
                         restorePurchasesRow
                     }
+
+                    NativeAdRow(model: topAdModel)
 
                     Section {
                         Picker("テーマ", selection: $appTheme) {
@@ -208,6 +212,7 @@ struct SettingView: View {
 
                     NativeAdRow(model: model)
                 }
+                .loadsNativeAd(topAdModel)
                 .loadsNativeAd(model)
                 .scrollContentBackground(.hidden)
                 .background(.clear)
