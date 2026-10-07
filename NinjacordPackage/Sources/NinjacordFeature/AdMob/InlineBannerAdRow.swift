@@ -99,6 +99,8 @@ final class InlineBannerAdModel: NSObject, ObservableObject, GADBannerViewDelega
         print("AdMob inline banner ad failed: \(error)")
         Task { @MainActor in
             loadedAdSize = nil
+            // 次に画面を開いたときに同じ幅で読み込み直せるよう、記録した幅を消す
+            loadedWidth = nil
         }
     }
 }
@@ -137,6 +139,7 @@ private struct InlineBannerAdLoadModifier: ViewModifier {
                         }
                 }
             )
+            .onAppear(perform: loadAd)
             .onChange(of: listWidth) { _ in
                 loadAd()
             }
@@ -145,6 +148,10 @@ private struct InlineBannerAdLoadModifier: ViewModifier {
             }
             .onChange(of: adConsent.canRequestAds) { _ in
                 // 画面を開いている間に同意が得られた場合も広告を読み込む
+                loadAd()
+            }
+            .onChange(of: purchaseManager.isPro) { _ in
+                // 画面を開いている間に Pro が解除された場合も広告を読み込む
                 loadAd()
             }
     }
