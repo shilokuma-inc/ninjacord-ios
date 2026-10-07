@@ -6,8 +6,8 @@
 import GoogleMobileAds
 import UserMessagingPlatform
 
-/// UMP（User Messaging Platform）で広告の同意を取得し、許可されてから GoogleMobileAds を初期化する。
-/// 同意が必要ない地域では、同意情報の更新後すぐに `canRequestAds` が true になる
+/// UMP（User Messaging Platform）で広告の同意を取得し、ATT の許可を尋ねてから GoogleMobileAds を初期化する。
+/// 同意が必要ない地域では、同意情報の更新と ATT の回答のあとすぐに `canRequestAds` が true になる
 @MainActor
 final class AdConsentManager: ObservableObject {
     static let shared = AdConsentManager()
@@ -19,13 +19,14 @@ final class AdConsentManager: ObservableObject {
     private var hasGatheredConsent = false
 
     private init() {
-        // 前回までの起動で同意済みなら、同意情報の更新を待たずに広告を出せる
-        if UMPConsentInformation.sharedInstance.canRequestAds {
+        // 前回までの起動で同意済みで ATT にも回答済みなら、同意情報の更新を待たずに広告を出せる。
+        // ATT をまだ尋ねていなければ、トラッキングに使えるデータを集める前に尋ねるため `gatherConsent` まで待つ
+        if UMPConsentInformation.sharedInstance.canRequestAds && !TrackingAuthorization.needsRequest {
             startMobileAdsIfNeeded()
         }
     }
 
-    /// 同意情報を更新し、必要なら同意フォームを表示する。起動ごとに 1 回だけ実行され、2 回目以降は何もしない
+    /// 同意情報を更新し、必要なら同意フォームと ATT の許可ダイアログを表示する。起動ごとに 1 回だけ実行され、2 回目以降は何もしない
     func gatherConsent(from viewController: UIViewController?) async {
         guard AdConfiguration.isEnabled, !hasGatheredConsent else { return }
         hasGatheredConsent = true
@@ -45,14 +46,20 @@ final class AdConsentManager: ObservableObject {
                 // AdMob コンソールに同意メッセージが未設定だと、地域を問わず必ずこのエラーになり
                 // canRequestAds が false のままになる。広告が一切出なくなるのを防ぐため、
                 // 未設定の間は従来どおり初期化する（メッセージを設定すれば通常の同意フローになる）
-                startMobileAdsIfNeeded()
+                await startMobileAdsAfterTrackingRequest()
                 return
             }
         }
 
         if UMPConsentInformation.sharedInstance.canRequestAds {
-            startMobileAdsIfNeeded()
+            await startMobileAdsAfterTrackingRequest()
         }
+    }
+
+    /// ATT の許可を尋ねて回答を待ってから GoogleMobileAds を初期化する（Guideline 2.1 で ATT より先に広告を読み込んでいると指摘されたため）
+    private func startMobileAdsAfterTrackingRequest() async {
+        await TrackingAuthorization.requestIfNeeded()
+        startMobileAdsIfNeeded()
     }
 
     private static func isMisconfiguration(_ error: Error) -> Bool {

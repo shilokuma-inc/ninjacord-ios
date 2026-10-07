@@ -295,7 +295,7 @@ extension SendMessageView {
         }
     }
 
-    /// 送信に成功したあとのリワード広告の解放の消費・ATT の許可・レビュー依頼・インタースティシャル広告
+    /// 送信に成功したあとのリワード広告の解放の消費・レビュー依頼・インタースティシャル広告
     /// - Parameter usedProFeatures: 埋め込みの Pro 限定の項目や一斉送信など、Pro 機能を使った送信か
     private func handleSendSucceeded(usedProFeatures: Bool) async {
         // リワード広告の一時解放は、Pro 機能を使った 1 回の送信で使い切る（Discussion #386・判断ログ #389）。
@@ -303,15 +303,13 @@ extension SendMessageView {
         if usedProFeatures {
             RewardedUnlockState.shared.consumeIfUnlocked()
         }
-        let didRequestTracking = await TrackingAuthorization.requestIfNeeded()
         // 成功回数は ViewModel で記録済み。ちょうど 3 回目の送信のときだけ依頼する
         let sendSuccessCount = SendSuccessCounter().count
         if sendSuccessCount == Self.reviewRequestSendCount {
             requestReview()
         }
-        // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す。
-        // ATT のダイアログに続けて出すと体験を損なうため、ATT を尋ねた送信でも出さない
-        if !didRequestTracking && sendSuccessCount > Self.reviewRequestSendCount {
+        // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す
+        if sendSuccessCount > Self.reviewRequestSendCount {
             // 成功のトーストを見てもらってから表示する
             try? await Task.sleep(for: .seconds(1))
             InterstitialAdManager.shared.showIfAllowed(from: sceneDelegate.window?.rootViewController)
