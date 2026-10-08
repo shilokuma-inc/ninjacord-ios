@@ -33,6 +33,7 @@ final class AdConsentManager: ObservableObject {
 
         let parameters = UMPRequestParameters()
         parameters.debugSettings = Self.debugSettings
+        var isMisconfigured = false
 
         do {
             try await UMPConsentInformation.sharedInstance.requestConsentInfoUpdate(with: parameters)
@@ -42,24 +43,19 @@ final class AdConsentManager: ObservableObject {
         } catch {
             // 取得・表示に失敗しても、前回までの同意状況で広告を出せる場合があるので続行する
             print("UMP consent failed: \(error)")
-            if Self.isMisconfiguration(error) {
-                // AdMob コンソールに同意メッセージが未設定だと、地域を問わず必ずこのエラーになり
-                // canRequestAds が false のままになる。広告が一切出なくなるのを防ぐため、
-                // 未設定の間は従来どおり初期化する（メッセージを設定すれば通常の同意フローになる）
-                await startMobileAdsAfterTrackingRequest()
-                return
-            }
+            // AdMob コンソールに同意メッセージが未設定だと、地域を問わず必ずこのエラーになり
+            // canRequestAds が false のままになる。広告が一切出なくなるのを防ぐため、
+            // 未設定の間は従来どおり初期化する（メッセージを設定すれば通常の同意フローになる）
+            isMisconfigured = Self.isMisconfiguration(error)
         }
 
-        if UMPConsentInformation.sharedInstance.canRequestAds {
-            await startMobileAdsAfterTrackingRequest()
-        }
-    }
-
-    /// ATT の許可を尋ねて回答を待ってから GoogleMobileAds を初期化する（Guideline 2.1 で ATT より先に広告を読み込んでいると指摘されたため）
-    private func startMobileAdsAfterTrackingRequest() async {
+        // ATT は UMP の結果にかかわらず尋ねる。通信の失敗などで canRequestAds が false のままでも
+        // ダイアログまで辿り着けるようにするため（Guideline 2.1 で ATT が見つからないと 2 回指摘された）。
+        // GoogleMobileAds は ATT の回答を待ってから初期化する（ATT より先に広告を読み込まないため）
         await TrackingAuthorization.requestIfNeeded()
-        startMobileAdsIfNeeded()
+        if isMisconfigured || UMPConsentInformation.sharedInstance.canRequestAds {
+            startMobileAdsIfNeeded()
+        }
     }
 
     private static func isMisconfiguration(_ error: Error) -> Bool {
