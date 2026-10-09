@@ -67,6 +67,28 @@ struct DiscordWebhookRequest {
         ]
     }
 
+    /// multipartParts を multipart/form-data の本文にする。添付する画像が無ければ nil。
+    /// 書式は Alamofire の MultipartFormData と同じ（パートごとに境界・Content-Disposition・Content-Type・中身）
+    func multipartBody(boundary: String) -> Data? {
+        guard let parts = multipartParts else {
+            return nil
+        }
+        var body = Data()
+        for part in parts {
+            var disposition = "form-data; name=\"\(part.name)\""
+            if let fileName = part.fileName {
+                disposition += "; filename=\"\(fileName)\""
+            }
+            body.append("--\(boundary)\r\n")
+            body.append("Content-Disposition: \(disposition)\r\n")
+            body.append("Content-Type: \(part.mimeType)\r\n\r\n")
+            body.append(part.data)
+            body.append("\r\n")
+        }
+        body.append("--\(boundary)--\r\n")
+        return body
+    }
+
     /// Discord の embed オブジェクトを組み立てる。空の項目は送らない
     /// https://discord.com/developers/docs/resources/message#embed-object
     private func embedParameters(_ embed: MessageEmbedEntity) -> [String: Any] {
@@ -97,5 +119,11 @@ struct DiscordWebhookRequest {
             param["timestamp"] = ISO8601DateFormatter().string(from: sentAt)
         }
         return param
+    }
+}
+
+private extension Data {
+    mutating func append(_ string: String) {
+        append(Data(string.utf8))
     }
 }

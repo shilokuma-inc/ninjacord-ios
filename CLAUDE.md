@@ -30,7 +30,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
   - `NinjacordApp-Screenshot` … App Store 掲載用スクリーンショット撮影用。広告を表示しない（`ADS_ENABLED = NO`）
 - Configuration: `Debug` / `NinjacordApp-STG` / `NinjacordApp-Screenshot` / `Release`
 - 広告の表示可否は Configuration の `ADS_ENABLED` → Info.plist の `AdsEnabled` → `AdConfiguration.isEnabled` で切り替える
-- 依存は全て SPM（`NinjacordPackage/Package.swift` で宣言）: Firebase, Alamofire, Google Mobile Ads (AdMob), LicenseList
+- 依存は全て SPM（`NinjacordPackage/Package.swift` で宣言）: Firebase, Google Mobile Ads (AdMob), LicenseList。Discord への送信は `URLSession`（`DiscordWebhookClient`）で行う
 - SwiftLint 使用（CI で `brew install swiftlint`）
 
 ## ディレクトリ

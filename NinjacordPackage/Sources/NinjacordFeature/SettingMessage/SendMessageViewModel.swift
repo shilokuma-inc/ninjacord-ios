@@ -6,11 +6,11 @@
 //
 
 import Foundation
-import Alamofire
 
 struct SendMessageViewModel {
     private let analytics = FirebaseAnalytics()
     private let sendSuccessCounter = SendSuccessCounter()
+    private let client = DiscordWebhookClient()
 
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
     /// 失敗時は Discord のレスポンスから判定した原因を返す
@@ -24,36 +24,18 @@ struct SendMessageViewModel {
         attachment: ImageAttachment? = nil,
         countsAsSend: Bool = true
     ) async -> Result<Void, DiscordWebhookError> {
-        let baseUrlString = url
         let webhookRequest = DiscordWebhookRequest(messageEntity: messageEntity, attachment: attachment)
-
-        var request = URLRequest(url: (URL(string: baseUrlString) ?? URL(string: "https://www.apple.com/")!))
-        request.httpMethod = HTTPMethod.post.rawValue
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = webhookRequest.jsonBody
-        print(request)
-        // validate() を付けないと Discord が 4xx / 5xx を返しても success 扱いになるため、
-        // ステータスコードが 2xx 以外なら failure にする
-        let response = if let parts = webhookRequest.multipartParts {
-            await upload(to: request.url, parts: parts)
-        } else {
-            await AF.request(request).validate().serializingData().response
-        }
+        // URL にできないときは apple.com に送る（今の挙動のまま。#472）
+        let endpoint = URL(string: url) ?? URL(string: "https://www.apple.com/")!
+        let response = await client.send(webhookRequest, to: endpoint)
         analytics.sendMessageSendEvent(
-            isSuccess: response.error == nil,
-            httpStatus: response.response?.statusCode
+            isSuccess: (try? response.result.get()) != nil,
+            httpStatus: response.statusCode
         )
-        switch response.result {
-        case .success:
-            print("success")
-            if countsAsSend {
-                recordSendSuccess()
-            }
-            return .success(())
-        case .failure(let error):
-            print("error: \(error)")
-            return .failure(DiscordWebhookError(statusCode: response.response?.statusCode, data: response.data))
+        if case .success = response.result, countsAsSend {
+            recordSendSuccess()
         }
+        return response.result
     }
 }
 
@@ -86,24 +68,6 @@ extension SendMessageViewModel {
             recordSendSuccess()
         }
         return results
-    }
-
-    /// 画像を添付して送る。各パート（payload_json と files[0]）は DiscordWebhookRequest が組み立てる
-    private func upload(
-        to url: URL?,
-        parts: [DiscordWebhookRequest.MultipartPart]
-    ) async -> DataResponse<Data, AFError> {
-        await AF.upload(
-            multipartFormData: { form in
-                for part in parts {
-                    form.append(part.data, withName: part.name, fileName: part.fileName, mimeType: part.mimeType)
-                }
-            },
-            to: url ?? URL(string: "https://www.apple.com/")!
-        )
-        .validate()
-        .serializingData()
-        .response
     }
 
     private func recordSendSuccess() {
