@@ -8,39 +8,21 @@ import Foundation
 import Testing
 
 /// 送信画面の操作（`SendMessageViewModel.sendMessage` など）の今の挙動を固定する。
-/// View から移したあとも、入力チェックの順番・送信履歴の記録・トーストの文言・送信後の流れの呼び出しが変わらないことを確かめる
+/// View から移したあとも、入力チェックの順番・送信履歴の記録・トーストの文言・送信後の流れが変わらないことを確かめる
 @MainActor
 final class SendMessageViewModelTests {
-    private let suiteName = "SendMessageViewModelTests.\(UUID().uuidString)"
-    private let userDefaults: UserDefaults
-    private let historyStore: SendHistoryStore
-    private let viewModel: SendMessageViewModel
-    /// 送信後の流れ（View の handleSendSucceeded）が呼ばれた回数と、渡された「Pro 機能を使った送信か」
-    private var succeededCalls: [Bool] = []
+    private let fixture: SendMessageViewModelFixture
+    private var viewModel: SendMessageViewModel { fixture.viewModel }
+    private var historyStore: SendHistoryStore { fixture.historyStore }
+    private var recorder: SendSucceededRecorder { fixture.recorder }
 
     init() throws {
-        userDefaults = try #require(UserDefaults(suiteName: suiteName))
-        // 送信履歴の保存は既定で OFF なので、記録を確かめるために ON にする
-        userDefaults.set(true, forKey: SendHistoryStore.isEnabledKey)
-        historyStore = SendHistoryStore(userDefaults: userDefaults)
-        viewModel = SendMessageViewModel(
-            client: DiscordWebhookClient(session: StubURLProtocol.session),
-            historyStore: historyStore
-        )
+        fixture = try SendMessageViewModelFixture()
     }
 
-    deinit {
-        userDefaults.removePersistentDomain(forName: suiteName)
-    }
-
-    /// 送信ボタンを押したときと同じく sendMessage を呼び、送信を始めたら終わるまで待つ。始めたかどうかを返す
     @discardableResult
     private func send(isPro: Bool = false) async -> Bool {
-        let task = viewModel.sendMessage(isPro: isPro) { [weak self] usedProFeatures in
-            self?.succeededCalls.append(usedProFeatures)
-        }
-        await task?.value
-        return task != nil
+        await fixture.send(isPro: isPro)
     }
 
     /// その URL に最初に送ったリクエストの Content-Type
@@ -49,7 +31,7 @@ final class SendMessageViewModelTests {
     }
 
     private func savedURL(_ name: String, returning stub: StubURLProtocol.Stub) -> SavedWebhookURL {
-        SavedWebhookURL(id: UUID(), name: name, url: StubURLProtocol.makeURL(returning: stub).absoluteString)
+        fixture.savedURL(name, returning: stub)
     }
 
     private static let noContent = StubURLProtocol.Stub.response(statusCode: 204, data: Data())
@@ -183,7 +165,8 @@ final class SendMessageViewModelTests {
         #expect(entry.url == url.absoluteString)
         #expect(entry.message == viewModel.currentMessage)
         #expect(entry.isSuccess)
-        #expect(succeededCalls == [false])
+        // Pro 機能を使っていないので解放は消費せず、1 回目の送信なのでレビュー依頼も全画面広告も出さない
+        #expect(recorder.events == [.requestTracking])
         #expect(!viewModel.isSending)
         #expect(StubURLProtocol.requests(to: url).count == 1)
     }
@@ -195,7 +178,7 @@ final class SendMessageViewModelTests {
 
         await send(isPro: true)
 
-        #expect(succeededCalls == [true])
+        #expect(recorder.events == [.consumeRewardedUnlock, .requestTracking])
     }
 
     @Test("送信に失敗したら原因をトーストに出し、失敗として送信履歴に残し、送信後の流れは呼ばない")
@@ -212,7 +195,7 @@ final class SendMessageViewModelTests {
         let entry = try #require(historyStore.items.first)
         #expect(entry.url == url.absoluteString)
         #expect(!entry.isSuccess)
-        #expect(succeededCalls.isEmpty)
+        #expect(recorder.events.isEmpty)
     }
 
     @Test("送信中は二重に送らず、送信中に URL 欄を書き換えても送った先を履歴に残す")
@@ -221,9 +204,9 @@ final class SendMessageViewModelTests {
         viewModel.inputURL = url.absoluteString
         viewModel.inputContext = "こんにちは"
 
-        let task = viewModel.sendMessage(isPro: false) { _ in }
+        let task = viewModel.sendMessage(isPro: false, screenActions: fixture.screenActions)
         #expect(viewModel.isSending)
-        let secondTask = viewModel.sendMessage(isPro: false) { _ in }
+        let secondTask = viewModel.sendMessage(isPro: false, screenActions: fixture.screenActions)
         #expect(secondTask == nil)
         viewModel.inputURL = "https://discord.com/api/webhooks/2/changed"
         await task?.value
@@ -267,7 +250,7 @@ final class SendMessageViewModelTests {
         let historyResults = historyStore.items.map(\.isSuccess)
         #expect(historyResults == [true, true])
         // 一斉送信そのものが Pro 機能
-        #expect(succeededCalls == [true])
+        #expect(recorder.events == [.consumeRewardedUnlock, .requestTracking])
     }
 
     @Test("一斉送信でも、画像を添付していれば宛先ごとに multipart/form-data で送る")
@@ -301,7 +284,7 @@ final class SendMessageViewModelTests {
         #expect(toast.message.testString == "2件中1件の送信に失敗しました")
         let historyResults = historyStore.items.map(\.isSuccess)
         #expect(historyResults == [false, true])
-        #expect(succeededCalls == [true])
+        #expect(recorder.events == [.consumeRewardedUnlock, .requestTracking])
     }
 
     @Test("一斉送信がすべて失敗したら、送信後の流れは呼ばない")
@@ -319,6 +302,6 @@ final class SendMessageViewModelTests {
         #expect(toast.message.testString == "2件中2件の送信に失敗しました")
         let historyResults = historyStore.items.map(\.isSuccess)
         #expect(historyResults == [false, false])
-        #expect(succeededCalls.isEmpty)
+        #expect(recorder.events.isEmpty)
     }
 }
