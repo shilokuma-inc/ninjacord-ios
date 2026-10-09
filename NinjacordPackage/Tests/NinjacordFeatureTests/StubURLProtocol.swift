@@ -5,8 +5,8 @@
 
 import Foundation
 
-/// 通信せずに、決めておいたレスポンスかエラーを返す URLProtocol。受け取ったリクエストと本文を記録する。
-/// 状態を static に持つので、使うテストのスイートは `.serialized` にする
+/// 通信せずに、送信先の URL ごとに決めておいたレスポンスかエラーを返す URLProtocol。受け取ったリクエストと本文を URL ごとに記録する。
+/// テストごとに `makeURL(returning:)` で別の URL を作って使えば、並べて走るテストどうしで応答と記録が混ざらない
 final class StubURLProtocol: URLProtocol {
     enum Stub {
         case response(statusCode: Int, data: Data)
@@ -18,23 +18,30 @@ final class StubURLProtocol: URLProtocol {
         let body: Data?
     }
 
-    private static let lock = NSLock()
-    private static var stub = Stub.response(statusCode: 204, data: Data())
-    private static var receivedRequests: [ReceivedRequest] = []
-
     /// このプロトコルだけを通す URLSession
-    static func makeSession(returning stub: Stub) -> URLSession {
-        lock.withLock {
-            self.stub = stub
-            receivedRequests = []
-        }
+    static let session: URLSession = {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubURLProtocol.self]
         return URLSession(configuration: configuration)
+    }()
+
+    private static let lock = NSLock()
+    private static var stubs: [URL: Stub] = [:]
+    private static var receivedRequests: [URL: [ReceivedRequest]] = [:]
+
+    /// まだ使っていない Webhook URL を作り、その URL に送ったときの応答を決める
+    static func makeURL(returning stub: Stub) -> URL {
+        // swiftlint:disable:next force_unwrapping
+        let url = URL(string: "https://discord.com/api/webhooks/\(UUID().uuidString)/token")!
+        lock.withLock {
+            stubs[url] = stub
+        }
+        return url
     }
 
-    static var requests: [ReceivedRequest] {
-        lock.withLock { receivedRequests }
+    /// その URL に送られたリクエスト（送った順）
+    static func requests(to url: URL) -> [ReceivedRequest] {
+        lock.withLock { receivedRequests[url] ?? [] }
     }
 
     override static func canInit(with request: URLRequest) -> Bool {
@@ -46,22 +53,26 @@ final class StubURLProtocol: URLProtocol {
     }
 
     override func startLoading() {
+        guard let url = request.url else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badURL))
+            return
+        }
         // URLProtocol には httpBody ではなく httpBodyStream として渡ってくることがある
         let body = request.httpBody ?? request.httpBodyStream.map(Self.readAll)
         let stub = Self.lock.withLock {
-            Self.receivedRequests.append(ReceivedRequest(request: request, body: body))
-            return Self.stub
+            Self.receivedRequests[url, default: []].append(ReceivedRequest(request: request, body: body))
+            // 応答を決めていない URL（apple.com へのフォールバックなど）には、通信できなかったものとして返す
+            return Self.stubs[url] ?? .error(URLError(.cannotConnectToHost))
         }
         switch stub {
         case let .response(statusCode, data):
-            guard let url = request.url,
-                  let response = HTTPURLResponse(
-                    url: url,
-                    statusCode: statusCode,
-                    httpVersion: "HTTP/1.1",
-                    headerFields: ["Content-Type": "application/json"]
-                  ) else {
-                client?.urlProtocol(self, didFailWithError: URLError(.badURL))
+            guard let response = HTTPURLResponse(
+                url: url,
+                statusCode: statusCode,
+                httpVersion: "HTTP/1.1",
+                headerFields: ["Content-Type": "application/json"]
+            ) else {
+                client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
                 return
             }
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
