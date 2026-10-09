@@ -8,7 +8,7 @@ set -euo pipefail
 PROMISE="${1:-}"
 MAX="${2:-0}"
 # "00" が 0 判定をすり抜けたり、"abc" が Stop hook に弾かれる state を書くのを防ぐ
-[[ "$MAX" =~ ^[0-9]+$ ]] || { echo "max_iterations は 0 以上の整数で指定してください（指定: $MAX）" >&2; exit 1; }
+[[ "$MAX" =~ ^[0-9]+$ ]] || { echo "max_iterations は 0 以上の整数で指定してください（指定: ${MAX}）" >&2; exit 1; }
 MAX=$((10#$MAX))
 STATE=".claude/ralph-loop.local.md"
 GOAL=".claude/ralph-goal.local.md"
