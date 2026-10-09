@@ -192,6 +192,30 @@ struct DiscordWebhookRequestTests {
         ))
     }
 
+    @Test("添付する画像が無ければ multipart の本文を作らない")
+    func noMultipartBodyWithoutAttachment() {
+        #expect(request(.make(content: "本文")).multipartBody(boundary: "BOUNDARY") == nil)
+    }
+
+    @Test("multipart の本文は Alamofire の MultipartFormData と同じ書式で、payload_json と files[0] を並べる")
+    func multipartBody() throws {
+        let attachment = ImageAttachment(
+            data: Data([0x89, 0x50, 0x4E, 0x47]),
+            fileName: "image.png",
+            mimeType: "image/png"
+        )
+        let webhookRequest = request(.make(content: "スクリーンショット"), attachment: attachment)
+        let body = try #require(webhookRequest.multipartBody(boundary: "BOUNDARY"))
+
+        let parts = try #require(
+            MultipartFormDataParser.parse(body, boundary: "BOUNDARY", fileName: "image.png", mimeType: "image/png")
+        )
+        let payload = try #require(try JSONSerialization.jsonObject(with: parts.payloadJSON) as? NSDictionary)
+        #expect(payload == webhookRequest.parameters.dictionary)
+        #expect(!parts.payloadJSON.contains(UInt8(ascii: "\n")))
+        #expect(parts.file == attachment.data)
+    }
+
     /// 埋め込みだけを送るメッセージを組み立て、embeds の 1 件目を返す。embeds が無ければ nil
     private func embedParameters(of embed: MessageEmbedEntity) -> NSDictionary? {
         let embeds = request(.make(content: "本文", embed: embed)).parameters["embeds"] as? [[String: Any]]
