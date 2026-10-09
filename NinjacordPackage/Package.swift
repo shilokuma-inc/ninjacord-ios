@@ -40,6 +40,11 @@ let package = Package(
                 ),
                 .product(name: "LicenseList", package: "LicenseList")
             ]
+        ),
+        // NinjacordApp の scheme の TestAction から実行する（CI の Build ワークフローでも流す）
+        .testTarget(
+            name: "NinjacordFeatureTests",
+            dependencies: ["NinjacordFeature"]
         )
     ]
 )
