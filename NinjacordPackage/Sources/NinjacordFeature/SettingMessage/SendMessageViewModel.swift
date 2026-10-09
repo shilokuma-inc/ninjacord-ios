@@ -176,7 +176,7 @@ extension SendMessageViewModel {
 // MARK: - 入力バリデーション
 
 /// 送信前の入力チェックで検出したエラー。アラートのタイトル・本文として表示する
-enum SendMessageValidationError: LocalizedError {
+enum SendMessageValidationError: LocalizedError, Equatable {
     /// 送信先 URL が未入力
     case emptyURL
     /// 送信先 URL が URL の形式になっていない
