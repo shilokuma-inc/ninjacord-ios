@@ -34,7 +34,7 @@ struct SendMessageView: View {
     @ObservedObject private var adConsent = AdConsentManager.shared
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @StateObject private var historyStore = SendHistoryStore()
-    private var viewModel = SendMessageViewModel()
+    @StateObject private var viewModel = SendMessageViewModel()
 
     /// 何回目の送信成功でレビューを依頼するか
     private static let reviewRequestSendCount = 3

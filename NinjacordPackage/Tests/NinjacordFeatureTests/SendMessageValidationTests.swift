@@ -9,8 +9,10 @@ import Testing
 
 /// 送信前の入力チェック（`SendMessageViewModel.validate`）の今の結果を固定する。
 /// 送信まわりのリファクタ（Discussion #459）で、チェックの内容と順番が変わらないことを確かめる
+@MainActor
 struct SendMessageValidationTests {
-    private static let webhookURL = "https://discord.com/api/webhooks/123/abc"
+    // 既定引数から参照するので、MainActor に縛らない
+    private nonisolated static let webhookURL = "https://discord.com/api/webhooks/123/abc"
 
     private let viewModel = SendMessageViewModel()
 

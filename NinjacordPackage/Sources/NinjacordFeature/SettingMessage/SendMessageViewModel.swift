@@ -7,7 +7,9 @@
 
 import Foundation
 
-struct SendMessageViewModel {
+/// 送信画面の状態と操作。Discord への通信は DiscordWebhookClient に任せる
+@MainActor
+final class SendMessageViewModel: ObservableObject {
     private let analytics = FirebaseAnalytics()
     private let sendSuccessCounter = SendSuccessCounter()
     private let client = DiscordWebhookClient()
