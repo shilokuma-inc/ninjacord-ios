@@ -6,11 +6,59 @@
 //
 
 import Foundation
+import SwiftUI
 
-struct SendMessageViewModel {
+/// 送信画面の状態と操作。Discord への通信は DiscordWebhookClient、送信履歴の保存は SendHistoryStore に任せる
+@MainActor
+final class SendMessageViewModel: ObservableObject {
+    @Published var inputURL = ""
+    @Published var inputUsername = ""
+    @Published var inputAvatarURL = ""
+    @Published var inputContext = ""
+
+    /// 埋め込み。タイトルは送信画面で、それ以外の項目は embed エディタで入力する
+    @Published var inputEmbed = MessageEmbedEntity()
+
+    @Published private(set) var validationError: SendMessageValidationError?
+    @Published var isValidationAlertPresented: Bool = false
+    /// 添付する画像（1 枚）。テンプレート・送信履歴には保存しない
+    @Published var attachment: ImageAttachment?
+    /// 一斉送信（Pro 限定）の宛先。空なら URL 欄の宛先に送る
+    @Published var broadcastTargets: [SavedWebhookURL] = []
+    /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
+    @Published private(set) var isSending = false
+    /// 送信結果を知らせるトースト
+    @Published var toast: Toast?
+
     private let analytics = FirebaseAnalytics()
     private let sendSuccessCounter = SendSuccessCounter()
-    private let client = DiscordWebhookClient()
+    private let client: DiscordWebhookClient
+    private let historyStore: SendHistoryStore
+
+    convenience init() {
+        self.init(client: DiscordWebhookClient(), historyStore: SendHistoryStore())
+    }
+
+    /// - Parameters:
+    ///   - client: Discord への通信。テストでは URLProtocol のスタブを入れたものを渡す
+    ///   - historyStore: 送信履歴の保存先
+    init(client: DiscordWebhookClient, historyStore: SendHistoryStore) {
+        self.client = client
+        self.historyStore = historyStore
+
+        // App Store 用スクリーンショットの撮影モードでは、デモの内容を入力しておく
+        guard ScreenshotDemo.isEnabled else { return }
+        let content = ScreenshotDemo.content
+        inputURL = content.url
+        inputUsername = content.message.username
+        inputAvatarURL = content.message.avatarURL
+        inputContext = content.message.content
+        inputEmbed = content.message.messageEmbedEntity
+        attachment = ScreenshotDemo.attachment
+        if ScreenshotDemo.scene == .broadcast {
+            broadcastTargets = ScreenshotDemo.broadcastTargets
+        }
+    }
 
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
     /// 失敗時は Discord のレスポンスから判定した原因を返す
@@ -73,6 +121,117 @@ extension SendMessageViewModel {
     private func recordSendSuccess() {
         if sendSuccessCounter.increment() == 1 {
             analytics.sendFirstSendCompletedEvent()
+        }
+    }
+}
+
+// MARK: - 送信画面の操作
+
+extension SendMessageViewModel {
+    /// 入力欄の内容から組み立てた、送信・テンプレート保存用のメッセージ
+    var currentMessage: MessageEntity {
+        MessageEntity(
+            username: inputUsername,
+            avatarURL: inputAvatarURL,
+            content: inputContext,
+            messageEmbedEntity: inputEmbed
+        )
+    }
+
+    /// テンプレートの中身を入力欄に反映する。宛先（URL）はそのまま残す
+    func applyTemplate(_ template: MessageTemplate) {
+        inputUsername = template.message.username
+        inputAvatarURL = template.message.avatarURL
+        inputContext = template.message.content
+        inputEmbed = template.message.messageEmbedEntity
+    }
+
+    /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する
+    /// - Parameters:
+    ///   - isPro: Pro 購読中か。Pro 限定の項目・一斉送信を使えるかの判定に使う
+    ///   - onSucceeded: 送信に成功したあとの流れ（レビュー依頼・広告など、View の環境を使うもの）。
+    ///     Pro 機能を使った送信かを受け取る
+    /// - Returns: 送信を始めたときは、その Task（テストで送信が終わるのを待つため）。始めなかったときは nil
+    @discardableResult
+    func sendMessage(
+        isPro: Bool,
+        onSucceeded: @escaping @MainActor (_ usedProFeatures: Bool) async -> Void
+    ) -> Task<Void, Never>? {
+        guard !isSending else { return nil }
+
+        let messageEntity = currentMessage
+
+        if !broadcastTargets.isEmpty {
+            return sendBroadcast(messageEntity, isPro: isPro, onSucceeded: onSucceeded)
+        }
+
+        if let error = validate(
+            url: inputURL,
+            messageEntity: messageEntity,
+            canUseProFeatures: ProFeatureAccess.canUse(isPro: isPro)
+        ) {
+            validationError = error
+            isValidationAlertPresented = true
+            return nil
+        }
+
+        isSending = true
+        // 送信中に URL 欄が書き換えられても、実際に送った先を履歴に残す
+        let url = inputURL
+        return Task {
+            let result = await postDiscordWebhook(
+                url: url,
+                messageEntity: messageEntity,
+                attachment: attachment
+            )
+            isSending = false
+            // 設定で「送信履歴を保存する」が ON のときだけ記録される
+            historyStore.record(url: url, message: messageEntity, isSuccess: (try? result.get()) != nil)
+            switch result {
+            case .success:
+                toast = Toast(style: .success, message: "送信しました")
+                await onSucceeded(messageEntity.messageEmbedEntity.usesProFeatures)
+            case .failure(let error):
+                toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
+            }
+        }
+    }
+
+    /// 選んだ宛先に一斉送信する（Pro 限定）
+    private func sendBroadcast(
+        _ messageEntity: MessageEntity,
+        isPro: Bool,
+        onSucceeded: @escaping @MainActor (_ usedProFeatures: Bool) async -> Void
+    ) -> Task<Void, Never>? {
+        let urls = broadcastTargets.map(\.url)
+        // 宛先を選んだあとに Pro でなくなった場合は送らない
+        let error: SendMessageValidationError? = ProFeatureAccess.canUse(isPro: isPro)
+            ? validate(url: urls[0], messageEntity: messageEntity, canUseProFeatures: true)
+            : .proBroadcast
+        if let error {
+            validationError = error
+            isValidationAlertPresented = true
+            return nil
+        }
+
+        isSending = true
+        return Task {
+            let results = await broadcast(to: urls, messageEntity: messageEntity, attachment: attachment)
+            isSending = false
+            let failureCount = results.filter { (try? $0.result.get()) == nil }.count
+            for result in results {
+                let isSuccess = (try? result.result.get()) != nil
+                historyStore.record(url: result.url, message: messageEntity, isSuccess: isSuccess)
+            }
+            if failureCount == 0 {
+                toast = Toast(style: .success, message: "\(results.count)件の宛先に送信しました")
+            } else {
+                toast = Toast(style: .failure, message: "\(results.count)件中\(failureCount)件の送信に失敗しました")
+            }
+            if failureCount < results.count {
+                // 一斉送信そのものが Pro 機能
+                await onSucceeded(true)
+            }
         }
     }
 }

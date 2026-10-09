@@ -14,3 +14,7 @@
 - LicenseList のビルドツールプラグイン（`PrepareLicenseList`）は、既定では DerivedData の中の `SourcePackages` を探す。`-clonedSourcePackagesDirPath` で依存の置き場所を DerivedData の外にするときは、`xcodebuild` に環境変数 `PLL_SOURCE_PACKAGES_PATH` でその絶対パスを渡す。渡さないと `SourcePackages not found` でビルドが落ちる。依存を DerivedData ごとに取り直しても避けられる（Issue #460）。
 - 依存を外したあとに `xcodebuild -resolvePackageDependencies` が解決し直すと、`Package.resolved` を v2（`originHash` なし）で書き直すことがある（Xcode 26.6）。`Package.swift` から直接の依存を外したときは、そのピンだけを手で消した v3 のファイルにしておけば、解決し直しても書き換えられない。消したあとのピンが Xcode の解決結果と同じかは、v2 で書かせたファイルとピンを比べて確かめる（Issue #471）。
 - LicenseList の一覧は `SourcePackages/workspace-state.json` に載っているパッケージから作るので、依存を外しても、前から使っている DerivedData では外した依存が一覧に残ることがある。一覧から消えたかは、新しい DerivedData で依存を取り直して確かめる（CI は `Package.resolved` が変わるとキャッシュのキーが変わり、取り直すので消える）（Issue #471）。
+
+## Simulator での確認
+
+- Debug ビルドの広告（AdMob のテスト広告）は、起動のたびに出る中身も高さも変わる。撮影モードで変更前と変更後のスクリーンショットを見比べるときは、広告の位置と、広告の高さが変わったぶんずれる部分（テンプレート一覧のネイティブ広告の下など）は差とみなさない。広告を写さずに比べたいなら `NinjacordApp-Screenshot` の scheme でビルドする（Issue #476）。
