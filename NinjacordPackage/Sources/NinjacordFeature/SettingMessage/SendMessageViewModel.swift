@@ -8,7 +8,8 @@
 import Foundation
 import SwiftUI
 
-/// 送信画面の状態と操作。Discord への通信は DiscordWebhookClient、送信履歴の保存は SendHistoryStore に任せる
+/// 送信画面の状態と操作。Discord への通信は DiscordWebhookClient、送信履歴の保存は SendHistoryStore に任せる。
+/// 送信に成功したあとの流れ（リワード解放の消費・ATT・レビュー依頼・全画面広告）もここで行う
 @MainActor
 final class SendMessageViewModel: ObservableObject {
     @Published var inputURL = ""
@@ -30,21 +31,61 @@ final class SendMessageViewModel: ObservableObject {
     /// 送信結果を知らせるトースト
     @Published var toast: Toast?
 
-    private let analytics = FirebaseAnalytics()
-    private let sendSuccessCounter = SendSuccessCounter()
     private let client: DiscordWebhookClient
     private let historyStore: SendHistoryStore
+    private let analytics: SendMessageAnalytics
+    private let sendSuccessCounter: SendSuccessCounter
+    private let rewardedUnlock: RewardedUnlockConsuming
+    private let interstitialAd: InterstitialAdPresenting
+    /// まだ ATT の許可を尋ねていなければ尋ね、尋ねたかを返す
+    private let requestTrackingAuthorization: @MainActor () async -> Bool
+    /// 指定した時間だけ待つ。テストでは待たずに、待った時間を記録する
+    private let sleep: @MainActor (Duration) async -> Void
+
+    /// 何回目の送信成功でレビューを依頼するか
+    private static let reviewRequestSendCount = 3
 
     convenience init() {
-        self.init(client: DiscordWebhookClient(), historyStore: SendHistoryStore())
+        self.init(
+            client: DiscordWebhookClient(),
+            historyStore: SendHistoryStore(),
+            analytics: FirebaseAnalytics(),
+            sendSuccessCounter: SendSuccessCounter(),
+            rewardedUnlock: RewardedUnlockState.shared,
+            interstitialAd: InterstitialAdManager.shared,
+            requestTrackingAuthorization: { await TrackingAuthorization.requestIfNeeded() },
+            sleep: { duration in try? await Task.sleep(for: duration) }
+        )
     }
 
+    /// 引数なしの `init()` は今までと同じ実体（`.shared` など）を使う。テストではそれぞれ差し替えたものを渡す
     /// - Parameters:
-    ///   - client: Discord への通信。テストでは URLProtocol のスタブを入れたものを渡す
+    ///   - client: Discord への通信
     ///   - historyStore: 送信履歴の保存先
-    init(client: DiscordWebhookClient, historyStore: SendHistoryStore) {
+    ///   - analytics: 送信の Analytics
+    ///   - sendSuccessCounter: 送信成功回数（初回送信の計測・レビュー依頼・全画面広告の判定に使う）
+    ///   - rewardedUnlock: リワード広告の一時解放
+    ///   - interstitialAd: 送信のあとに出す全画面広告
+    ///   - requestTrackingAuthorization: ATT の許可を尋ねる（尋ねたかを返す）
+    ///   - sleep: 全画面広告の前にトーストを見せるための待ち
+    init(
+        client: DiscordWebhookClient,
+        historyStore: SendHistoryStore,
+        analytics: SendMessageAnalytics,
+        sendSuccessCounter: SendSuccessCounter,
+        rewardedUnlock: RewardedUnlockConsuming,
+        interstitialAd: InterstitialAdPresenting,
+        requestTrackingAuthorization: @escaping @MainActor () async -> Bool,
+        sleep: @escaping @MainActor (Duration) async -> Void
+    ) {
         self.client = client
         self.historyStore = historyStore
+        self.analytics = analytics
+        self.sendSuccessCounter = sendSuccessCounter
+        self.rewardedUnlock = rewardedUnlock
+        self.interstitialAd = interstitialAd
+        self.requestTrackingAuthorization = requestTrackingAuthorization
+        self.sleep = sleep
 
         // App Store 用スクリーンショットの撮影モードでは、デモの内容を入力しておく
         guard ScreenshotDemo.isEnabled else { return }
@@ -149,20 +190,16 @@ extension SendMessageViewModel {
     /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する
     /// - Parameters:
     ///   - isPro: Pro 購読中か。Pro 限定の項目・一斉送信を使えるかの判定に使う
-    ///   - onSucceeded: 送信に成功したあとの流れ（レビュー依頼・広告など、View の環境を使うもの）。
-    ///     Pro 機能を使った送信かを受け取る
+    ///   - screenActions: 送信に成功したあとの流れで使う、View の環境から来るもの（レビュー依頼・全画面広告の表示元）
     /// - Returns: 送信を始めたときは、その Task（テストで送信が終わるのを待つため）。始めなかったときは nil
     @discardableResult
-    func sendMessage(
-        isPro: Bool,
-        onSucceeded: @escaping @MainActor (_ usedProFeatures: Bool) async -> Void
-    ) -> Task<Void, Never>? {
+    func sendMessage(isPro: Bool, screenActions: SendMessageScreenActions) -> Task<Void, Never>? {
         guard !isSending else { return nil }
 
         let messageEntity = currentMessage
 
         if !broadcastTargets.isEmpty {
-            return sendBroadcast(messageEntity, isPro: isPro, onSucceeded: onSucceeded)
+            return sendBroadcast(messageEntity, isPro: isPro, screenActions: screenActions)
         }
 
         if let error = validate(
@@ -190,7 +227,10 @@ extension SendMessageViewModel {
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
-                await onSucceeded(messageEntity.messageEmbedEntity.usesProFeatures)
+                await handleSendSucceeded(
+                    usedProFeatures: messageEntity.messageEmbedEntity.usesProFeatures,
+                    screenActions: screenActions
+                )
             case .failure(let error):
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
             }
@@ -201,7 +241,7 @@ extension SendMessageViewModel {
     private func sendBroadcast(
         _ messageEntity: MessageEntity,
         isPro: Bool,
-        onSucceeded: @escaping @MainActor (_ usedProFeatures: Bool) async -> Void
+        screenActions: SendMessageScreenActions
     ) -> Task<Void, Never>? {
         let urls = broadcastTargets.map(\.url)
         // 宛先を選んだあとに Pro でなくなった場合は送らない
@@ -230,8 +270,31 @@ extension SendMessageViewModel {
             }
             if failureCount < results.count {
                 // 一斉送信そのものが Pro 機能
-                await onSucceeded(true)
+                await handleSendSucceeded(usedProFeatures: true, screenActions: screenActions)
             }
+        }
+    }
+
+    /// 送信に成功したあとのリワード広告の解放の消費・ATT の許可・レビュー依頼・インタースティシャル広告
+    /// - Parameter usedProFeatures: 埋め込みの Pro 限定の項目や一斉送信など、Pro 機能を使った送信か
+    private func handleSendSucceeded(usedProFeatures: Bool, screenActions: SendMessageScreenActions) async {
+        // リワード広告の一時解放は、Pro 機能を使った 1 回の送信で使い切る（Discussion #386・判断ログ #389）。
+        // 一斉送信は宛先の数ではなく 1 回の操作で 1 回と数え、1 件でも成功していれば使い切る
+        if usedProFeatures {
+            rewardedUnlock.consumeIfUnlocked()
+        }
+        let didRequestTracking = await requestTrackingAuthorization()
+        // 成功回数は postDiscordWebhook / broadcast で記録済み。ちょうど 3 回目の送信のときだけ依頼する
+        let sendSuccessCount = sendSuccessCounter.count
+        if sendSuccessCount == Self.reviewRequestSendCount {
+            screenActions.requestReview()
+        }
+        // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す。
+        // ATT のダイアログに続けて出すと体験を損なうため、ATT を尋ねた送信でも出さない
+        if !didRequestTracking && sendSuccessCount > Self.reviewRequestSendCount {
+            // 成功のトーストを見てもらってから表示する
+            await sleep(.seconds(1))
+            interstitialAd.showIfAllowed(from: screenActions.rootViewController())
         }
     }
 }
