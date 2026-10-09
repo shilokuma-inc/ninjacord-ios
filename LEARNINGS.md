@@ -11,4 +11,4 @@
 ## ビルド・依存（Swift Package Manager）
 
 - firebase-ios-sdk のプロダクト（`FirebaseFirestore` など）を `Package.swift` から外しても、`Package.resolved` は変わらない。SwiftPM は使うプロダクトに関係なく firebase-ios-sdk が宣言しているパッケージ依存（abseil・gRPC・leveldb・app-check など）をすべてピンするため。ピンを手で消しても `xcodebuild -resolvePackageDependencies` が同じバージョンで戻し、書式を v2（`originHash` なし）に書き換えてしまうので、手で消さない。外したプロダクトがアプリに入らなくなったことは、ビルドした `.app` の `Frameworks/` とリソースバンドルで確かめる（Issue #466）。
-- LicenseList のビルドツールプラグイン（`PrepareLicenseList`）は、DerivedData の中の `SourcePackages` を前提にしている。`-clonedSourcePackagesDirPath` で依存の置き場所を DerivedData の外にすると `SourcePackages not found` でビルドが落ちる。DerivedData を分けて試すときは、依存も DerivedData ごとに取り直す（Issue #460）。
+- LicenseList のビルドツールプラグイン（`PrepareLicenseList`）は、既定では DerivedData の中の `SourcePackages` を探す。`-clonedSourcePackagesDirPath` で依存の置き場所を DerivedData の外にするときは、`xcodebuild` に環境変数 `PLL_SOURCE_PACKAGES_PATH` でその絶対パスを渡す。渡さないと `SourcePackages not found` でビルドが落ちる。依存を DerivedData ごとに取り直しても避けられる（Issue #460）。
