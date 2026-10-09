@@ -43,12 +43,22 @@ final class SendMessageViewModelTests {
         return task != nil
     }
 
+    /// その URL に最初に送ったリクエストの Content-Type
+    private func contentType(of url: URL) -> String? {
+        StubURLProtocol.requests(to: url).first?.request.value(forHTTPHeaderField: "Content-Type")
+    }
+
     private func savedURL(_ name: String, returning stub: StubURLProtocol.Stub) -> SavedWebhookURL {
         SavedWebhookURL(id: UUID(), name: name, url: StubURLProtocol.makeURL(returning: stub).absoluteString)
     }
 
     private static let noContent = StubURLProtocol.Stub.response(statusCode: 204, data: Data())
     private static let notFound = StubURLProtocol.Stub.response(statusCode: 404, data: Data())
+    private static let attachment = ImageAttachment(
+        data: Data([0x89, 0x50, 0x4E, 0x47]),
+        fileName: "image.png",
+        mimeType: "image/png"
+    )
 
     // MARK: - 入力欄
 
@@ -127,7 +137,10 @@ final class SendMessageViewModelTests {
 
     @Test("Pro でなければ、一斉送信は宛先や中身より先に proBroadcast で止める")
     func broadcastWithoutPro() async {
-        viewModel.broadcastTargets = [savedURL("作戦室", returning: Self.noContent)]
+        // 宛先の URL が壊れていて、中身も空でも、先に Pro かどうかで止める
+        viewModel.broadcastTargets = [
+            SavedWebhookURL(id: UUID(), name: "壊れた URL", url: "discord.com/api/webhooks/1/token")
+        ]
 
         #expect(await send(isPro: false) == false)
         #expect(viewModel.validationError == .proBroadcast)
@@ -221,6 +234,19 @@ final class SendMessageViewModelTests {
         #expect(historyURLs == [url.absoluteString])
     }
 
+    @Test("画像を添付していれば、multipart/form-data で送る")
+    func sendWithAttachment() async throws {
+        let url = StubURLProtocol.makeURL(returning: Self.noContent)
+        viewModel.inputURL = url.absoluteString
+        viewModel.inputContext = "スクリーンショット"
+        viewModel.attachment = Self.attachment
+
+        await send()
+
+        let header = try #require(contentType(of: url))
+        #expect(header.hasPrefix("multipart/form-data; boundary="))
+    }
+
     // MARK: - 一斉送信
 
     @Test("一斉送信がすべて届いたら「N件の宛先に送信しました」を出し、宛先ごとに履歴に残す")
@@ -242,6 +268,23 @@ final class SendMessageViewModelTests {
         #expect(historyResults == [true, true])
         // 一斉送信そのものが Pro 機能
         #expect(succeededCalls == [true])
+    }
+
+    @Test("一斉送信でも、画像を添付していれば宛先ごとに multipart/form-data で送る")
+    func broadcastWithAttachment() async throws {
+        let first = savedURL("作戦室", returning: Self.noContent)
+        let second = savedURL("雑談", returning: Self.noContent)
+        viewModel.broadcastTargets = [first, second]
+        viewModel.inputContext = "スクリーンショット"
+        viewModel.attachment = Self.attachment
+
+        await send(isPro: true)
+
+        for target in [first, second] {
+            let url = try #require(URL(string: target.url))
+            let header = try #require(contentType(of: url))
+            #expect(header.hasPrefix("multipart/form-data; boundary="))
+        }
     }
 
     @Test("一斉送信の一部が失敗したら「N件中M件の送信に失敗しました」を出し、1 件でも届けば送信後の流れを呼ぶ")

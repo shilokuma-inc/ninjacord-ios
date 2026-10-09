@@ -31,7 +31,6 @@ final class StubURLProtocol: URLProtocol {
 
     /// まだ使っていない Webhook URL を作り、その URL に送ったときの応答を決める
     static func makeURL(returning stub: Stub) -> URL {
-        // swiftlint:disable:next force_unwrapping
         let url = URL(string: "https://discord.com/api/webhooks/\(UUID().uuidString)/token")!
         lock.withLock {
             stubs[url] = stub
