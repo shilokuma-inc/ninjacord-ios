@@ -25,26 +25,17 @@ struct SendMessageViewModel {
         countsAsSend: Bool = true
     ) async -> Result<Void, DiscordWebhookError> {
         let baseUrlString = url
-        let param: Parameters = {
-            makeParameter(messageEntity: messageEntity)
-        }()
+        let webhookRequest = DiscordWebhookRequest(messageEntity: messageEntity, attachment: attachment)
 
         var request = URLRequest(url: (URL(string: baseUrlString) ?? URL(string: "https://www.apple.com/")!))
         request.httpMethod = HTTPMethod.post.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = NSString(
-            // swiftlint:disable:next force_try
-            data: try! JSONSerialization.data(withJSONObject: param as Any,
-                                              options: JSONSerialization.WritingOptions.prettyPrinted
-                                             ),
-            encoding: String.Encoding.utf8.rawValue
-        )!
-            .data(using: String.Encoding.utf8.rawValue)
+        request.httpBody = webhookRequest.jsonBody
         print(request)
         // validate() を付けないと Discord が 4xx / 5xx を返しても success 扱いになるため、
         // ステータスコードが 2xx 以外なら failure にする
-        let response = if let attachment {
-            await upload(to: request.url, parameter: param, attachment: attachment)
+        let response = if let parts = webhookRequest.multipartParts {
+            await upload(to: request.url, parts: parts)
         } else {
             await AF.request(request).validate().serializingData().response
         }
@@ -97,23 +88,16 @@ extension SendMessageViewModel {
         return results
     }
 
-    /// 画像を添付して送る。メッセージは payload_json、画像は files[0] として multipart/form-data で送る
-    /// https://discord.com/developers/docs/reference#uploading-files
+    /// 画像を添付して送る。各パート（payload_json と files[0]）は DiscordWebhookRequest が組み立てる
     private func upload(
         to url: URL?,
-        parameter: Parameters,
-        attachment: ImageAttachment
+        parts: [DiscordWebhookRequest.MultipartPart]
     ) async -> DataResponse<Data, AFError> {
-        let payload = (try? JSONSerialization.data(withJSONObject: parameter)) ?? Data()
-        return await AF.upload(
+        await AF.upload(
             multipartFormData: { form in
-                form.append(payload, withName: "payload_json", mimeType: "application/json")
-                form.append(
-                    attachment.data,
-                    withName: "files[0]",
-                    fileName: attachment.fileName,
-                    mimeType: attachment.mimeType
-                )
+                for part in parts {
+                    form.append(part.data, withName: part.name, fileName: part.fileName, mimeType: part.mimeType)
+                }
             },
             to: url ?? URL(string: "https://www.apple.com/")!
         )
@@ -126,50 +110,6 @@ extension SendMessageViewModel {
         if sendSuccessCounter.increment() == 1 {
             analytics.sendFirstSendCompletedEvent()
         }
-    }
-
-    private func makeParameter(messageEntity: MessageEntity) -> Parameters {
-        var param: Parameters = [
-            "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
-            "avatar_url": messageEntity.avatarURL,
-            "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
-        ]
-        if messageEntity.messageEmbedEntity.hasContent {
-            param["embeds"] = [makeEmbedParameter(messageEntity.messageEmbedEntity)]
-        }
-        return param
-    }
-
-    /// Discord の embed オブジェクトを組み立てる。空の項目は送らない
-    /// https://discord.com/developers/docs/resources/message#embed-object
-    private func makeEmbedParameter(_ embed: MessageEmbedEntity, sentAt: Date = Date()) -> [String: Any] {
-        var param: [String: Any] = [:]
-        if !embed.title.isEmpty {
-            param["title"] = embed.title
-        }
-        if !embed.description.isEmpty {
-            param["description"] = embed.description
-        }
-        if let color = embed.color {
-            param["color"] = color
-        }
-        let fields = embed.sendableFields
-        if !fields.isEmpty {
-            param["fields"] = fields.map { ["name": $0.name, "value": $0.value, "inline": $0.isInline] }
-        }
-        if !embed.footerText.isEmpty {
-            param["footer"] = ["text": embed.footerText]
-        }
-        if !embed.imageURL.isEmpty {
-            param["image"] = ["url": embed.imageURL]
-        }
-        if !embed.thumbnailURL.isEmpty {
-            param["thumbnail"] = ["url": embed.thumbnailURL]
-        }
-        if embed.includesTimestamp {
-            param["timestamp"] = ISO8601DateFormatter().string(from: sentAt)
-        }
-        return param
     }
 }
 
