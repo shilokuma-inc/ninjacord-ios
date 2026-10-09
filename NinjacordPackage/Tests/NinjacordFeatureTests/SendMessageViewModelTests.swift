@@ -30,7 +30,7 @@ final class SendMessageViewModelTests {
     }
 
     deinit {
-        UserDefaults.standard.removePersistentDomain(forName: suiteName)
+        userDefaults.removePersistentDomain(forName: suiteName)
     }
 
     /// 送信ボタンを押したときと同じく sendMessage を呼び、送信を始めたら終わるまで待つ。始めたかどうかを返す
