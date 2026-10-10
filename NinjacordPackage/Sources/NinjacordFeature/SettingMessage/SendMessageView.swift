@@ -10,51 +10,15 @@ import StoreKit
 
 struct SendMessageView: View {
 
-    @State var inputURL = ""
-    @State var inputUsername = ""
-    @State var inputAvatarURL = ""
-    @State var inputContext = ""
-
-    /// 埋め込み。タイトルは送信画面で、それ以外の項目は embed エディタで入力する
-    @State var inputEmbed = MessageEmbedEntity()
-
     @State private var isEditing: Bool = false
-    @State private var validationError: SendMessageValidationError?
-    @State private var isValidationAlertPresented: Bool = false
-    /// 添付する画像（1 枚）。テンプレート・送信履歴には保存しない
-    @State private var attachment: ImageAttachment?
-    /// 一斉送信（Pro 限定）の宛先。空なら URL 欄の宛先に送る
-    @State private var broadcastTargets: [SavedWebhookURL] = []
-    /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
-    @State private var isSending = false
-    /// 送信結果を知らせるトースト
-    @State private var toast: Toast?
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
     @EnvironmentObject private var purchaseManager: PurchaseManager
-    @StateObject private var historyStore = SendHistoryStore()
-    private var viewModel = SendMessageViewModel()
-
-    /// 何回目の送信成功でレビューを依頼するか
-    private static let reviewRequestSendCount = 3
+    @StateObject private var viewModel = SendMessageViewModel()
 
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
-
-    init() {
-        guard ScreenshotDemo.isEnabled else { return }
-        let content = ScreenshotDemo.content
-        _inputURL = State(initialValue: content.url)
-        _inputUsername = State(initialValue: content.message.username)
-        _inputAvatarURL = State(initialValue: content.message.avatarURL)
-        _inputContext = State(initialValue: content.message.content)
-        _inputEmbed = State(initialValue: content.message.messageEmbedEntity)
-        _attachment = State(initialValue: ScreenshotDemo.attachment)
-        if ScreenshotDemo.scene == .broadcast {
-            _broadcastTargets = State(initialValue: ScreenshotDemo.broadcastTargets)
-        }
-    }
 
     var body: some View {
         ZStack {
@@ -72,20 +36,20 @@ struct SendMessageView: View {
                 VStack(spacing: 8.0) {
                     Spacer()
 
-                    if broadcastTargets.isEmpty {
+                    if viewModel.broadcastTargets.isEmpty {
                         HStack {
                             ClearableIconTextField(
                                 icon: Image(systemName: "link.icloud.fill"),
                                 placeholder: "URLを入れてください",
-                                text: $inputURL
+                                text: $viewModel.inputURL
                             )
                             .onTapGesture {
                                 self.isEditing = true
                             }
 
-                            WebhookURLHelpButton(url: $inputURL)
+                            WebhookURLHelpButton(url: $viewModel.inputURL)
 
-                            SavedWebhookURLButton(url: $inputURL)
+                            SavedWebhookURLButton(url: $viewModel.inputURL)
                         }
                     } else {
                         broadcastTargetsRow
@@ -93,24 +57,24 @@ struct SendMessageView: View {
 
                     // 宛先を選ぶボタンなので、宛先（URL）の直下に置く
                     HStack {
-                        BroadcastButton(targets: $broadcastTargets)
+                        BroadcastButton(targets: $viewModel.broadcastTargets)
                         Spacer()
-                        ImageAttachmentButton(attachment: $attachment) {
-                            toast = Toast(style: .failure, message: "画像を添付できませんでした。10MBまでの画像を選んでください")
+                        ImageAttachmentButton(attachment: $viewModel.attachment) {
+                            viewModel.toast = Toast(style: .failure, message: "画像を添付できませんでした。10MBまでの画像を選んでください")
                         }
                     }
                     .padding(.leading, 44.0)
 
                     // 宛先（URL）ではなく中身の入力欄の上に置く
-                    MessageTemplateButtons(message: currentMessage, onApply: applyTemplate) {
-                        toast = Toast(style: .success, message: "テンプレートを保存しました")
+                    MessageTemplateButtons(message: viewModel.currentMessage, onApply: viewModel.applyTemplate) {
+                        viewModel.toast = Toast(style: .success, message: "テンプレートを保存しました")
                     }
                     .padding(.leading, 44.0)
 
                     ClearableIconTextField(
                         icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
                         placeholder: "名前を入れてください",
-                        text: $inputUsername
+                        text: $viewModel.inputUsername
                     )
                     .onTapGesture {
                         self.isEditing = true
@@ -119,7 +83,7 @@ struct SendMessageView: View {
                     ClearableIconTextField(
                         icon: Image(systemName: "person.crop.square"),
                         placeholder: "プロフィール画像のURLを入れてください",
-                        text: $inputAvatarURL
+                        text: $viewModel.inputAvatarURL
                     )
                     .onTapGesture {
                         self.isEditing = true
@@ -128,7 +92,7 @@ struct SendMessageView: View {
                     ClearableIconTextField(
                         icon: Image(systemName: "square.and.pencil"),
                         placeholder: "メッセージを入れてください",
-                        text: $inputContext
+                        text: $viewModel.inputContext
                     )
                     .onTapGesture {
                         self.isEditing = true
@@ -146,13 +110,13 @@ struct SendMessageView: View {
                     ClearableIconTextField(
                         icon: Image(systemName: "list.clipboard"),
                         placeholder: "埋め込みタイトルを入れてください",
-                        text: $inputEmbed.title
+                        text: $viewModel.inputEmbed.title
                     )
                     .onTapGesture {
                         self.isEditing = true
                     }
 
-                    EmbedEditorButton(embed: $inputEmbed)
+                    EmbedEditorButton(embed: $viewModel.inputEmbed)
                 }
                 .padding(.horizontal)
                 .frame(maxWidth: Self.contentMaxWidth)
@@ -175,7 +139,7 @@ struct SendMessageView: View {
         }
         // iOS 26 のアラートはボタン文字に周囲の tint を使う。画面には AppAccent を付け直し、アラートだけシステム標準の青にする
         .tint(Color.appAccent)
-        .alert(isPresented: $isValidationAlertPresented, error: validationError) { _ in
+        .alert(isPresented: $viewModel.isValidationAlertPresented, error: viewModel.validationError) { _ in
             Button("OK", role: .cancel) {}
         } message: { error in
             if let recoverySuggestion = error.recoverySuggestion {
@@ -183,7 +147,7 @@ struct SendMessageView: View {
             }
         }
         .tint(Color(uiColor: .systemBlue))
-        .toast($toast)
+        .toast($viewModel.toast)
         .onAppear {
             InterstitialAdManager.shared.preload()
         }
@@ -197,15 +161,21 @@ struct SendMessageView: View {
 extension SendMessageView {
     private var sendButton: some View {
         Button(action: {
-            sendMessage()
+            viewModel.sendMessage(
+                isPro: purchaseManager.isPro,
+                screenActions: SendMessageScreenActions(
+                    requestReview: { requestReview() },
+                    rootViewController: { sceneDelegate.window?.rootViewController }
+                )
+            )
         }, label: {
             // ローディング中もボタンの大きさが変わらないよう、文言は透明にして残し上に重ねる
             Text("メッセージを送信！")
                 .font(.system(size: 24, weight: .semibold, design: .default))
                 .foregroundStyle(.white)
-                .opacity(isSending ? 0 : 1)
+                .opacity(viewModel.isSending ? 0 : 1)
                 .overlay {
-                    if isSending {
+                    if viewModel.isSending {
                         HStack(spacing: 8.0) {
                             ProgressView()
                                 .tint(.white)
@@ -223,111 +193,11 @@ extension SendMessageView {
                         .shadow(radius: 5.0)
                 )
         })
-        .disabled(isSending)
+        .disabled(viewModel.isSending)
     }
 }
 
 extension SendMessageView {
-    /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する
-    private func sendMessage() {
-        guard !isSending else { return }
-
-        let messageEntity = currentMessage
-
-        if !broadcastTargets.isEmpty {
-            sendBroadcast(messageEntity)
-            return
-        }
-
-        if let error = viewModel.validate(
-            url: inputURL,
-            messageEntity: messageEntity,
-            canUseProFeatures: ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
-        ) {
-            validationError = error
-            isValidationAlertPresented = true
-            return
-        }
-
-        isSending = true
-        // 送信中に URL 欄が書き換えられても、実際に送った先を履歴に残す
-        let url = inputURL
-        Task {
-            let result = await viewModel.postDiscordWebhook(
-                url: url,
-                messageEntity: messageEntity,
-                attachment: attachment
-            )
-            isSending = false
-            // 設定で「送信履歴を保存する」が ON のときだけ記録される
-            historyStore.record(url: url, message: messageEntity, isSuccess: (try? result.get()) != nil)
-            switch result {
-            case .success:
-                toast = Toast(style: .success, message: "送信しました")
-                await handleSendSucceeded(usedProFeatures: messageEntity.messageEmbedEntity.usesProFeatures)
-            case .failure(let error):
-                toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
-            }
-        }
-    }
-
-    /// 選んだ宛先に一斉送信する（Pro 限定）
-    private func sendBroadcast(_ messageEntity: MessageEntity) {
-        let urls = broadcastTargets.map(\.url)
-        // 宛先を選んだあとに Pro でなくなった場合は送らない
-        let error: SendMessageValidationError? = ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
-            ? viewModel.validate(url: urls[0], messageEntity: messageEntity, canUseProFeatures: true)
-            : .proBroadcast
-        if let error {
-            validationError = error
-            isValidationAlertPresented = true
-            return
-        }
-
-        isSending = true
-        Task {
-            let results = await viewModel.broadcast(to: urls, messageEntity: messageEntity, attachment: attachment)
-            isSending = false
-            let failureCount = results.filter { (try? $0.result.get()) == nil }.count
-            for result in results {
-                let isSuccess = (try? result.result.get()) != nil
-                historyStore.record(url: result.url, message: messageEntity, isSuccess: isSuccess)
-            }
-            if failureCount == 0 {
-                toast = Toast(style: .success, message: "\(results.count)件の宛先に送信しました")
-            } else {
-                toast = Toast(style: .failure, message: "\(results.count)件中\(failureCount)件の送信に失敗しました")
-            }
-            if failureCount < results.count {
-                // 一斉送信そのものが Pro 機能
-                await handleSendSucceeded(usedProFeatures: true)
-            }
-        }
-    }
-
-    /// 送信に成功したあとのリワード広告の解放の消費・ATT の許可・レビュー依頼・インタースティシャル広告
-    /// - Parameter usedProFeatures: 埋め込みの Pro 限定の項目や一斉送信など、Pro 機能を使った送信か
-    private func handleSendSucceeded(usedProFeatures: Bool) async {
-        // リワード広告の一時解放は、Pro 機能を使った 1 回の送信で使い切る（Discussion #386・判断ログ #389）。
-        // 一斉送信は宛先の数ではなく 1 回の操作で 1 回と数え、1 件でも成功していれば使い切る
-        if usedProFeatures {
-            RewardedUnlockState.shared.consumeIfUnlocked()
-        }
-        let didRequestTracking = await TrackingAuthorization.requestIfNeeded()
-        // 成功回数は ViewModel で記録済み。ちょうど 3 回目の送信のときだけ依頼する
-        let sendSuccessCount = SendSuccessCounter().count
-        if sendSuccessCount == Self.reviewRequestSendCount {
-            requestReview()
-        }
-        // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す。
-        // ATT のダイアログに続けて出すと体験を損なうため、ATT を尋ねた送信でも出さない
-        if !didRequestTracking && sendSuccessCount > Self.reviewRequestSendCount {
-            // 成功のトーストを見てもらってから表示する
-            try? await Task.sleep(for: .seconds(1))
-            InterstitialAdManager.shared.showIfAllowed(from: sceneDelegate.window?.rootViewController)
-        }
-    }
-
     /// 一斉送信の宛先を選んでいる間、URL 欄の代わりに出す
     private var broadcastTargetsRow: some View {
         HStack {
@@ -336,16 +206,16 @@ extension SendMessageView {
                 .foregroundStyle(Color.appAccent)
                 .frame(width: 44.0)
             VStack(alignment: .leading, spacing: 2.0) {
-                Text("\(broadcastTargets.count)件の宛先に一斉送信")
+                Text("\(viewModel.broadcastTargets.count)件の宛先に一斉送信")
                     .foregroundStyle(Color.appTextPrimary)
-                Text(broadcastTargets.map(\.name).joined(separator: "、"))
+                Text(viewModel.broadcastTargets.map(\.name).joined(separator: "、"))
                     .font(.caption)
                     .foregroundStyle(Color.appTextSecondary)
                     .lineLimit(1)
             }
             Spacer()
             Button {
-                broadcastTargets = []
+                viewModel.broadcastTargets = []
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(Color.appTextSecondary)
@@ -355,26 +225,6 @@ extension SendMessageView {
             .accessibilityLabel("一斉送信をやめる")
         }
         .frame(minHeight: 56.0)
-    }
-}
-
-extension SendMessageView {
-    /// 入力欄の内容から組み立てた、送信・テンプレート保存用のメッセージ
-    private var currentMessage: MessageEntity {
-        MessageEntity(
-            username: inputUsername,
-            avatarURL: inputAvatarURL,
-            content: inputContext,
-            messageEmbedEntity: inputEmbed
-        )
-    }
-
-    /// テンプレートの中身を入力欄に反映する。宛先（URL）はそのまま残す
-    private func applyTemplate(_ template: MessageTemplate) {
-        inputUsername = template.message.username
-        inputAvatarURL = template.message.avatarURL
-        inputContext = template.message.content
-        inputEmbed = template.message.messageEmbedEntity
     }
 }
 

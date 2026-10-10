@@ -22,6 +22,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
   - `.swift` ファイルの追加・削除は `NinjacordPackage/Sources/NinjacordFeature/` 配下で行う。**`.xcodeproj` に差分は出ない**（Issue #211）。
   - 外部依存（Firebase 等）も `Package.swift` の `dependencies` で管理する。バージョンのピンは従来どおり `NinjacordApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`。
   - `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate` / `AppTheme`）だけ `public`。それ以外は internal のまま。
+  - ユニットテストは `NinjacordPackage/Tests/NinjacordFeatureTests/`（`Package.swift` の `testTarget`）。`NinjacordApp` の scheme の TestAction に入れてあり、Build ワークフローの `Test` で流す。手元では `build-for-testing` の後に `xcodebuild test-without-building -project NinjacordApp.xcodeproj -scheme NinjacordApp -destination "platform=iOS Simulator,id=$(python3 Tools/select_test_simulator.py)" -parallel-testing-enabled NO`（`-derivedDataPath` はビルドと揃える）。
   - 文言は `NinjacordApp/Localizable.xcstrings` に**自動で抽出されない**ので、`Text("…")` などを足したら手で登録する（翻訳しないブランド名は `shouldTranslate: false`）。載せ忘れは Build ワークフローの `Check localizations`（`Tools/check_localizations.py`）が落とす。手元で確かめるなら `SWIFT_EMIT_LOC_STRINGS=YES -derivedDataPath build/DerivedData` を付けてビルドし、`python3 Tools/check_localizations.py --derived-data build/DerivedData`。
 - Scheme は3つ:
   - `NinjacordApp` … 本番
@@ -29,7 +30,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
   - `NinjacordApp-Screenshot` … App Store 掲載用スクリーンショット撮影用。広告を表示しない（`ADS_ENABLED = NO`）
 - Configuration: `Debug` / `NinjacordApp-STG` / `NinjacordApp-Screenshot` / `Release`
 - 広告の表示可否は Configuration の `ADS_ENABLED` → Info.plist の `AdsEnabled` → `AdConfiguration.isEnabled` で切り替える
-- 依存は全て SPM（`NinjacordPackage/Package.swift` で宣言）: Firebase, Alamofire, Google Mobile Ads (AdMob), LicenseList
+- 依存は全て SPM（`NinjacordPackage/Package.swift` で宣言）: Firebase, Google Mobile Ads (AdMob), LicenseList。Discord への送信は `URLSession`（`DiscordWebhookClient`）で行う
 - SwiftLint 使用（CI で `brew install swiftlint`）
 
 ## ディレクトリ
@@ -42,6 +43,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
     - `Setting/` … 設定・ライセンス・プライバシー
     - `AdMob/` … 広告
     - `Extension/`, `Common/` … 共通部品
+  - `Tests/NinjacordFeatureTests/` … ユニットテスト
 - `ci_scripts/ci_post_clone.sh` … CI 前処理（SwiftLint 導入等）
 - `AppStore/` … App Store の掲載情報（言語・撮影する画面・説明文などの JSON）
 - `Tools/` … App Store 用スクリーンショットの撮影と App Store Connect への反映スクリプト

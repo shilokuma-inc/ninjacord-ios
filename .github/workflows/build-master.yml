@@ -50,3 +50,12 @@ jobs:
           set -euo pipefail
           xcodebuild build-for-testing -project "$PROJECT" -scheme "$SCHEME" -destination "generic/platform=iOS Simulator" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData"
+
+      # NinjacordPackage のユニットテスト（NinjacordApp の scheme の TestAction）。テストは上の Build でビルド済みなので、ビルドし直さずに流す。
+      # Simulator の名前はランナーのイメージで変わるため、名前ではなく一覧から選ぶ。並列テストは Simulator の clone の起動で遅くなるので切る
+      - name: Test
+        run: |
+          set -euo pipefail
+          UDID="$(python3 Tools/select_test_simulator.py)"
+          xcodebuild test-without-building -project "$PROJECT" -scheme "$SCHEME" -destination "platform=iOS Simulator,id=${UDID}" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" -parallel-testing-enabled NO

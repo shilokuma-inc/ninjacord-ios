@@ -6,11 +6,100 @@
 //
 
 import Foundation
-import Alamofire
+import SwiftUI
 
-struct SendMessageViewModel {
-    private let analytics = FirebaseAnalytics()
-    private let sendSuccessCounter = SendSuccessCounter()
+/// 送信画面の状態と操作。Discord への通信は DiscordWebhookClient、送信履歴の保存は SendHistoryStore に任せる。
+/// 送信に成功したあとの流れ（リワード解放の消費・ATT・レビュー依頼・全画面広告）もここで行う
+@MainActor
+final class SendMessageViewModel: ObservableObject {
+    @Published var inputURL = ""
+    @Published var inputUsername = ""
+    @Published var inputAvatarURL = ""
+    @Published var inputContext = ""
+
+    /// 埋め込み。タイトルは送信画面で、それ以外の項目は embed エディタで入力する
+    @Published var inputEmbed = MessageEmbedEntity()
+
+    @Published private(set) var validationError: SendMessageValidationError?
+    @Published var isValidationAlertPresented: Bool = false
+    /// 添付する画像（1 枚）。テンプレート・送信履歴には保存しない
+    @Published var attachment: ImageAttachment?
+    /// 一斉送信（Pro 限定）の宛先。空なら URL 欄の宛先に送る
+    @Published var broadcastTargets: [SavedWebhookURL] = []
+    /// Webhook への送信中かどうか。送信中はボタンにローディングを出し、二重送信を防ぐ
+    @Published private(set) var isSending = false
+    /// 送信結果を知らせるトースト
+    @Published var toast: Toast?
+
+    private let client: DiscordWebhookClient
+    private let historyStore: SendHistoryStore
+    private let analytics: SendMessageAnalytics
+    private let sendSuccessCounter: SendSuccessCounter
+    private let rewardedUnlock: RewardedUnlockConsuming
+    private let interstitialAd: InterstitialAdPresenting
+    /// まだ ATT の許可を尋ねていなければ尋ね、尋ねたかを返す
+    private let requestTrackingAuthorization: @MainActor () async -> Bool
+    /// 指定した時間だけ待つ。テストでは待たずに、待った時間を記録する
+    private let sleep: @MainActor (Duration) async -> Void
+
+    /// 何回目の送信成功でレビューを依頼するか
+    private static let reviewRequestSendCount = 3
+
+    convenience init() {
+        self.init(
+            client: DiscordWebhookClient(),
+            historyStore: SendHistoryStore(),
+            analytics: FirebaseAnalytics(),
+            sendSuccessCounter: SendSuccessCounter(),
+            rewardedUnlock: RewardedUnlockState.shared,
+            interstitialAd: InterstitialAdManager.shared,
+            requestTrackingAuthorization: { await TrackingAuthorization.requestIfNeeded() },
+            sleep: { duration in try? await Task.sleep(for: duration) }
+        )
+    }
+
+    /// 引数なしの `init()` は今までと同じ実体（`.shared` など）を使う。テストではそれぞれ差し替えたものを渡す
+    /// - Parameters:
+    ///   - client: Discord への通信
+    ///   - historyStore: 送信履歴の保存先
+    ///   - analytics: 送信の Analytics
+    ///   - sendSuccessCounter: 送信成功回数（初回送信の計測・レビュー依頼・全画面広告の判定に使う）
+    ///   - rewardedUnlock: リワード広告の一時解放
+    ///   - interstitialAd: 送信のあとに出す全画面広告
+    ///   - requestTrackingAuthorization: ATT の許可を尋ねる（尋ねたかを返す）
+    ///   - sleep: 全画面広告の前にトーストを見せるための待ち
+    init(
+        client: DiscordWebhookClient,
+        historyStore: SendHistoryStore,
+        analytics: SendMessageAnalytics,
+        sendSuccessCounter: SendSuccessCounter,
+        rewardedUnlock: RewardedUnlockConsuming,
+        interstitialAd: InterstitialAdPresenting,
+        requestTrackingAuthorization: @escaping @MainActor () async -> Bool,
+        sleep: @escaping @MainActor (Duration) async -> Void
+    ) {
+        self.client = client
+        self.historyStore = historyStore
+        self.analytics = analytics
+        self.sendSuccessCounter = sendSuccessCounter
+        self.rewardedUnlock = rewardedUnlock
+        self.interstitialAd = interstitialAd
+        self.requestTrackingAuthorization = requestTrackingAuthorization
+        self.sleep = sleep
+
+        // App Store 用スクリーンショットの撮影モードでは、デモの内容を入力しておく
+        guard ScreenshotDemo.isEnabled else { return }
+        let content = ScreenshotDemo.content
+        inputURL = content.url
+        inputUsername = content.message.username
+        inputAvatarURL = content.message.avatarURL
+        inputContext = content.message.content
+        inputEmbed = content.message.messageEmbedEntity
+        attachment = ScreenshotDemo.attachment
+        if ScreenshotDemo.scene == .broadcast {
+            broadcastTargets = ScreenshotDemo.broadcastTargets
+        }
+    }
 
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
     /// 失敗時は Discord のレスポンスから判定した原因を返す
@@ -24,45 +113,18 @@ struct SendMessageViewModel {
         attachment: ImageAttachment? = nil,
         countsAsSend: Bool = true
     ) async -> Result<Void, DiscordWebhookError> {
-        let baseUrlString = url
-        let param: Parameters = {
-            makeParameter(messageEntity: messageEntity)
-        }()
-
-        var request = URLRequest(url: (URL(string: baseUrlString) ?? URL(string: "https://www.apple.com/")!))
-        request.httpMethod = HTTPMethod.post.rawValue
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = NSString(
-            // swiftlint:disable:next force_try
-            data: try! JSONSerialization.data(withJSONObject: param as Any,
-                                              options: JSONSerialization.WritingOptions.prettyPrinted
-                                             ),
-            encoding: String.Encoding.utf8.rawValue
-        )!
-            .data(using: String.Encoding.utf8.rawValue)
-        print(request)
-        // validate() を付けないと Discord が 4xx / 5xx を返しても success 扱いになるため、
-        // ステータスコードが 2xx 以外なら failure にする
-        let response = if let attachment {
-            await upload(to: request.url, parameter: param, attachment: attachment)
-        } else {
-            await AF.request(request).validate().serializingData().response
-        }
+        let webhookRequest = DiscordWebhookRequest(messageEntity: messageEntity, attachment: attachment)
+        // URL にできないときは apple.com に送る（今の挙動のまま。#472）
+        let endpoint = URL(string: url) ?? URL(string: "https://www.apple.com/")!
+        let response = await client.send(webhookRequest, to: endpoint)
         analytics.sendMessageSendEvent(
-            isSuccess: response.error == nil,
-            httpStatus: response.response?.statusCode
+            isSuccess: (try? response.result.get()) != nil,
+            httpStatus: response.statusCode
         )
-        switch response.result {
-        case .success:
-            print("success")
-            if countsAsSend {
-                recordSendSuccess()
-            }
-            return .success(())
-        case .failure(let error):
-            print("error: \(error)")
-            return .failure(DiscordWebhookError(statusCode: response.response?.statusCode, data: response.data))
+        if case .success = response.result, countsAsSend {
+            recordSendSuccess()
         }
+        return response.result
     }
 }
 
@@ -97,86 +159,150 @@ extension SendMessageViewModel {
         return results
     }
 
-    /// 画像を添付して送る。メッセージは payload_json、画像は files[0] として multipart/form-data で送る
-    /// https://discord.com/developers/docs/reference#uploading-files
-    private func upload(
-        to url: URL?,
-        parameter: Parameters,
-        attachment: ImageAttachment
-    ) async -> DataResponse<Data, AFError> {
-        let payload = (try? JSONSerialization.data(withJSONObject: parameter)) ?? Data()
-        return await AF.upload(
-            multipartFormData: { form in
-                form.append(payload, withName: "payload_json", mimeType: "application/json")
-                form.append(
-                    attachment.data,
-                    withName: "files[0]",
-                    fileName: attachment.fileName,
-                    mimeType: attachment.mimeType
-                )
-            },
-            to: url ?? URL(string: "https://www.apple.com/")!
-        )
-        .validate()
-        .serializingData()
-        .response
-    }
-
     private func recordSendSuccess() {
         if sendSuccessCounter.increment() == 1 {
             analytics.sendFirstSendCompletedEvent()
         }
     }
+}
 
-    private func makeParameter(messageEntity: MessageEntity) -> Parameters {
-        var param: Parameters = [
-            "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
-            "avatar_url": messageEntity.avatarURL,
-            "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
-        ]
-        if messageEntity.messageEmbedEntity.hasContent {
-            param["embeds"] = [makeEmbedParameter(messageEntity.messageEmbedEntity)]
-        }
-        return param
+// MARK: - 送信画面の操作
+
+extension SendMessageViewModel {
+    /// 入力欄の内容から組み立てた、送信・テンプレート保存用のメッセージ
+    var currentMessage: MessageEntity {
+        MessageEntity(
+            username: inputUsername,
+            avatarURL: inputAvatarURL,
+            content: inputContext,
+            messageEmbedEntity: inputEmbed
+        )
     }
 
-    /// Discord の embed オブジェクトを組み立てる。空の項目は送らない
-    /// https://discord.com/developers/docs/resources/message#embed-object
-    private func makeEmbedParameter(_ embed: MessageEmbedEntity, sentAt: Date = Date()) -> [String: Any] {
-        var param: [String: Any] = [:]
-        if !embed.title.isEmpty {
-            param["title"] = embed.title
+    /// テンプレートの中身を入力欄に反映する。宛先（URL）はそのまま残す
+    func applyTemplate(_ template: MessageTemplate) {
+        inputUsername = template.message.username
+        inputAvatarURL = template.message.avatarURL
+        inputContext = template.message.content
+        inputEmbed = template.message.messageEmbedEntity
+    }
+
+    /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する
+    /// - Parameters:
+    ///   - isPro: Pro 購読中か。Pro 限定の項目・一斉送信を使えるかの判定に使う
+    ///   - screenActions: 送信に成功したあとの流れで使う、View の環境から来るもの（レビュー依頼・全画面広告の表示元）
+    /// - Returns: 送信を始めたときは、その Task（テストで送信が終わるのを待つため）。始めなかったときは nil
+    @discardableResult
+    func sendMessage(isPro: Bool, screenActions: SendMessageScreenActions) -> Task<Void, Never>? {
+        guard !isSending else { return nil }
+
+        let messageEntity = currentMessage
+
+        if !broadcastTargets.isEmpty {
+            return sendBroadcast(messageEntity, isPro: isPro, screenActions: screenActions)
         }
-        if !embed.description.isEmpty {
-            param["description"] = embed.description
+
+        if let error = validate(
+            url: inputURL,
+            messageEntity: messageEntity,
+            canUseProFeatures: ProFeatureAccess.canUse(isPro: isPro)
+        ) {
+            validationError = error
+            isValidationAlertPresented = true
+            return nil
         }
-        if let color = embed.color {
-            param["color"] = color
+
+        isSending = true
+        // 送信中に URL 欄が書き換えられても、実際に送った先を履歴に残す
+        let url = inputURL
+        return Task {
+            let result = await postDiscordWebhook(
+                url: url,
+                messageEntity: messageEntity,
+                attachment: attachment
+            )
+            isSending = false
+            // 設定で「送信履歴を保存する」が ON のときだけ記録される
+            historyStore.record(url: url, message: messageEntity, isSuccess: (try? result.get()) != nil)
+            switch result {
+            case .success:
+                toast = Toast(style: .success, message: "送信しました")
+                await handleSendSucceeded(
+                    usedProFeatures: messageEntity.messageEmbedEntity.usesProFeatures,
+                    screenActions: screenActions
+                )
+            case .failure(let error):
+                toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
+            }
         }
-        let fields = embed.sendableFields
-        if !fields.isEmpty {
-            param["fields"] = fields.map { ["name": $0.name, "value": $0.value, "inline": $0.isInline] }
+    }
+
+    /// 選んだ宛先に一斉送信する（Pro 限定）
+    private func sendBroadcast(
+        _ messageEntity: MessageEntity,
+        isPro: Bool,
+        screenActions: SendMessageScreenActions
+    ) -> Task<Void, Never>? {
+        let urls = broadcastTargets.map(\.url)
+        // 宛先を選んだあとに Pro でなくなった場合は送らない
+        let error: SendMessageValidationError? = ProFeatureAccess.canUse(isPro: isPro)
+            ? validate(url: urls[0], messageEntity: messageEntity, canUseProFeatures: true)
+            : .proBroadcast
+        if let error {
+            validationError = error
+            isValidationAlertPresented = true
+            return nil
         }
-        if !embed.footerText.isEmpty {
-            param["footer"] = ["text": embed.footerText]
+
+        isSending = true
+        return Task {
+            let results = await broadcast(to: urls, messageEntity: messageEntity, attachment: attachment)
+            isSending = false
+            let failureCount = results.filter { (try? $0.result.get()) == nil }.count
+            for result in results {
+                let isSuccess = (try? result.result.get()) != nil
+                historyStore.record(url: result.url, message: messageEntity, isSuccess: isSuccess)
+            }
+            if failureCount == 0 {
+                toast = Toast(style: .success, message: "\(results.count)件の宛先に送信しました")
+            } else {
+                toast = Toast(style: .failure, message: "\(results.count)件中\(failureCount)件の送信に失敗しました")
+            }
+            if failureCount < results.count {
+                // 一斉送信そのものが Pro 機能
+                await handleSendSucceeded(usedProFeatures: true, screenActions: screenActions)
+            }
         }
-        if !embed.imageURL.isEmpty {
-            param["image"] = ["url": embed.imageURL]
+    }
+
+    /// 送信に成功したあとのリワード広告の解放の消費・ATT の許可・レビュー依頼・インタースティシャル広告
+    /// - Parameter usedProFeatures: 埋め込みの Pro 限定の項目や一斉送信など、Pro 機能を使った送信か
+    private func handleSendSucceeded(usedProFeatures: Bool, screenActions: SendMessageScreenActions) async {
+        // リワード広告の一時解放は、Pro 機能を使った 1 回の送信で使い切る（Discussion #386・判断ログ #389）。
+        // 一斉送信は宛先の数ではなく 1 回の操作で 1 回と数え、1 件でも成功していれば使い切る
+        if usedProFeatures {
+            rewardedUnlock.consumeIfUnlocked()
         }
-        if !embed.thumbnailURL.isEmpty {
-            param["thumbnail"] = ["url": embed.thumbnailURL]
+        let didRequestTracking = await requestTrackingAuthorization()
+        // 成功回数は postDiscordWebhook / broadcast で記録済み。ちょうど 3 回目の送信のときだけ依頼する
+        let sendSuccessCount = sendSuccessCounter.count
+        if sendSuccessCount == Self.reviewRequestSendCount {
+            screenActions.requestReview()
         }
-        if embed.includesTimestamp {
-            param["timestamp"] = ISO8601DateFormatter().string(from: sentAt)
+        // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す。
+        // ATT のダイアログに続けて出すと体験を損なうため、ATT を尋ねた送信でも出さない
+        if !didRequestTracking && sendSuccessCount > Self.reviewRequestSendCount {
+            // 成功のトーストを見てもらってから表示する
+            await sleep(.seconds(1))
+            interstitialAd.showIfAllowed(from: screenActions.rootViewController())
         }
-        return param
     }
 }
 
 // MARK: - 入力バリデーション
 
 /// 送信前の入力チェックで検出したエラー。アラートのタイトル・本文として表示する
-enum SendMessageValidationError: LocalizedError {
+enum SendMessageValidationError: LocalizedError, Equatable {
     /// 送信先 URL が未入力
     case emptyURL
     /// 送信先 URL が URL の形式になっていない
