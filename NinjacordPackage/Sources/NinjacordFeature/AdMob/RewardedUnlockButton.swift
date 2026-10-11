@@ -27,7 +27,15 @@ struct RewardedUnlockButton: View {
                 }
             } label: {
                 Label(RewardedUnlock.watchAdTitle, systemImage: "play.rectangle.fill")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12.0)
+                    .padding(.horizontal, 8.0)
             }
+            // フォームの行の中に置くため、送信ボタンより角丸と厚みを小さくする
+            .buttonStyle(.raised(cornerRadius: 12.0, depth: 4.0, isLoading: isShowing))
             .disabled(isShowing)
         }
     }
