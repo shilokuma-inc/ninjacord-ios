@@ -18,6 +18,8 @@ final class SendMessageViewModelFixture {
     let analytics: AnalyticsSpy
     /// 送信後の流れ（リワード解放の消費・ATT・レビュー依頼・待ち・全画面広告）で起きたこと
     let recorder: SendSucceededRecorder
+    /// 鳴らした振動
+    let haptics: HapticFeedbackSpy
     /// View から渡す、全画面広告の表示元
     let rootViewController: UIViewController
     let viewModel: SendMessageViewModel
@@ -34,6 +36,8 @@ final class SendMessageViewModelFixture {
         self.analytics = analytics
         let recorder = SendSucceededRecorder()
         self.recorder = recorder
+        let haptics = HapticFeedbackSpy()
+        self.haptics = haptics
         rootViewController = UIViewController()
         viewModel = SendMessageViewModel(
             client: DiscordWebhookClient(session: StubURLProtocol.session),
@@ -42,6 +46,7 @@ final class SendMessageViewModelFixture {
             sendSuccessCounter: sendSuccessCounter,
             rewardedUnlock: RewardedUnlockSpy(recorder: recorder),
             interstitialAd: InterstitialAdSpy(recorder: recorder),
+            haptics: haptics,
             requestTrackingAuthorization: {
                 recorder.record(.requestTracking)
                 return recorder.trackingDialogWillBeShown

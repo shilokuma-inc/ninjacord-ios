@@ -53,6 +53,16 @@ final class InterstitialAdSpy: InterstitialAdPresenting {
     }
 }
 
+/// 鳴らした振動を記録する（実際には鳴らさない）
+@MainActor
+final class HapticFeedbackSpy: HapticFeedbackPlaying {
+    private(set) var impactCount = 0
+
+    func playImpact() {
+        impactCount += 1
+    }
+}
+
 /// 送信の Analytics に送った値を記録する（Firebase には送らない）
 final class AnalyticsSpy: SendMessageAnalytics {
     struct SendEvent: Equatable {
