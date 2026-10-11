@@ -57,9 +57,15 @@ final class InterstitialAdSpy: InterstitialAdPresenting {
 @MainActor
 final class HapticFeedbackSpy: HapticFeedbackPlaying {
     private(set) var impactCount = 0
+    /// 結果を知らせる振動を鳴らした順に、成功だったかを記録する
+    private(set) var notifications: [Bool] = []
 
     func playImpact() {
         impactCount += 1
+    }
+
+    func playNotification(isSuccess: Bool) {
+        notifications.append(isSuccess)
     }
 }
 
