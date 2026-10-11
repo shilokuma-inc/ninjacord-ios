@@ -68,7 +68,7 @@ final class SendMessageViewModel: ObservableObject {
     ///   - sendSuccessCounter: 送信成功回数（初回送信の計測・レビュー依頼・全画面広告の判定に使う）
     ///   - rewardedUnlock: リワード広告の一時解放
     ///   - interstitialAd: 送信のあとに出す全画面広告
-    ///   - haptics: 送信ボタンを押したときの振動
+    ///   - haptics: 送信ボタンを押したとき・送信が終わったときの振動
     ///   - requestTrackingAuthorization: ATT の許可を尋ねる（尋ねたかを返す）
     ///   - sleep: 全画面広告の前にトーストを見せるための待ち
     init(
@@ -234,12 +234,14 @@ extension SendMessageViewModel {
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
+                haptics.playNotification(isSuccess: true)
                 await handleSendSucceeded(
                     usedProFeatures: messageEntity.messageEmbedEntity.usesProFeatures,
                     screenActions: screenActions
                 )
             case .failure(let error):
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
+                haptics.playNotification(isSuccess: false)
             }
         }
     }
@@ -275,6 +277,8 @@ extension SendMessageViewModel {
             } else {
                 toast = Toast(style: .failure, message: "\(results.count)件中\(failureCount)件の送信に失敗しました")
             }
+            // 宛先ごとではなく、全件が終わったときに 1 回だけ。1 件でも失敗したらトーストと同じく失敗にする
+            haptics.playNotification(isSuccess: failureCount == 0)
             if failureCount < results.count {
                 // 一斉送信そのものが Pro 機能
                 await handleSendSucceeded(usedProFeatures: true, screenActions: screenActions)
