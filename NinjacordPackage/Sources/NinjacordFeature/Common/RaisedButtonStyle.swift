@@ -70,6 +70,8 @@ private struct RaisedButton: View {
                     .overlay(shape.fill(Color.black.opacity(0.35)))
                     .padding(.top, depth)
                     .shadow(color: .black.opacity(isPressedDown ? 0.1 : 0.25), radius: 3.0, y: 2.0)
+                    // 視差効果を減らす設定では面が下がらないので、無効のときは厚みを消して平らにする
+                    .opacity(reduceMotion && !isEnabled && !isLoading ? 0 : 1)
             }
             .opacity(isEnabled || isLoading ? 1 : 0.5)
             .animation(.easeOut(duration: 0.08), value: isPressedDown)
