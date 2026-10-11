@@ -186,13 +186,8 @@ extension SendMessageView {
                     }
                 }
                 .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 30.0)
-                        .foregroundStyle(.indigo)
-                        .foregroundStyle(.ultraThickMaterial)
-                        .shadow(radius: 5.0)
-                )
         })
+        .buttonStyle(.raised(isLoading: viewModel.isSending))
         .disabled(viewModel.isSending)
     }
 }
