@@ -9,7 +9,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 | リポジトリ | `shilokuma-inc/ninjacord-ios` |
 | デフォルトブランチ | `develop` |
 | UI フレームワーク | SwiftUI |
-| 言語 / Xcode | Swift 5 / Xcode 26.3 |
+| 言語 / Xcode | Swift 5 / Xcode 26.6 |
 | Deployment Target | iOS 16.0 |
 | バージョン | `MARKETING_VERSION` 2.1.0 |
 | Bundle ID (本番) | `ml.mrs1669.discord-bot-helper` |
