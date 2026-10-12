@@ -120,6 +120,8 @@ jobs:
         env:
           LANGUAGES: ${{ inputs.languages }}
           PS4: '+ $(date +%H:%M:%S) '
+          WARMUP_SECONDS: 60
+          SETTLE_MINIMUM: 10
         run: |
           # 検証用: ランナーの負荷を 1 分ごとに出す
           (while sleep 60; do echo "[負荷] $(date +%H:%M:%S) $(sysctl -n vm.loadavg) $(memory_pressure | tail -1) swap: $(sysctl -n vm.swapusage)"; done) &
