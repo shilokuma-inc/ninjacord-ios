@@ -12,15 +12,12 @@ import UIKit
 final class SendSucceededRecorder {
     enum Event: Equatable {
         case consumeRewardedUnlock
-        case requestTracking
         case requestReview
         case sleep(Duration)
         case showInterstitial(from: UIViewController?)
     }
 
     private(set) var events: [Event] = []
-    /// ATT の許可を尋ねたとき、ダイアログを出した（尋ねた）ものとして返すか
-    var trackingDialogWillBeShown = false
 
     func record(_ event: Event) {
         events.append(event)

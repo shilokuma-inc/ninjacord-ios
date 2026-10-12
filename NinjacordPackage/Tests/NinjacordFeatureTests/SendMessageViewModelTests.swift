@@ -166,7 +166,7 @@ final class SendMessageViewModelTests {
         #expect(entry.message == viewModel.currentMessage)
         #expect(entry.isSuccess)
         // Pro 機能を使っていないので解放は消費せず、1 回目の送信なのでレビュー依頼も全画面広告も出さない
-        #expect(recorder.events == [.requestTracking])
+        #expect(recorder.events.isEmpty)
         #expect(!viewModel.isSending)
         #expect(StubURLProtocol.requests(to: url).count == 1)
     }
@@ -178,7 +178,7 @@ final class SendMessageViewModelTests {
 
         await send(isPro: true)
 
-        #expect(recorder.events == [.consumeRewardedUnlock, .requestTracking])
+        #expect(recorder.events == [.consumeRewardedUnlock])
     }
 
     @Test("送信に失敗したら原因をトーストに出し、失敗として送信履歴に残し、送信後の流れは呼ばない")
@@ -250,7 +250,7 @@ final class SendMessageViewModelTests {
         let historyResults = historyStore.items.map(\.isSuccess)
         #expect(historyResults == [true, true])
         // 一斉送信そのものが Pro 機能
-        #expect(recorder.events == [.consumeRewardedUnlock, .requestTracking])
+        #expect(recorder.events == [.consumeRewardedUnlock])
     }
 
     @Test("一斉送信でも、画像を添付していれば宛先ごとに multipart/form-data で送る")
@@ -284,7 +284,7 @@ final class SendMessageViewModelTests {
         #expect(toast.message.testString == "2件中1件の送信に失敗しました")
         let historyResults = historyStore.items.map(\.isSuccess)
         #expect(historyResults == [false, true])
-        #expect(recorder.events == [.consumeRewardedUnlock, .requestTracking])
+        #expect(recorder.events == [.consumeRewardedUnlock])
     }
 
     @Test("一斉送信がすべて失敗したら、送信後の流れは呼ばない")

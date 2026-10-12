@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 /// 送信画面の状態と操作。Discord への通信は DiscordWebhookClient、送信履歴の保存は SendHistoryStore に任せる。
-/// 送信に成功したあとの流れ（リワード解放の消費・ATT・レビュー依頼・全画面広告）もここで行う
+/// 送信に成功したあとの流れ（リワード解放の消費・レビュー依頼・全画面広告）もここで行う
 @MainActor
 final class SendMessageViewModel: ObservableObject {
     @Published var inputURL = ""
@@ -38,8 +38,6 @@ final class SendMessageViewModel: ObservableObject {
     private let rewardedUnlock: RewardedUnlockConsuming
     private let interstitialAd: InterstitialAdPresenting
     private let haptics: HapticFeedbackPlaying
-    /// まだ ATT の許可を尋ねていなければ尋ね、尋ねたかを返す
-    private let requestTrackingAuthorization: @MainActor () async -> Bool
     /// 指定した時間だけ待つ。テストでは待たずに、待った時間を記録する
     private let sleep: @MainActor (Duration) async -> Void
 
@@ -55,7 +53,6 @@ final class SendMessageViewModel: ObservableObject {
             rewardedUnlock: RewardedUnlockState.shared,
             interstitialAd: InterstitialAdManager.shared,
             haptics: HapticFeedback(),
-            requestTrackingAuthorization: { await TrackingAuthorization.requestIfNeeded() },
             sleep: { duration in try? await Task.sleep(for: duration) }
         )
     }
@@ -69,7 +66,6 @@ final class SendMessageViewModel: ObservableObject {
     ///   - rewardedUnlock: リワード広告の一時解放
     ///   - interstitialAd: 送信のあとに出す全画面広告
     ///   - haptics: 送信ボタンを押したとき・送信が終わったときの振動
-    ///   - requestTrackingAuthorization: ATT の許可を尋ねる（尋ねたかを返す）
     ///   - sleep: 全画面広告の前にトーストを見せるための待ち
     init(
         client: DiscordWebhookClient,
@@ -79,7 +75,6 @@ final class SendMessageViewModel: ObservableObject {
         rewardedUnlock: RewardedUnlockConsuming,
         interstitialAd: InterstitialAdPresenting,
         haptics: HapticFeedbackPlaying,
-        requestTrackingAuthorization: @escaping @MainActor () async -> Bool,
         sleep: @escaping @MainActor (Duration) async -> Void
     ) {
         self.client = client
@@ -89,7 +84,6 @@ final class SendMessageViewModel: ObservableObject {
         self.rewardedUnlock = rewardedUnlock
         self.interstitialAd = interstitialAd
         self.haptics = haptics
-        self.requestTrackingAuthorization = requestTrackingAuthorization
         self.sleep = sleep
 
         // App Store 用スクリーンショットの撮影モードでは、デモの内容を入力しておく
@@ -109,7 +103,7 @@ final class SendMessageViewModel: ObservableObject {
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
     /// 失敗時は Discord のレスポンスから判定した原因を返す
     @discardableResult
-    /// - Parameter countsAsSend: 送信成功回数（初回送信の計測・ATT・レビュー依頼の判定に使う）に数えるか。
+    /// - Parameter countsAsSend: 送信成功回数（初回送信の計測・レビュー依頼・全画面広告の判定に使う）に数えるか。
     ///   一斉送信では宛先ごとではなく 1 回の操作で 1 回と数えるため、呼び出し元でまとめて数える
     /// - Parameter attachment: 添付する画像。あれば multipart/form-data で送る
     public func postDiscordWebhook(
@@ -286,7 +280,7 @@ extension SendMessageViewModel {
         }
     }
 
-    /// 送信に成功したあとのリワード広告の解放の消費・ATT の許可・レビュー依頼・インタースティシャル広告
+    /// 送信に成功したあとのリワード広告の解放の消費・レビュー依頼・インタースティシャル広告
     /// - Parameter usedProFeatures: 埋め込みの Pro 限定の項目や一斉送信など、Pro 機能を使った送信か
     private func handleSendSucceeded(usedProFeatures: Bool, screenActions: SendMessageScreenActions) async {
         // リワード広告の一時解放は、Pro 機能を使った 1 回の送信で使い切る（Discussion #386・判断ログ #389）。
@@ -294,15 +288,13 @@ extension SendMessageViewModel {
         if usedProFeatures {
             rewardedUnlock.consumeIfUnlocked()
         }
-        let didRequestTracking = await requestTrackingAuthorization()
         // 成功回数は postDiscordWebhook / broadcast で記録済み。ちょうど 3 回目の送信のときだけ依頼する
         let sendSuccessCount = sendSuccessCounter.count
         if sendSuccessCount == Self.reviewRequestSendCount {
             screenActions.requestReview()
         }
-        // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す。
-        // ATT のダイアログに続けて出すと体験を損なうため、ATT を尋ねた送信でも出さない
-        if !didRequestTracking && sendSuccessCount > Self.reviewRequestSendCount {
+        // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す
+        if sendSuccessCount > Self.reviewRequestSendCount {
             // 成功のトーストを見てもらってから表示する
             await sleep(.seconds(1))
             interstitialAd.showIfAllowed(from: screenActions.rootViewController())

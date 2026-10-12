@@ -16,7 +16,7 @@ final class SendMessageViewModelFixture {
     let historyStore: SendHistoryStore
     let sendSuccessCounter: SendSuccessCounter
     let analytics: AnalyticsSpy
-    /// 送信後の流れ（リワード解放の消費・ATT・レビュー依頼・待ち・全画面広告）で起きたこと
+    /// 送信後の流れ（リワード解放の消費・レビュー依頼・待ち・全画面広告）で起きたこと
     let recorder: SendSucceededRecorder
     /// 鳴らした振動
     let haptics: HapticFeedbackSpy
@@ -47,10 +47,6 @@ final class SendMessageViewModelFixture {
             rewardedUnlock: RewardedUnlockSpy(recorder: recorder),
             interstitialAd: InterstitialAdSpy(recorder: recorder),
             haptics: haptics,
-            requestTrackingAuthorization: {
-                recorder.record(.requestTracking)
-                return recorder.trackingDialogWillBeShown
-            },
             sleep: { duration in
                 recorder.record(.sleep(duration))
             }
