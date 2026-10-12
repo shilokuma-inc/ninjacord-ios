@@ -119,12 +119,24 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 
 UI の見た目が変わる変更では、Before / After のスクリーンショットを PR 本文に添付する。
 
-- 画像は PR の diff を汚さないよう、**`assets/issue-<Issue番号>` ブランチ**に置き、PR 本文からは raw URL で参照する。
-  - 例: `https://raw.githubusercontent.com/shilokuma-inc/ninjacord-ios/assets/issue-335/335/before.png`
-  - このブランチは `.github/workflows/cleanup-assets-branch.yml` が PR のマージ時に自動削除する。ブランチ名がこの規約から外れると削除されないので注意。
+- 画像は `gh pr create --attach`（gh v2.99.0 以上）で GitHub の添付ファイルとしてアップロードする。`assets/issue-<Issue番号>` ブランチは使わない。
+  - 本文は Markdown の表に `![Before](./before.png)` の形でローカルのパスを書き、同じファイルを `--attach` で渡す。gh がその場でアップロード先の URL に書き換える。
+  - HTML の `<img>` や `<table>` の中のパスは書き換わらない。幅をそろえるため、作成後に本文の画像を `<img width="300">` に置き換える（下の例）。
+  - アップロードした画像は削除できない。個人情報やトークンなどが写っていないか確認してから添付する。
 - Before / After は表で横に並べ、同一条件（同じ端末・OS・テーマ・データ状態）で撮影する。
 - 影響する画面が複数ある場合は画面ごとに用意する。新規画面で Before が無い場合は「なし」と書く。
 - プレースホルダーのコメント（`<!-- 修正前のスクリーンショットを添付 -->`）を残したまま PR を出さない。
+
+```bash
+# body.md の表に ![Before](./before.png) と ![After](./after.png) を書いておく
+gh pr create --title "..." --body-file body.md --assignee @me \
+  --attach ./before.png --attach ./after.png
+
+# 本文の画像を幅 300 の <img> に置き換える
+gh pr view <番号> --json body -q .body \
+  | perl -pe 's{!\[([^\]]*)\]\((https://github\.com/user-attachments/assets/[^)\s]+)\)}{<img src="$2" alt="$1" width="300">}g' \
+  | gh pr edit <番号> --body-file -
+```
 
 ## コーディング方針
 
