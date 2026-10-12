@@ -83,19 +83,27 @@ jobs:
         uses: actions/checkout@v7
 
       # 検証用: イメージに入っているのは iOS 27.0 のランタイムだけなので、選んだ Xcode に合う iOS ランタイムを入れる
+      # ジョブがタイムアウトするとログごと消えるので、結果はステップのサマリーにも残す
       - name: Prepare iOS runtime for iPhone Duo
         run: |
-          xcodebuild -version
-          sdk="$(xcrun --sdk iphonesimulator --show-sdk-version)"
-          echo "iphonesimulator SDK: ${sdk}"
-          xcrun simctl list runtimes
-          if ! xcrun simctl list runtimes | grep -q "iOS ${sdk} "; then
-            echo "iOS ${sdk} のランタイムが無いのでダウンロードします"
-            time xcodebuild -downloadPlatform iOS
+          {
+            echo '## 環境'
+            echo '```'
+            xcodebuild -version
+            sdk="$(xcrun --sdk iphonesimulator --show-sdk-version)"
+            echo "iphonesimulator SDK: ${sdk}"
             xcrun simctl list runtimes
-          fi
-          echo "--- iPhone の機種"
-          xcrun simctl list devicetypes | grep -i iphone
+            if ! xcrun simctl list runtimes | grep -q "iOS ${sdk} "; then
+              echo "iOS ${sdk} のランタイムが無いのでダウンロードします"
+              start=$(date +%s)
+              xcodebuild -downloadPlatform iOS
+              echo "ダウンロード: $(( $(date +%s) - start )) 秒"
+              xcrun simctl list runtimes
+            fi
+            echo "--- iPhone の機種"
+            xcrun simctl list devicetypes | grep -i iphone
+            echo '```'
+          } 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: ci_post_clone
         run: |
@@ -103,10 +111,26 @@ jobs:
           defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
           defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 
+      # 検証用: どこで止まるかを見るため、時刻付きでコマンドを出す。
+      # ジョブのタイムアウトより先にステップを打ち切り、ログと artifact が残るようにする
       - name: Capture screenshots
+        timeout-minutes: 50
         env:
           LANGUAGES: ${{ inputs.languages }}
-        run: Tools/capture_screenshots.sh "${{ matrix.display_type }}" "$LANGUAGES"
+          PS4: '+ $(date +%H:%M:%S) '
+        run: /bin/bash -x Tools/capture_screenshots.sh "${{ matrix.display_type }}" "$LANGUAGES"
+
+      - name: Diagnose capture
+        if: failure()
+        timeout-minutes: 5
+        run: |
+          {
+            echo '## 撮影が失敗したときの状態'
+            echo '```'
+            xcrun simctl list devices booted || true
+            ps -axo pid,etime,command | grep -E 'xcodebuild|simctl|Simulator|swift-frontend' | grep -v grep || true
+            echo '```'
+          } 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload screenshots as artifact
         if: always()
