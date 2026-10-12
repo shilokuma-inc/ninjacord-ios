@@ -18,3 +18,7 @@
 ## Simulator での確認
 
 - Debug ビルドの広告（AdMob のテスト広告）は、起動のたびに出る中身も高さも変わる。撮影モードで変更前と変更後のスクリーンショットを見比べるときは、広告の位置と、広告の高さが変わったぶんずれる部分（テンプレート一覧のネイティブ広告の下など）は差とみなさない。広告を写さずに比べたいなら `NinjacordApp-Screenshot` の scheme でビルドする（Issue #476）。
+
+## リリース
+
+- 審査対応などで `release/vX.Y.Z` に直接マージした修正は、`develop` に自動では戻らない（v2.0.0 の ATT の修正 #437・#453 が抜けていた）。リリース後に `master` へ反映するときは、`git fetch origin` で remote-tracking の参照を最新にしてから `git log origin/develop..origin/release/vX.Y.Z` で release にだけあるコミットを確かめ、あれば release を `develop` にもマージする（#505）。
