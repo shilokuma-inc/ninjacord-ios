@@ -1,6 +1,5 @@
 name: Build
 
-# assets/** はスクリーンショット置き場でアプリのコードを含まないため除外する。
 on:
   push:
     # ドキュメントだけの変更では、macOS ランナーの枠を使わないよう Build を実行しない
@@ -11,7 +10,6 @@ on:
       - '**'
       - '!master'
       - '!develop'
-      - '!assets/**'
 
 # 同じブランチへの連続 push では古い実行をキャンセルする
 concurrency:
