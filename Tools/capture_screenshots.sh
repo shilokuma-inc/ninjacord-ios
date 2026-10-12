@@ -137,6 +137,10 @@ xcrun simctl status_bar "$UDID" override \
 
 # 検証用: 内側の画面も撮れるかを見るため、Simulator の画面の一覧を出す
 xcrun simctl io "$UDID" enumerate || true
+# 検証用: 内側の画面（2007x2853）のポートの UUID。見つかれば、外側と一緒に撮って別の artifact に入れる
+INNER_DISPLAY="$(xcrun simctl io "$UDID" enumerate 2>/dev/null \
+    | awk '/^ *UUID:/ {uuid = $2} /Default width: 2007/ {print uuid; exit}')" || true
+echo "内側の画面: ${INNER_DISPLAY:-なし}"
 
 xcrun simctl install "$UDID" "$BUILT_DIR/$APP_NAME"
 
@@ -193,6 +197,10 @@ while IFS=$'\t' read -r -u 3 language apple_language apple_locale store_locale; 
             -AppleLocale "$apple_locale" >/dev/null
         capture_when_settled "$destination/$file.png"
         echo "  $file.png"
+        if [ -n "${INNER_DISPLAY:-}" ]; then
+            mkdir -p "$SCREENSHOTS_DIR/inner/$language"
+            xcrun simctl io "$UDID" screenshot --display="$INNER_DISPLAY" "$SCREENSHOTS_DIR/inner/$language/$file.png" || true
+        fi
     done 4< <($CONFIG scenes)
     echo "::endgroup::"
 done 3< <(printf '%s\n' "$LANGUAGE_LIST")
