@@ -89,6 +89,8 @@ jobs:
           {
             echo '## 環境'
             echo '```'
+            sw_vers
+            echo "CPU: $(sysctl -n hw.ncpu) / メモリ: $(( $(sysctl -n hw.memsize) / 1024 / 1024 / 1024 )) GB"
             xcodebuild -version
             sdk="$(xcrun --sdk iphonesimulator --show-sdk-version)"
             echo "iphonesimulator SDK: ${sdk}"
@@ -114,11 +116,16 @@ jobs:
       # 検証用: どこで止まるかを見るため、時刻付きでコマンドを出す。
       # ジョブのタイムアウトより先にステップを打ち切り、ログと artifact が残るようにする
       - name: Capture screenshots
-        timeout-minutes: 50
+        timeout-minutes: 70
         env:
           LANGUAGES: ${{ inputs.languages }}
           PS4: '+ $(date +%H:%M:%S) '
-        run: /bin/bash -x Tools/capture_screenshots.sh "${{ matrix.display_type }}" "$LANGUAGES"
+        run: |
+          # 検証用: ランナーの負荷を 1 分ごとに出す
+          (while sleep 60; do echo "[負荷] $(date +%H:%M:%S) $(sysctl -n vm.loadavg) $(memory_pressure | tail -1) swap: $(sysctl -n vm.swapusage)"; done) &
+          monitor=$!
+          trap 'kill "$monitor" 2>/dev/null || true' EXIT
+          /bin/bash -x Tools/capture_screenshots.sh "${{ matrix.display_type }}" "$LANGUAGES"
 
       - name: Diagnose capture
         if: failure()
@@ -127,8 +134,9 @@ jobs:
           {
             echo '## 撮影が失敗したときの状態'
             echo '```'
+            ps -axo pid,etime,%cpu,rss,command -r | head -25 || true
+            sysctl -n vm.loadavg vm.swapusage || true
             xcrun simctl list devices booted || true
-            ps -axo pid,etime,command | grep -E 'xcodebuild|simctl|Simulator|swift-frontend' | grep -v grep || true
             echo '```'
           } 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
 

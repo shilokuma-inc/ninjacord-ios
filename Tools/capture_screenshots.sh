@@ -96,20 +96,6 @@ cleanup() {
 trap cleanup EXIT
 
 echo "機種: $DEVICE_NAME ($UDID)"
-xcrun simctl boot "$UDID"
-xcrun simctl bootstatus "$UDID" -b >/dev/null
-
-# App Store のスクリーンショットらしく、上端を整える
-xcrun simctl status_bar "$UDID" override \
-    --time "9:41" \
-    --dataNetwork wifi \
-    --wifiMode active \
-    --wifiBars 3 \
-    --cellularMode active \
-    --cellularBars 4 \
-    --batteryState charged \
-    --batteryLevel 100 \
-    --operatorName ""
 
 # MARK: - ビルド
 
@@ -132,6 +118,22 @@ SETTINGS="$(xcodebuild -showBuildSettings \
 BUILT_DIR="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ BUILT_PRODUCTS_DIR /{print $2; exit}')"
 APP_NAME="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ FULL_PRODUCT_NAME /{print $2; exit}')"
 BUNDLE_ID="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ PRODUCT_BUNDLE_IDENTIFIER /{print $2; exit}')"
+
+# 検証用: Simulator を起動したままビルドするとランナーが固まったので、ビルドしてから起動する
+xcrun simctl boot "$UDID"
+xcrun simctl bootstatus "$UDID" -b >/dev/null
+
+# App Store のスクリーンショットらしく、上端を整える
+xcrun simctl status_bar "$UDID" override \
+    --time "9:41" \
+    --dataNetwork wifi \
+    --wifiMode active \
+    --wifiBars 3 \
+    --cellularMode active \
+    --cellularBars 4 \
+    --batteryState charged \
+    --batteryLevel 100 \
+    --operatorName ""
 
 xcrun simctl install "$UDID" "$BUILT_DIR/$APP_NAME"
 
