@@ -26,7 +26,7 @@ struct LicenseView: View {
     var body: some View {
         ZStack {
             Color.appBackground
-                .ignoresSafeArea(edges: [.top])
+                .ignoresSafeArea()
             List {
                 Section(content: {
                     ForEach(Library.libraries, id: \.name) { library in

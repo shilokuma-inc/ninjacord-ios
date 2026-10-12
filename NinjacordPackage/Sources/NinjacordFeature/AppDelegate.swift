@@ -7,18 +7,19 @@
 
 import SwiftUI
 import FirebaseCore
-import GoogleMobileAds
 
 /// Firebase / AdMob の初期化を行う AppDelegate。`@UIApplicationDelegateAdaptor` から参照するため public。
+/// GoogleMobileAds は広告の同意が取れてから `AdConsentManager` が初期化する
 public class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
     public func application(_ application: UIApplication,
                             didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil)
     -> Bool {
         FirebaseApp.configure()
 
-        if AdConfiguration.isEnabled {
-            GADMobileAds.sharedInstance().start(completionHandler: nil)
-        }
+        // 前回までに同意済みなら、ここで GoogleMobileAds の初期化が始まる
+        _ = AdConsentManager.shared
+        // 起動中に届く購入の更新（自動更新・返金など）を取りこぼさないよう、最初に監視を始める
+        _ = PurchaseManager.shared
 
         return true
     }

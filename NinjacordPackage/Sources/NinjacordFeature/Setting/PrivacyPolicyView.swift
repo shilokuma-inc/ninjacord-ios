@@ -8,14 +8,15 @@
 import SwiftUI
 
 struct PrivacyPolicyView: View {
-    let baseUrl: String = "https://shilokuma-inc.github.io"
-    let path: String = "/iOS-Release-Sample/PrivacyPolicy/discord-bot-helper/PrivacyPolicy.html"
-    var privacyPolicyUrlString: String {
-        baseUrl + path
+    private static let baseUrl: String = "https://shilokuma-inc.github.io"
+    private static let path: String = "/iOS-Release-Sample/PrivacyPolicy/discord-bot-helper/PrivacyPolicy.html"
+    /// プライバシーポリシーの URL。ペイウォールなど他の画面からもリンクするため static にしている
+    static var url: URL? {
+        URL(string: baseUrl + path)
     }
 
     var body: some View {
-        if let privacyPolicyUrl = URL(string: privacyPolicyUrlString) {
+        if let privacyPolicyUrl = Self.url {
             WebView(url: privacyPolicyUrl)
                 .navigationTitle("プライバシーポリシー")
         } else {

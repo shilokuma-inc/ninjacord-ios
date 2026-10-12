@@ -1,0 +1,30 @@
+{
+  "_comment": [
+    "App Store 用スクリーンショットの撮影設定。構成と並び順は Discussion #355 で決めた。",
+    "scenes:       撮る画面。この順が App Store の並び順になる（ファイル名の番号もこの順）。",
+    "              scene は起動引数 -screenshot-scene に渡す値で、ScreenshotDemo.Scene と一致させる。",
+    "              App Store Connect の上限は 1 言語・1 表示サイズにつき 10 枚。",
+    "displayTypes: App Store Connect の表示サイズごとの、撮影に使う Simulator と期待する寸法。",
+    "              devices は上から順に、Runner に入っている機種を使う。"
+  ],
+  "scenes": [
+    { "file": "01_send", "scene": "send" },
+    { "file": "02_embed", "scene": "embed" },
+    { "file": "03_saved_urls", "scene": "saved-urls" },
+    { "file": "04_templates", "scene": "templates" },
+    { "file": "05_broadcast", "scene": "broadcast" },
+    { "file": "06_webhook_help", "scene": "webhook-help" }
+  ],
+  "displayTypes": {
+    "APP_IPHONE_67": {
+      "label": "iPhone 6.9 inch",
+      "devices": ["iPhone 17 Pro Max", "iPhone 16 Pro Max"],
+      "sizes": ["1320x2868", "1290x2796"]
+    },
+    "APP_IPAD_PRO_3GEN_129": {
+      "label": "iPad 13 inch",
+      "devices": ["iPad Pro 13-inch (M5)", "iPad Pro 13-inch (M4)"],
+      "sizes": ["2064x2752", "2048x2732"]
+    }
+  }
+}

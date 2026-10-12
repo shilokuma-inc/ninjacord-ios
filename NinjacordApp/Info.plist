@@ -4,14 +4,20 @@
 <dict>
 	<key>AdMobBannerAdUnitID</key>
 	<string>$(ADMOB_BANNER_AD_UNIT_ID)</string>
+	<key>AdMobInterstitialAdUnitID</key>
+	<string>$(ADMOB_INTERSTITIAL_AD_UNIT_ID)</string>
 	<key>AdMobNativeAdUnitID</key>
 	<string>$(ADMOB_NATIVE_AD_UNIT_ID)</string>
+	<key>AdMobRewardedAdUnitID</key>
+	<string>$(ADMOB_REWARDED_AD_UNIT_ID)</string>
 	<key>AdsEnabled</key>
 	<string>$(ADS_ENABLED)</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-7683522872696760~1123417271</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Allowing tracking helps us show ads that are more relevant to you. All features of the app work even if you do not allow it.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

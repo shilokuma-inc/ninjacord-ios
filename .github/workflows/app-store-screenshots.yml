@@ -1,0 +1,170 @@
+name: Screenshots/App Store
+
+# App Store 用のスクリーンショットを、表示サイズ × 言語ぶん撮って App Store Connect に反映する。
+#
+# 撮る画面・並び順・機種は AppStore/screenshots.json、言語は AppStore/languages.json で決める
+# （構成は Discussion #355）。撮影は Tools/capture_screenshots.sh が、アプリの撮影モード
+# （ScreenshotDemo.swift）を起動引数で切り替えながら行う。表示サイズごとに別のジョブで並行して撮る。
+#
+# 反映先は「編集できる状態のバージョン」だけ。審査中・配信済みのバージョンには触らない。
+# upload を外せば撮るだけで、結果は artifact から取れる。
+
+on:
+  workflow_dispatch:
+    inputs:
+      display_types:
+        description: '撮影する表示サイズ（カンマ区切り）。空なら screenshots.json の全サイズ（APP_IPHONE_67 / APP_IPAD_PRO_3GEN_129）'
+        required: false
+        default: ''
+      languages:
+        description: '撮影する言語（カンマ区切り）。空なら languages.json の全言語（ja / en）'
+        required: false
+        default: ''
+      app_version:
+        description: '反映先のバージョン。空なら編集できるバージョンを自動で選ぶ'
+        required: false
+        default: ''
+      upload:
+        description: 'App Store Connect に反映する（外すと撮るだけ）'
+        type: boolean
+        default: true
+      missing_locales:
+        description: 'App Store Connect にその言語が無いときの扱い'
+        type: choice
+        options:
+          - fail
+          - skip
+          - create
+        default: fail
+
+jobs:
+  plan:
+    name: plan
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve display types
+        id: matrix
+        env:
+          DISPLAY_TYPES: ${{ inputs.display_types }}
+          LANGUAGES: ${{ inputs.languages }}
+        run: |
+          set -euo pipefail
+          # 言語の指定ミスは撮影（macOS ランナーで数十分）の前にここで落とす
+          python3 Tools/app_store_config.py languages "$LANGUAGES" > /dev/null
+          echo "matrix=$(python3 Tools/app_store_config.py display-types "$DISPLAY_TYPES")" >> "$GITHUB_OUTPUT"
+
+  screenshots:
+    name: ${{ matrix.label }}
+    needs: plan
+    runs-on: macos-latest
+    timeout-minutes: 90
+    strategy:
+      # 片方のサイズが失敗しても、もう片方は撮り切って反映する
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+
+    env:
+      SCREENSHOTS_DIR: build/screenshots
+
+    steps:
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: ci_post_clone
+        run: |
+          brew install swiftlint
+          defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+          defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
+      - name: Capture screenshots
+        env:
+          LANGUAGES: ${{ inputs.languages }}
+        run: Tools/capture_screenshots.sh "${{ matrix.display_type }}" "$LANGUAGES"
+
+      - name: Upload screenshots as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.display_type }}
+          path: ${{ env.SCREENSHOTS_DIR }}/${{ matrix.display_type }}
+          # 途中で失敗したときも撮れたぶんは残したいので、無くても警告どまりにする
+          if-no-files-found: warn
+
+      - name: Create Private Key
+        if: ${{ inputs.upload }}
+        run: |
+          set -euo pipefail
+          mkdir -p private_keys
+          echo -n '${{ secrets.APPLE_API_KEY_BASE64 }}' | base64 --decode > private_keys/AuthKey.p8
+
+      - name: Upload to App Store Connect
+        if: ${{ inputs.upload }}
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY_PATH: private_keys/AuthKey.p8
+          DISPLAY_TYPE: ${{ matrix.display_type }}
+          LANGUAGES: ${{ inputs.languages }}
+          APP_VERSION: ${{ inputs.app_version }}
+          MISSING_LOCALES: ${{ inputs.missing_locales }}
+        run: |
+          set -euo pipefail
+          # PyJWT は標準では入っていないので、この実行かぎりの venv に入れる
+          python3 -m venv .venv
+          .venv/bin/pip install --quiet --disable-pip-version-check pyjwt cryptography
+
+          options=(--missing-locales "$MISSING_LOCALES")
+          if [ -n "$LANGUAGES" ]; then
+            options+=(--languages "$LANGUAGES")
+          fi
+          if [ -n "$APP_VERSION" ]; then
+            options+=(--app-version "$APP_VERSION")
+          fi
+
+          # tee に繋ぐと標準出力がまとめ書きになり、失敗したときのログが前後するので -u で止める
+          .venv/bin/python -u Tools/upload_screenshots.py \
+            --screenshots-dir "$SCREENSHOTS_DIR/$DISPLAY_TYPE" \
+            --display-type "$DISPLAY_TYPE" \
+            "${options[@]}" \
+            | tee "$RUNNER_TEMP/upload.log"
+
+      - name: Summary
+        if: always()
+        env:
+          LABEL: ${{ matrix.label }}
+          DISPLAY_TYPE: ${{ matrix.display_type }}
+          UPLOAD: ${{ inputs.upload }}
+        run: |
+          set -euo pipefail
+          {
+            # 全角の括弧が続くと bash 3.2 は変数名の一部と見なすので、必ず波括弧で閉じる
+            echo "## スクリーンショット: ${LABEL}（${DISPLAY_TYPE}）"
+            echo
+            echo "- 反映: $([ "$UPLOAD" = "true" ] && echo "する" || echo "しない（撮るだけ）")"
+            echo
+            if [ -d "$SCREENSHOTS_DIR/$DISPLAY_TYPE" ]; then
+              echo "| 言語 | 枚数 |"
+              echo "|---|---|"
+              for directory in "$SCREENSHOTS_DIR/$DISPLAY_TYPE"/*/; do
+                [ -d "$directory" ] || continue
+                echo "| $(basename "$directory") | $(find "$directory" -name '*.png' | wc -l | tr -d ' ') |"
+              done
+            fi
+            if [ -f "$RUNNER_TEMP/upload.log" ]; then
+              echo
+              echo '```'
+              cat "$RUNNER_TEMP/upload.log"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

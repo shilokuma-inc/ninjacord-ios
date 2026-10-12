@@ -1,16 +1,31 @@
 name: Build
 
+# assets/** はスクリーンショット置き場でアプリのコードを含まないため除外する。
 on:
   push:
+    # ドキュメントだけの変更では、macOS ランナーの枠を使わないよう Build を実行しない
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
     branches:
       - '**'
       - '!master'
       - '!develop'
+      - '!assets/**'
+
+# 同じブランチへの連続 push では古い実行をキャンセルする
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     name: Build
     runs-on: macos-latest
+
+    env:
+      PROJECT: NinjacordApp.xcodeproj
+      SCHEME: NinjacordApp
 
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
@@ -26,21 +41,27 @@ jobs:
           defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
           defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 
-      - name: Set Default Scheme
-        run: |
-          xcodebuild -resolvePackageDependencies -project NinjacordApp.xcodeproj -scheme NinjacordApp
-          scheme_list=$(xcodebuild -list -json)
-          echo "$scheme_list"
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
-          echo $default | cat >default
-          echo Using default scheme: $default
+      # 依存の取得（Firebase などの clone）に毎回 1 分以上かかるため、SourcePackages ごと保存する。
+      # Build 系のワークフローで同じパス・キーにして、キャッシュを共有する
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/DerivedData/SourcePackages
+          # restore-keys は付けない。依存が変わったときに古い依存入りのキャッシュを復元し、そのまま保存し直して肥大化するため
+          key: spm-${{ runner.os }}-${{ hashFiles('**/Package.resolved') }}
 
-      - name: Build
-        env:
-          scheme: ${{ 'default' }}
-          platform: ${{ 'iOS Simulator' }}
+      - name: Resolve package dependencies
         run: |
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          xcodebuild build-for-testing -scheme "$scheme" -"$filetype_parameter" "$file_to_build" -destination "generic/platform=iOS Simulator"
+          set -euo pipefail
+          xcodebuild -resolvePackageDependencies -project "$PROJECT" -scheme "$SCHEME" -derivedDataPath "$RUNNER_TEMP/DerivedData"
+
+      # SWIFT_EMIT_LOC_STRINGS=YES で、ローカライズ対象の文言を .stringsdata に書き出す（次の Check localizations で使う）
+      - name: Build
+        run: |
+          set -euo pipefail
+          xcodebuild build-for-testing -project "$PROJECT" -scheme "$SCHEME" -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" SWIFT_EMIT_LOC_STRINGS=YES
+
+      # アプリのコードは Swift Package にあり、文言が String Catalog に自動で抽出されないため、載せ忘れをここで落とす
+      - name: Check localizations
+        run: python3 Tools/check_localizations.py --derived-data "$RUNNER_TEMP/DerivedData"

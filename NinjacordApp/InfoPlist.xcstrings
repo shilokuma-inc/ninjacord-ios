@@ -1,0 +1,24 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSUserTrackingUsageDescription" : {
+      "comment" : "ATT の許可ダイアログに表示する説明文",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allowing tracking helps us show ads that are more relevant to you. All features of the app work even if you do not allow it."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許可すると、あなたの興味に合った広告が表示されやすくなります。許可しなくても、アプリの機能はすべて使えます。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

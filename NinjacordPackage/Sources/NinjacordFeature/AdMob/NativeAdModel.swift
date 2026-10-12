@@ -16,6 +16,16 @@ enum AdUnitIdProvider {
         // Info.plist の AdMobBannerAdUnitID を参照（Scheme/Build Configurationごとに値を差し替える）
         Bundle.main.object(forInfoDictionaryKey: "AdMobBannerAdUnitID") as? String ?? ""
     }
+
+    static var interstitial: String {
+        // Release は AdMob で広告ユニットを作るまで空。空の間はインタースティシャルを読み込まない
+        Bundle.main.object(forInfoDictionaryKey: "AdMobInterstitialAdUnitID") as? String ?? ""
+    }
+
+    static var rewarded: String {
+        // Release は AdMob で広告ユニットを作るまで空。空の間はリワード広告を読み込まない
+        Bundle.main.object(forInfoDictionaryKey: "AdMobRewardedAdUnitID") as? String ?? ""
+    }
 }
 
 class NativeAdModel: NSObject, ObservableObject, GADNativeAdLoaderDelegate {

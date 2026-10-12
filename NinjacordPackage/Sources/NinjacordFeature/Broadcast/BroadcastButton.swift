@@ -1,0 +1,97 @@
+//
+//  BroadcastButton.swift
+//  NinjacordApp
+//
+
+import SwiftUI
+
+/// 送信画面の「複数の宛先に送る」ボタン。Pro なら宛先の選択を、Pro でなければペイウォールを開く
+struct BroadcastButton: View {
+    @Binding var targets: [SavedWebhookURL]
+
+    @EnvironmentObject private var purchaseManager: PurchaseManager
+    @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
+    @State private var isPickerPresented = ScreenshotDemo.scene == .broadcast
+    @State private var isPaywallPresented = false
+    @State private var isUpsellPresented = false
+    @ObservedObject private var rewardedAdManager = RewardedAdManager.shared
+
+    var body: some View {
+        Button {
+            if canUseBroadcast {
+                isPickerPresented = true
+            } else if rewardedAdManager.isReady {
+                // リワード広告を読み込めていれば、Pro にするか広告を見るかを選べるようにする
+                isUpsellPresented = true
+            } else {
+                isPaywallPresented = true
+            }
+        } label: {
+            HStack(spacing: 4.0) {
+                Label("複数の宛先に送る", systemImage: "paperplane.circle")
+                // 一斉送信は Pro 限定（Discussion #260 の決定）。
+                // App Store 用スクリーンショットでも、Pro 限定だと分かるよう出す（Discussion #355）
+                if !canUseBroadcast || ScreenshotDemo.isEnabled {
+                    Text("PRO")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6.0)
+                        .padding(.vertical, 2.0)
+                        .background(Capsule().fill(Color.appAccent))
+                        .accessibilityLabel("Pro限定")
+                }
+            }
+        }
+        .font(.system(size: 15, weight: .semibold))
+        .tint(Color.appAccent)
+        .frame(minHeight: 44.0)
+        .preloadsRewardedAd(when: !canUseBroadcast)
+        .confirmationDialog("一斉送信はNinjacord Pro限定です", isPresented: $isUpsellPresented, titleVisibility: .visible) {
+            Button("Proを見る") {
+                isPaywallPresented = true
+            }
+            Button(RewardedUnlock.watchAdTitle) {
+                Task {
+                    if await rewardedAdManager.showForUnlock() {
+                        isPickerPresented = true
+                    }
+                }
+            }
+            Button("キャンセル", role: .cancel) {}
+        }
+        .sheet(isPresented: $isPickerPresented) {
+            NavigationStack {
+                BroadcastTargetPickerView(selection: $targets)
+                    .navigationTitle("一斉送信の宛先")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("完了") {
+                                isPickerPresented = false
+                            }
+                        }
+                    }
+            }
+            .limitedDynamicTypeSize()
+        }
+        .sheet(isPresented: $isPaywallPresented) {
+            NavigationStack {
+                PaywallView(source: .broadcast)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("閉じる") {
+                                isPaywallPresented = false
+                            }
+                        }
+                    }
+            }
+            .environmentObject(purchaseManager)
+            .limitedDynamicTypeSize()
+        }
+    }
+
+    /// リワード広告の一時解放中も一斉送信できる
+    private var canUseBroadcast: Bool {
+        ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
+    }
+}

@@ -9,12 +9,8 @@ tools: Read, Bash, Grep, Glob
 ## 役割
 現在の変更（`git diff` またはブランチ差分）をレビューし、修正すべき点を重要度順に指摘する。
 
-## 観点（`ios-swiftui` スキルの基準に沿う）
-1. **正しさ**: ロジックの誤り、境界条件、Optional 強制アンラップ、リグレッション。
-2. **State 管理**: @State/@Binding/@Observable の使い分け、不要な再描画、ソースオブトゥルースの重複。
-3. **Concurrency**: MainActor 境界、async/await の取りこぼし、データ競合。
-4. **iOS 16 互換**: 16 で使えない API の混入。
-5. **スタイル**: 既存コードとの一貫性、SwiftLint 違反の可能性。
+## 観点
+リポジトリ直下の `CLAUDE.md`「コードレビュー観点」に従う（CodeRabbit と共通）。一般的な SwiftUI の作法は `ios-swiftui` スキルを参照するが、食い違う場合は `CLAUDE.md` を優先する。
 
 ## 進め方
 - `git diff origin/develop...HEAD` などで差分を把握し、変更ファイルの周辺も Read する。
