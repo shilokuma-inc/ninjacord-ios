@@ -21,4 +21,4 @@
 
 ## リリース
 
-- 審査対応などで `release/vX.Y.Z` に直接マージした修正は、`develop` に自動では戻らない（v2.0.0 の ATT の修正 #437・#453 が抜けていた）。リリース後に `master` へ反映するときは `git log origin/develop..origin/release/vX.Y.Z` で release にだけあるコミットを確かめ、あれば release を `develop` にもマージする（#505）。
+- 審査対応などで `release/vX.Y.Z` に直接マージした修正は、`develop` に自動では戻らない（v2.0.0 の ATT の修正 #437・#453 が抜けていた）。リリース後に `master` へ反映するときは、`git fetch origin` で remote-tracking の参照を最新にしてから `git log origin/develop..origin/release/vX.Y.Z` で release にだけあるコミットを確かめ、あれば release を `develop` にもマージする（#505）。
