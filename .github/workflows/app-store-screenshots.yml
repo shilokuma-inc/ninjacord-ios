@@ -62,7 +62,8 @@ jobs:
   screenshots:
     name: ${{ matrix.label }}
     needs: plan
-    runs-on: macos-latest
+    # 検証用: iPhone Duo の Simulator（iOS 27.1）を使うため、Xcode 27 のプレビューイメージで撮る
+    runs-on: xcode-27
     timeout-minutes: 90
     strategy:
       # 片方のサイズが失敗しても、もう片方は撮り切って反映する
@@ -76,10 +77,25 @@ jobs:
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.6'
+          xcode-version: '27.1'
 
       - name: Checkout
         uses: actions/checkout@v7
+
+      # 検証用: イメージに入っているのは iOS 27.0 のランタイムだけなので、選んだ Xcode に合う iOS ランタイムを入れる
+      - name: Prepare iOS runtime for iPhone Duo
+        run: |
+          xcodebuild -version
+          sdk="$(xcrun --sdk iphonesimulator --show-sdk-version)"
+          echo "iphonesimulator SDK: ${sdk}"
+          xcrun simctl list runtimes
+          if ! xcrun simctl list runtimes | grep -q "iOS ${sdk} "; then
+            echo "iOS ${sdk} のランタイムが無いのでダウンロードします"
+            time xcodebuild -downloadPlatform iOS
+            xcrun simctl list runtimes
+          fi
+          echo "--- iPhone の機種"
+          xcrun simctl list devicetypes | grep -i iphone
 
       - name: ci_post_clone
         run: |
