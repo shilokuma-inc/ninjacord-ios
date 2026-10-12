@@ -37,6 +37,7 @@ final class SendMessageViewModel: ObservableObject {
     private let sendSuccessCounter: SendSuccessCounter
     private let rewardedUnlock: RewardedUnlockConsuming
     private let interstitialAd: InterstitialAdPresenting
+    private let haptics: HapticFeedbackPlaying
     /// まだ ATT の許可を尋ねていなければ尋ね、尋ねたかを返す
     private let requestTrackingAuthorization: @MainActor () async -> Bool
     /// 指定した時間だけ待つ。テストでは待たずに、待った時間を記録する
@@ -53,6 +54,7 @@ final class SendMessageViewModel: ObservableObject {
             sendSuccessCounter: SendSuccessCounter(),
             rewardedUnlock: RewardedUnlockState.shared,
             interstitialAd: InterstitialAdManager.shared,
+            haptics: HapticFeedback(),
             requestTrackingAuthorization: { await TrackingAuthorization.requestIfNeeded() },
             sleep: { duration in try? await Task.sleep(for: duration) }
         )
@@ -66,6 +68,7 @@ final class SendMessageViewModel: ObservableObject {
     ///   - sendSuccessCounter: 送信成功回数（初回送信の計測・レビュー依頼・全画面広告の判定に使う）
     ///   - rewardedUnlock: リワード広告の一時解放
     ///   - interstitialAd: 送信のあとに出す全画面広告
+    ///   - haptics: 送信ボタンを押したとき・送信が終わったときの振動
     ///   - requestTrackingAuthorization: ATT の許可を尋ねる（尋ねたかを返す）
     ///   - sleep: 全画面広告の前にトーストを見せるための待ち
     init(
@@ -75,6 +78,7 @@ final class SendMessageViewModel: ObservableObject {
         sendSuccessCounter: SendSuccessCounter,
         rewardedUnlock: RewardedUnlockConsuming,
         interstitialAd: InterstitialAdPresenting,
+        haptics: HapticFeedbackPlaying,
         requestTrackingAuthorization: @escaping @MainActor () async -> Bool,
         sleep: @escaping @MainActor (Duration) async -> Void
     ) {
@@ -84,6 +88,7 @@ final class SendMessageViewModel: ObservableObject {
         self.sendSuccessCounter = sendSuccessCounter
         self.rewardedUnlock = rewardedUnlock
         self.interstitialAd = interstitialAd
+        self.haptics = haptics
         self.requestTrackingAuthorization = requestTrackingAuthorization
         self.sleep = sleep
 
@@ -195,6 +200,8 @@ extension SendMessageViewModel {
     @discardableResult
     func sendMessage(isPro: Bool, screenActions: SendMessageScreenActions) -> Task<Void, Never>? {
         guard !isSending else { return nil }
+        // 押したことが手に伝わるよう、入力チェックで止まる場合も含めてタップのたびに振動させる
+        haptics.playImpact()
 
         let messageEntity = currentMessage
 
@@ -227,12 +234,14 @@ extension SendMessageViewModel {
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
+                haptics.playNotification(isSuccess: true)
                 await handleSendSucceeded(
                     usedProFeatures: messageEntity.messageEmbedEntity.usesProFeatures,
                     screenActions: screenActions
                 )
             case .failure(let error):
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
+                haptics.playNotification(isSuccess: false)
             }
         }
     }
@@ -268,6 +277,8 @@ extension SendMessageViewModel {
             } else {
                 toast = Toast(style: .failure, message: "\(results.count)件中\(failureCount)件の送信に失敗しました")
             }
+            // 宛先ごとではなく、全件が終わったときに 1 回だけ。1 件でも失敗したらトーストと同じく失敗にする
+            haptics.playNotification(isSuccess: failureCount == 0)
             if failureCount < results.count {
                 // 一斉送信そのものが Pro 機能
                 await handleSendSucceeded(usedProFeatures: true, screenActions: screenActions)

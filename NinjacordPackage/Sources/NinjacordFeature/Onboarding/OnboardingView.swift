@@ -71,11 +71,8 @@ struct OnboardingView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16.0)
-                .background(
-                    RoundedRectangle(cornerRadius: 30.0)
-                        .foregroundStyle(.indigo)
-                )
         })
+        .buttonStyle(.raised)
     }
 }
 

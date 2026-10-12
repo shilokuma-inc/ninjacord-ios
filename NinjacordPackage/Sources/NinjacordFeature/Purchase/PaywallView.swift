@@ -199,11 +199,8 @@ struct PaywallView: View {
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 56.0)
-            .background(
-                RoundedRectangle(cornerRadius: 30.0)
-                    .foregroundStyle(.indigo)
-            )
         })
+        .buttonStyle(.raised(isLoading: isProcessing))
         .disabled(isProcessing || purchaseManager.isPro)
     }
 
