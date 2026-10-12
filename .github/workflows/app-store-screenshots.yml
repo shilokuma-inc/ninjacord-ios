@@ -151,6 +151,15 @@ jobs:
           # 途中で失敗したときも撮れたぶんは残したいので、無くても警告どまりにする
           if-no-files-found: warn
 
+      # 検証用: 内側の画面のスクリーンショット（撮れたときだけ）
+      - name: Upload inner display screenshots as artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots-inner-${{ matrix.display_type }}
+          path: ${{ env.SCREENSHOTS_DIR }}/inner
+          if-no-files-found: ignore
+
       - name: Create Private Key
         if: ${{ inputs.upload }}
         run: |
