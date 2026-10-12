@@ -135,12 +135,16 @@ xcrun simctl status_bar "$UDID" override \
     --batteryLevel 100 \
     --operatorName ""
 
+# 検証用: 内側の画面も撮れるかを見るため、Simulator の画面の一覧を出す
+xcrun simctl io "$UDID" enumerate || true
+
 xcrun simctl install "$UDID" "$BUILT_DIR/$APP_NAME"
 
 # インストール直後の初回起動は遅く、アプリが出る前のホーム画面を「落ち着いた」と誤って撮ってしまう。
 # 撮影の前に 1 回だけ起動しておく
 xcrun simctl launch "$UDID" "$BUNDLE_ID" -screenshot-demo >/dev/null
-sleep 15
+# 検証用: iPhone Duo は起動直後のランナーの負荷が高く、15 秒では 1 枚目が起動画面のまま撮れたので延ばせるようにする
+sleep "${WARMUP_SECONDS:-15}"
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 
 # MARK: - 撮影
