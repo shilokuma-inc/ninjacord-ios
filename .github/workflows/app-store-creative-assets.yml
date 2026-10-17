@@ -52,7 +52,7 @@ jobs:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
           APP_STORE_CONNECT_PRIVATE_KEY_PATH: private_keys/AuthKey.p8
-          MODE: ${{ inputs.mode || 'dry-run' }}
+          MODE: ${{ inputs.mode || 'upload' }}
           LANGUAGES: ${{ inputs.languages }}
           APP_VERSION: ${{ inputs.app_version }}
         run: |
