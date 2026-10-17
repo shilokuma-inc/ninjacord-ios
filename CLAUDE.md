@@ -72,13 +72,14 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 | ワークフロー | 反映するもの | 元ネタ |
 | --- | --- | --- |
 | `Screenshots/App Store` | スクリーンショット（iPhone 6.9 inch / iPhone 6.3 inch / iPad 13 inch × ja / en-US） | `AppStore/screenshots.json` / `AppStore/languages.json` |
-| `Metadata/App Store` | 説明文・キーワード・プロモーションテキスト・URL（既定は dry-run） | `AppStore/metadata/*.json` |
+| `Metadata/App Store` | 説明文・キーワード・プロモーションテキスト・最新情報・URL（既定は dry-run） | `AppStore/metadata/*.json` |
 | `Creative assets/App Store` | プロダクトページのヘッダーと検索結果のクリエイティブアセット（iOS 27 以降の App Store に出る。既定は dry-run） | `AppStore/creative_assets.json` / `AppStore/creative/<言語>/` |
 
 - 撮る画面・枚数・並び順は Discussion #355 で決めた。変えるときは `AppStore/screenshots.json` と `ScreenshotDemo.Scene` を合わせて直す。
 - 撮影はアプリの撮影モード（起動引数 `-screenshot-demo -screenshot-scene <名前>`、`Screenshot/ScreenshotDemo.swift`）で行う。デモの文言は言語ごとに `ScreenshotDemoContent` に持つ。
 - 手元で撮るなら `Tools/capture_screenshots.sh APP_IPHONE_67`（出力は `build/screenshots/`）。
 - クリエイティブアセットの元は `AppStore/creative/src/creative.html`。6.9 inch のスクリーンショットを撮ってから `Tools/render_creative_assets.sh` で書き出し、画像もコミットする。置き場所のグループと仕様は App Asset Library の参照データから引く（`Tools/upload_creative_assets.py --ref-data` で見られる）。
+- 「このバージョンの最新情報」は `AppStore/metadata/<言語>.json` の `whatsNew`（`version` と `text`）。`version` が反映先と一致するときだけ書き込むので、リリースごとに両方を書き換える。
 - 対応言語を増やしたら `AppStore/languages.json` と `AppStore/metadata/<言語>.json`、`ScreenshotDemoContent` に足す。
 
 ## 開発ワークフロー（Claude Code）
