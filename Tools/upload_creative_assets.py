@@ -284,6 +284,16 @@ def main() -> int:
             ],
         }
         print(json.dumps(raw, ensure_ascii=False, indent=2))
+        if not raw["placementTypes"]:
+            # TEMP: 項目名を確かめる
+            for name, values in ref_data.raw.items():
+                print(f"--- {name}: {len(values) if isinstance(values, list) else type(values).__name__}")
+                if isinstance(values, list):
+                    for v in values:
+                        text = json.dumps(v, ensure_ascii=False)
+                        if any(p in text for p in placement_types) or name in ("features", "placementProfileGroups"):
+                            print(text[:4000])
+            return 0
         print(ref_data.describe(placement_types))
         return 0
 
