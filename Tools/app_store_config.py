@@ -105,6 +105,20 @@ def display_type_names(selected: list[str] | None = None) -> list[str]:
     return names
 
 
+def matrix_entry(name: str) -> dict:
+    """GitHub Actions の matrix の 1 要素。表示サイズごとに、撮影するジョブの runner と Xcode を変えられる。"""
+    entry = display_type(name)
+    missing = [key for key in ("runsOn", "xcodeVersion") if not entry.get(key)]
+    if missing:
+        raise SystemExit(f"{SCREENSHOTS_FILE.name} の {name} に {', '.join(missing)} がありません")
+    return {
+        "display_type": name,
+        "label": entry["label"],
+        "runs_on": entry["runsOn"],
+        "xcode_version": entry["xcodeVersion"],
+    }
+
+
 def bundle_id() -> str:
     """アプリの bundle id を project.pbxproj から読む。ワークフローに書き写すと二重管理になるため。
 
@@ -147,8 +161,7 @@ def main() -> int:
         print(bundle_id())
     else:
         names = display_type_names(parse_list(args.argument))
-        print(json.dumps([{"display_type": name, "label": display_type(name)["label"]} for name in names],
-                         ensure_ascii=False))
+        print(json.dumps([matrix_entry(name) for name in names], ensure_ascii=False))
     return 0
 
 
