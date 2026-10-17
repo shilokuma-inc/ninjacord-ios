@@ -29,10 +29,6 @@ struct LicenseView: View {
             Color.appBackground
                 .ignoresSafeArea()
             List {
-                Section {
-                    InlineBannerAdRow(model: adModel)
-                }
-
                 Section(content: {
                     ForEach(Library.libraries, id: \.name) { library in
                         Button {
@@ -54,6 +50,10 @@ struct LicenseView: View {
                     Text("ライセンス一覧")
                         .foregroundStyle(Color.appTextPrimary)
                 })
+
+                Section {
+                    InlineBannerAdRow(model: adModel)
+                }
             }
             .loadsInlineBannerAd(adModel, when: !Library.libraries.isEmpty)
             .scrollContentBackground(.hidden)
