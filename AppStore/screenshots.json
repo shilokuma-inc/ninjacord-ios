@@ -5,7 +5,8 @@
     "              scene は起動引数 -screenshot-scene に渡す値で、ScreenshotDemo.Scene と一致させる。",
     "              App Store Connect の上限は 1 言語・1 表示サイズにつき 10 枚。",
     "displayTypes: App Store Connect の表示サイズごとの、撮影に使う Simulator と期待する寸法。",
-    "              devices は上から順に、Runner に入っている機種を使う。"
+    "              devices は上から順に、Runner に入っている機種を使う。",
+    "              runsOn / xcodeVersion は撮影するジョブの runs-on と Xcode。機種によっては新しい Xcode とランタイムが要る。"
   ],
   "scenes": [
     { "file": "01_send", "scene": "send" },
@@ -19,12 +20,23 @@
     "APP_IPHONE_67": {
       "label": "iPhone 6.9 inch",
       "devices": ["iPhone 17 Pro Max", "iPhone 16 Pro Max"],
-      "sizes": ["1320x2868", "1290x2796"]
+      "sizes": ["1320x2868", "1290x2796"],
+      "runsOn": "macos-latest",
+      "xcodeVersion": "26.6"
     },
     "APP_IPAD_PRO_3GEN_129": {
       "label": "iPad 13 inch",
       "devices": ["iPad Pro 13-inch (M5)", "iPad Pro 13-inch (M4)"],
-      "sizes": ["2064x2752", "2048x2732"]
+      "sizes": ["2064x2752", "2048x2732"],
+      "runsOn": "macos-latest",
+      "xcodeVersion": "26.6"
+    },
+    "APP_IPHONE_DUO": {
+      "label": "iPhone Duo",
+      "devices": ["iPhone Duo"],
+      "sizes": ["1398x2034", "2007x2853"],
+      "runsOn": "xcode-27",
+      "xcodeVersion": "27.1"
     }
   }
 }
