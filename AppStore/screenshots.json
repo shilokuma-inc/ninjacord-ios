@@ -21,6 +21,11 @@
       "devices": ["iPhone 17 Pro Max", "iPhone 16 Pro Max"],
       "sizes": ["1320x2868", "1290x2796"]
     },
+    "APP_IPHONE_61": {
+      "label": "iPhone 6.3 inch",
+      "devices": ["iPhone 17 Pro", "iPhone 17", "iPhone 16 Pro"],
+      "sizes": ["1206x2622", "1179x2556"]
+    },
     "APP_IPAD_PRO_3GEN_129": {
       "label": "iPad 13 inch",
       "devices": ["iPad Pro 13-inch (M5)", "iPad Pro 13-inch (M4)"],
