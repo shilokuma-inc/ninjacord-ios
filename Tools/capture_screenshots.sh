@@ -137,6 +137,20 @@ xcrun simctl status_bar "$UDID" override \
     --batteryLevel 100 \
     --operatorName ""
 
+# iPhone Duo のように画面が 2 つある機種では、どちらの画面を撮るかが起動のたびに変わる（内側は真っ黒に写る）。
+# screenshots.json の sizes の先頭と同じ寸法の画面を選んで撮る。見つからなければ simctl の既定の画面を撮る
+EXPECTED_SIZE="$($CONFIG sizes "$DISPLAY_TYPE" | head -n 1)"
+DISPLAY_ID="$(xcrun simctl io "$UDID" enumerate | awk -v size="$EXPECTED_SIZE" '
+    /^ *UUID:/ { uuid = $2 }
+    /^ *Default width:/ { width = $3 }
+    /^ *Default height:/ { if (width "x" $3 == size) { print uuid; exit } }
+')" || DISPLAY_ID=""
+DISPLAY_OPTION=()
+if [ -n "$DISPLAY_ID" ]; then
+    DISPLAY_OPTION=(--display="$DISPLAY_ID")
+fi
+echo "撮る画面: ${DISPLAY_ID:-既定}（${EXPECTED_SIZE}）"
+
 xcrun simctl install "$UDID" "$BUILT_DIR/$APP_NAME"
 
 # インストール直後の初回起動は遅く、アプリが出る前のホーム画面を「落ち着いた」と誤って撮ってしまう。
@@ -153,12 +167,12 @@ capture_when_settled() {
     output="$1"
     work="$(mktemp -d)"
     sleep "$SETTLE_MINIMUM"
-    xcrun simctl io "$UDID" screenshot "$work/previous.png" >/dev/null 2>&1
+    xcrun simctl io "$UDID" screenshot ${DISPLAY_OPTION[@]+"${DISPLAY_OPTION[@]}"} "$work/previous.png" >/dev/null 2>&1
     elapsed="$SETTLE_MINIMUM"
     while [ "$elapsed" -lt "$SETTLE_TIMEOUT" ]; do
         sleep 2
         elapsed=$((elapsed + 2))
-        xcrun simctl io "$UDID" screenshot "$work/current.png" >/dev/null 2>&1
+        xcrun simctl io "$UDID" screenshot ${DISPLAY_OPTION[@]+"${DISPLAY_OPTION[@]}"} "$work/current.png" >/dev/null 2>&1
         if cmp -s "$work/previous.png" "$work/current.png"; then
             mv "$work/current.png" "$output"
             rm -rf "$work"
