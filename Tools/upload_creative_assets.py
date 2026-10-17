@@ -62,7 +62,7 @@ def load_config() -> list[dict]:
 
 
 def _key(entry: dict, *names: str):
-    """参照データの項目名の揺れ（id / placementType など）を吸収して最初に見つかった値を返す。"""
+    """参照データの項目名（featureId / placementTypeId など）を、名前の揺れも込みで引く。"""
     for name in names:
         if name in entry:
             return entry[name]
@@ -75,7 +75,7 @@ class RefData:
 
     def placement_type(self, name: str) -> dict:
         for entry in self.raw.get("placementTypes", []):
-            if _key(entry, "placementType", "id", "name", "type") == name:
+            if _key(entry, "placementTypeId", "placementType") == name:
                 return entry
         raise SystemExit(f"参照データに置き場所 {name} がありません")
 
@@ -84,17 +84,17 @@ class RefData:
         groups = []
         for mapping in self.placement_type(placement_type).get("specMappings", []):
             if spec_id in (mapping.get("specs") or []):
-                group = _key(mapping, "placementGroup", "groupId", "placementProfileGroup", "id")
+                group = _key(mapping, "placementGroupId", "placementGroup")
                 if group:
                     groups.append(group)
         return groups
 
     def group_limit(self, placement_type: str, group: str) -> int | None:
         for feature in self.raw.get("features", []):
-            if _key(feature, "feature", "id", "name") != FEATURE:
+            if _key(feature, "featureId", "feature") != FEATURE:
                 continue
             for policy in feature.get("placementPolicies", []):
-                if _key(policy, "placementType", "id", "type") != placement_type:
+                if _key(policy, "placementType", "placementTypeId") != placement_type:
                     continue
                 for limit in policy.get("groupLimits", []):
                     if group in (limit.get("groupIds") or []):
@@ -110,13 +110,13 @@ class RefData:
     def describe(self, placement_types: list[str]) -> str:
         """置き場所ごとの、受け付けるグループと画像の仕様を人が読める形にする。"""
         lines = []
-        features = [_key(f, "feature", "id", "name") for f in self.raw.get("features", [])]
+        features = [_key(f, "featureId", "feature") for f in self.raw.get("features", [])]
         lines.append(f"features: {', '.join(str(f) for f in features)}")
         for name in placement_types:
             entry = self.placement_type(name)
             lines.append(f"\n{name}（accepts: {entry.get('acceptsAssetCategories')}）")
             for mapping in entry.get("specMappings", []):
-                group = _key(mapping, "placementGroup", "groupId", "placementProfileGroup", "id")
+                group = _key(mapping, "placementGroupId", "placementGroup")
                 limit = self.group_limit(name, group)
                 lines.append(f"  group {group}（{FEATURE} の上限: {limit}）")
                 for spec_id in mapping.get("specs") or []:
@@ -275,25 +275,6 @@ def main() -> int:
 
     if args.ref_data:
         placement_types = sorted({asset["placementType"] for asset in assets})
-        # 項目名が想定と違っても読めるよう、該当する生の参照データも出す
-        raw = {
-            "features": [f for f in ref_data.raw.get("features", []) if _key(f, "feature", "id", "name") == FEATURE],
-            "placementTypes": [
-                t for t in ref_data.raw.get("placementTypes", [])
-                if _key(t, "placementType", "id", "name", "type") in placement_types
-            ],
-        }
-        print(json.dumps(raw, ensure_ascii=False, indent=2))
-        if not raw["placementTypes"]:
-            # TEMP: 項目名を確かめる
-            for name, values in ref_data.raw.items():
-                print(f"--- {name}: {len(values) if isinstance(values, list) else type(values).__name__}")
-                if isinstance(values, list):
-                    for v in values:
-                        text = json.dumps(v, ensure_ascii=False)
-                        if any(p in text for p in placement_types) or name in ("features", "placementProfileGroups"):
-                            print(text[:4000])
-            return 0
         print(ref_data.describe(placement_types))
         return 0
 
