@@ -30,6 +30,13 @@
       "sizes": ["2064x2752", "2048x2732"],
       "runsOn": "macos-latest",
       "xcodeVersion": "26.6"
+    },
+    "APP_IPHONE_DUO": {
+      "label": "iPhone Duo",
+      "devices": ["iPhone Duo"],
+      "sizes": ["1398x2034", "2007x2853"],
+      "runsOn": "xcode-27",
+      "xcodeVersion": "27.1"
     }
   }
 }
