@@ -28,6 +28,8 @@ DERIVED_DATA="${DERIVED_DATA:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/NinjacordScreensho
 # 起動してから画面が落ち着くまで待つ上限と、落ち着いたとみなすまでの最短の待ち（秒）
 SETTLE_TIMEOUT="${SETTLE_TIMEOUT:-40}"
 SETTLE_MINIMUM="${SETTLE_MINIMUM:-4}"
+# 撮影の前の 1 回目の起動で待つ時間（秒）
+WARMUP_SECONDS="${WARMUP_SECONDS:-15}"
 
 CONFIG="python3 Tools/app_store_config.py"
 
@@ -96,20 +98,6 @@ cleanup() {
 trap cleanup EXIT
 
 echo "機種: $DEVICE_NAME ($UDID)"
-xcrun simctl boot "$UDID"
-xcrun simctl bootstatus "$UDID" -b >/dev/null
-
-# App Store のスクリーンショットらしく、上端を整える
-xcrun simctl status_bar "$UDID" override \
-    --time "9:41" \
-    --dataNetwork wifi \
-    --wifiMode active \
-    --wifiBars 3 \
-    --cellularMode active \
-    --cellularBars 4 \
-    --batteryState charged \
-    --batteryLevel 100 \
-    --operatorName ""
 
 # MARK: - ビルド
 
@@ -133,12 +121,28 @@ BUILT_DIR="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ BUILT_PRODUCTS_DIR /{pri
 APP_NAME="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ FULL_PRODUCT_NAME /{print $2; exit}')"
 BUNDLE_ID="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ PRODUCT_BUNDLE_IDENTIFIER /{print $2; exit}')"
 
+# Simulator を起動したままビルドすると、非力なランナー（iPhone Duo を撮る xcode-27）が固まったので、ビルドしてから起動する
+xcrun simctl boot "$UDID"
+xcrun simctl bootstatus "$UDID" -b >/dev/null
+
+# App Store のスクリーンショットらしく、上端を整える
+xcrun simctl status_bar "$UDID" override \
+    --time "9:41" \
+    --dataNetwork wifi \
+    --wifiMode active \
+    --wifiBars 3 \
+    --cellularMode active \
+    --cellularBars 4 \
+    --batteryState charged \
+    --batteryLevel 100 \
+    --operatorName ""
+
 xcrun simctl install "$UDID" "$BUILT_DIR/$APP_NAME"
 
 # インストール直後の初回起動は遅く、アプリが出る前のホーム画面を「落ち着いた」と誤って撮ってしまう。
 # 撮影の前に 1 回だけ起動しておく
 xcrun simctl launch "$UDID" "$BUNDLE_ID" -screenshot-demo >/dev/null
-sleep 15
+sleep "$WARMUP_SECONDS"
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 
 # MARK: - 撮影
