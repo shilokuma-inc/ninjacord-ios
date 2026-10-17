@@ -115,11 +115,18 @@ jobs:
             -exportOptionsPlist ExportOptions.plist \
             -exportPath app.ipa
 
+      # アップロードは App Store Connect API Key で認証する。altool は --apiKey の Key ID から
+      # ./private_keys/AuthKey_<Key ID>.p8 を探す
+      - name: Create Private Key
+        run: |
+          mkdir -p private_keys
+          echo -n '${{ secrets.APPLE_API_KEY_BASE64 }}' | base64 --decode > ./private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+
       - name: Upload IPA to App Store Connect
         run: |
           xcrun altool --upload-app -f app.ipa/NinjacordApp.ipa \
-                       -u ${{ secrets.APPLE_ID }} \
-                       -p ${{ secrets.APP_SPECIFIC_PASSWORD }} \
+                       --apiKey ${{ secrets.APPLE_API_KEY_ID }} \
+                       --apiIssuer ${{ secrets.APPLE_API_ISSUER_ID }} \
                        --type ios
 
       - name: Upload IPA Artifact
