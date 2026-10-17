@@ -35,6 +35,11 @@ TARGETS="header header.png 3840 1646
 search search_results.png 3840 2560"
 
 while IFS=$'\t' read -r -u 3 language _ _ _; do
+    # creative.html の copy に、その言語の文言が無いと崩れた画像になる
+    if ! grep -Eq "^    ${language}: \{" AppStore/creative/src/creative.html; then
+        echo "AppStore/creative/src/creative.html の copy に $language の文言がありません。" >&2
+        exit 1
+    fi
     if [ ! -d "$SCREENSHOTS/$language" ]; then
         echo "$SCREENSHOTS/$language がありません。先に Tools/capture_screenshots.sh APP_IPHONE_67 で撮ってください。" >&2
         exit 1

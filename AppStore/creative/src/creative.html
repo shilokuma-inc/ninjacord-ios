@@ -103,6 +103,11 @@
       post: { name: "Raid Bot", time: "Today at 9:00 PM", body: '<span class="mention">@everyone</span> Sign-ups for tonight\'s raid are open!' },
     },
   }[lang];
+  // 文言の無い言語は、星だけの画像を書き出さないようここで止める（render_creative_assets.sh でも先に確かめる）
+  if (!copy) {
+    document.body.innerHTML = `<h1 style="color:red;font-size:200px">No copy for "${lang}"</h1>`;
+    throw new Error(`creative.html に ${lang} の文言がありません`);
+  }
 
   const canvas = document.getElementById("canvas");
   const W = innerWidth, H = innerHeight;
