@@ -8,6 +8,10 @@ name: Creative assets/App Store
 # 反映先は「編集できる状態のバージョン」だけ。審査中・配信済みのバージョンには触らない。
 
 on:
+  # TEMP: workflow_dispatch は develop に入るまで使えないので、作業ブランチの push で動かす
+  push:
+    branches:
+      - feat/app-store-product-page
   workflow_dispatch:
     inputs:
       mode:
@@ -48,7 +52,7 @@ jobs:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
           APP_STORE_CONNECT_PRIVATE_KEY_PATH: private_keys/AuthKey.p8
-          MODE: ${{ inputs.mode }}
+          MODE: ${{ inputs.mode || 'ref-data' }}
           LANGUAGES: ${{ inputs.languages }}
           APP_VERSION: ${{ inputs.app_version }}
         run: |
