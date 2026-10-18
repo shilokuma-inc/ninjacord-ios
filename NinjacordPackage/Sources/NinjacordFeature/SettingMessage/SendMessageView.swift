@@ -11,6 +11,7 @@ import StoreKit
 struct SendMessageView: View {
 
     @State private var isEditing: Bool = false
+    @State private var isPreviewExpanded = false
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
@@ -27,18 +28,10 @@ struct SendMessageView: View {
         ZStack {
             Color.appBackground
                 .ignoresSafeArea()
-                .onTapGesture {
-                    if self.isEditing {
-                        UIApplication.shared.sendAction(
-                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-                        )
-                        self.isEditing = false
-                    }
-                }
-            VStack(spacing: .zero) {
+                .onTapGesture(perform: dismissKeyboard)
+            // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
+            SendMessageScrollLayout(onTapBackground: dismissKeyboard) {
                 VStack(spacing: Self.fieldSpacing) {
-                    Spacer()
-
                     if viewModel.broadcastTargets.isEmpty {
                         HStack {
                             ClearableIconTextField(
@@ -126,16 +119,24 @@ struct SendMessageView: View {
                 .frame(maxWidth: Self.contentMaxWidth)
 
                 Spacer()
-                    .frame(height: 48.0)
+                    .frame(height: Self.fieldSpacing)
+
+                // 入力した内容を確かめてから送れるよう、入力欄と送信ボタンの間に置く
+                messagePreviewSection
+                    .padding(.horizontal)
+                    .frame(maxWidth: Self.contentMaxWidth)
+
+                Spacer()
+                    .frame(height: 16.0)
 
                 sendButton
-
+            } bottom: {
                 // Pro 購読中は広告を出さない。購入した瞬間に消え、解約・失効したら戻る
                 if AdConfiguration.isEnabled && !purchaseManager.isPro {
                     BannerView()
                 } else {
-                    // バナーが占めていた下端の可変領域を、空の View で同じように確保する。
-                    // Spacer だと入力欄の上にある Spacer に高さを奪われ、画面全体が下に寄ってしまう
+                    // バナーが占めていた下端の領域を、空の View で同じように確保する。
+                    // 確保しないと入力欄の上の余白に高さを奪われ、画面全体が下に寄ってしまう
                     Color.clear
                         .frame(maxHeight: .infinity)
                 }
@@ -158,6 +159,18 @@ struct SendMessageView: View {
         .onChange(of: adConsent.canRequestAds) { _ in
             // 起動直後は同意の取得を待ってから読み込む
             InterstitialAdManager.shared.preload()
+        }
+    }
+}
+
+extension SendMessageView {
+    /// 背景をタップしたら、入力中のキーボードを閉じる
+    private func dismissKeyboard() {
+        if self.isEditing {
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+            )
+            self.isEditing = false
         }
     }
 }
@@ -197,6 +210,53 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
+    /// Discord での見え方のプレビュー。入力欄と送信ボタンを画面に収めるため、既定では閉じておく
+    private var messagePreviewSection: some View {
+        VStack(spacing: .zero) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isPreviewExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "eye")
+                        .foregroundStyle(Color.appAccent)
+                        .frame(width: 24.0, height: 24.0)
+                        .accessibilityHidden(true)
+                    Text("Discordでの見え方")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.appTextSecondary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.appTextSecondary)
+                        .rotationEffect(.degrees(isPreviewExpanded ? 90.0 : 0.0))
+                        .accessibilityHidden(true)
+                }
+                .frame(minHeight: 44.0)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(isPreviewExpanded ? Text("展開済み") : Text("折りたたみ済み"))
+
+            if isPreviewExpanded {
+                MessagePreview(
+                    username: viewModel.inputUsername,
+                    avatarURL: viewModel.inputAvatarURL,
+                    content: viewModel.inputContext,
+                    embed: viewModel.inputEmbed,
+                    attachment: viewModel.attachment
+                )
+                .padding(.top, Self.fieldSpacing)
+                // 開いても下端の広告の領域は縮めず、入力欄側をスクロールさせる
+                .sendMessageLayoutExcludesHeight()
+                .transition(.opacity)
+            }
+        }
+    }
+}
+
+extension SendMessageView {
     /// 一斉送信の宛先を選んでいる間、URL 欄の代わりに出す
     private var broadcastTargetsRow: some View {
         HStack {
@@ -224,6 +284,93 @@ extension SendMessageView {
             .accessibilityLabel("一斉送信をやめる")
         }
         .frame(minHeight: 56.0)
+    }
+}
+
+/// 送信画面の縦の配置。`content`（入力欄〜送信ボタン）をスクロールできるようにし、その下に `bottom`（広告など）を置く。
+/// 縦が余るときは、スクロール化する前の Spacer での配置と同じく、`content` の上の余白と `bottom` で残りの高さを等分する。
+/// 縦が足りないときは `content` をスクロールさせる。
+/// `sendMessageLayoutExcludesHeight()` を付けた部分の高さは、等分の計算に入れない（開いたプレビューなど）
+private struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
+    let onTapBackground: () -> Void
+    @ViewBuilder let content: Content
+    @ViewBuilder let bottom: Bottom
+
+    @State private var heights = Heights()
+
+    var body: some View {
+        GeometryReader { proxy in
+            let bottomHeight = max(0, (proxy.size.height - (heights.content - heights.excluded)) / 2)
+            VStack(spacing: .zero) {
+                bouncesOnlyWhenScrollable(ScrollView {
+                    VStack(spacing: .zero) {
+                        content
+                    }
+                    .background {
+                        GeometryReader { contentProxy in
+                            Color.clear
+                                .preference(key: HeightsKey.self, value: Heights(content: contentProxy.size.height))
+                        }
+                    }
+                    // 余った高さは上の余白にして、送信ボタンを下に寄せる
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height - bottomHeight, alignment: .bottom)
+                    // ScrollView が背景のタップを受け取るので、中の余白のタップでもキーボードを閉じられるようにする
+                    .background {
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture(perform: onTapBackground)
+                    }
+                })
+                .scrollDismissesKeyboard(.interactively)
+
+                bottom
+                    .frame(height: bottomHeight)
+            }
+        }
+        .onPreferenceChange(HeightsKey.self) { heights in
+            self.heights = heights
+        }
+    }
+
+    /// 内容が収まっているときは、引っ張っても動かないようにする（スクロール化する前と同じ操作感にする）
+    @ViewBuilder
+    private func bouncesOnlyWhenScrollable(_ scrollView: some View) -> some View {
+        if #available(iOS 16.4, *) {
+            scrollView.scrollBounceBehavior(.basedOnSize)
+        } else {
+            scrollView
+        }
+    }
+
+}
+
+/// `SendMessageScrollLayout` が測る高さ。両方を同じ更新で受け取り、下端の領域が一瞬だけ縮むのを防ぐ
+private struct Heights: Equatable {
+    /// `content` の本来の高さ（余白を足す前）
+    var content: CGFloat = 0
+    /// そのうち、等分の計算に入れない高さ
+    var excluded: CGFloat = 0
+}
+
+private struct HeightsKey: PreferenceKey {
+    static let defaultValue = Heights()
+
+    static func reduce(value: inout Heights, nextValue: () -> Heights) {
+        let next = nextValue()
+        value.content += next.content
+        value.excluded += next.excluded
+    }
+}
+
+private extension View {
+    /// この View の高さを、`SendMessageScrollLayout` の余白の等分の計算から外す
+    func sendMessageLayoutExcludesHeight() -> some View {
+        background {
+            GeometryReader { proxy in
+                Color.clear
+                    .preference(key: HeightsKey.self, value: Heights(excluded: proxy.size.height))
+            }
+        }
     }
 }
 
