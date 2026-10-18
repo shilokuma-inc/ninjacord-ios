@@ -161,6 +161,12 @@ struct DiscordWebhookURLTests {
         #expect(webhookURL?.url == URL(string: "https://discord.com/api/webhooks/123/abc"))
     }
 
+    @Test("取得に使う URL からはクエリとフラグメントを除く")
+    func dropsQueryAndFragment() {
+        let webhookURL = DiscordWebhookURL(string: "https://discord.com/api/webhooks/123/abc?x#frag")
+        #expect(webhookURL?.url == URL(string: "https://discord.com/api/webhooks/123/abc"))
+    }
+
     @Test("アイコンの URL は CDN の avatars に png で組み立てる。アニメーションのハッシュも png")
     func avatarURL() {
         #expect(
