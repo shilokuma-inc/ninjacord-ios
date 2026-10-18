@@ -24,6 +24,13 @@
       "runsOn": "macos-latest",
       "xcodeVersion": "26.6"
     },
+    "APP_IPHONE_61": {
+      "label": "iPhone 6.3 inch",
+      "devices": ["iPhone 17 Pro", "iPhone 17", "iPhone 16 Pro"],
+      "sizes": ["1206x2622", "1179x2556"],
+      "runsOn": "macos-latest",
+      "xcodeVersion": "26.6"
+    },
     "APP_IPAD_PRO_3GEN_129": {
       "label": "iPad 13 inch",
       "devices": ["iPad Pro 13-inch (M5)", "iPad Pro 13-inch (M4)"],

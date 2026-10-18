@@ -1,0 +1,178 @@
+<!doctype html>
+<!--
+  App Store のクリエイティブアセット（プロダクトページのヘッダー / 検索結果）の元。
+  Tools/render_creative_assets.sh が Chrome で開いて書き出す。直接開くときは
+  creative.html?type=header&lang=ja のように指定する（screens/<言語>/ に 6.9 inch のスクリーンショットが要る）。
+
+  方針（https://developer.apple.com/app-store/asset-best-practices/）
+  - ヘッダー: 初めて来た人向けに「好きな名前とアイコンで投稿できる」の 1 つだけを伝える。
+    端末によって左右が切れるので、文言と端末は中央に寄せる。
+  - 検索結果: アプリが何をするかを一目でわかるように、実際の画面と主な機能を見せる。
+  - 他社のロゴ・価格・受賞歴は入れない。文言は短く、言語ごとに訳す。
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --night: #070b22;
+    --night-2: #10164a;
+    --moon: #f4e6c3;
+    --gold: #e2b86a;
+    --accent: #4549ef;
+    --accent-2: #7b7ffb;
+    --text: #ffffff;
+    --text-2: rgba(244, 230, 195, 0.78);
+    --card: #2b2d31;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  body {
+    background: var(--night);
+    color: var(--text);
+    font-family: "Hiragino Sans", "SF Pro Display", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body[data-lang="en"] { font-family: "SF Pro Display", system-ui, "Hiragino Sans", sans-serif; }
+
+  .canvas { position: relative; width: 100vw; height: 100vh; overflow: hidden;
+    background:
+      radial-gradient(ellipse 60% 70% at 50% 100%, rgba(69, 73, 239, 0.45), transparent 70%),
+      radial-gradient(ellipse 90% 80% at 50% 0%, var(--night-2), var(--night) 75%); }
+
+  .stars { position: absolute; inset: 0; }
+  .star { position: absolute; border-radius: 50%; background: var(--moon); }
+  .spark { position: absolute; color: var(--moon); font-weight: 300; line-height: 1; }
+
+  .moon { position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 50% 45%, #fbf1d6, var(--moon) 55%, #e9d3a1); }
+  /* box-shadow の大きなぼかしは Chrome で四角い継ぎ目が出るので、光はグラデーションで描く */
+  .glow { position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, rgba(244, 230, 195, 0.30) 0%, rgba(226, 184, 106, 0.14) 38%, rgba(226, 184, 106, 0) 70%); }
+
+  .phone { position: absolute; border-radius: 9.5%/4.4%; background: #0c0d10; padding: 1.6%;
+    box-shadow: 0 0 0 4px #3a3d46, 0 60px 140px rgba(0, 0, 0, 0.6); }
+  .phone img { display: block; width: 100%; border-radius: 8.4%/3.9%; }
+
+  .post { position: absolute; display: flex; gap: 0.9em; padding: 0.95em 1.2em 1.05em; border-radius: 0.7em;
+    background: var(--card); box-shadow: 0 40px 100px rgba(0, 0, 0, 0.55), 0 0 0 3px rgba(255, 255, 255, 0.06); }
+  .post .avatar { flex: none; width: 2.6em; height: 2.6em; border-radius: 50%;
+    background: linear-gradient(135deg, #b44cf0, #5b5ff6); display: grid; place-items: center; }
+  .post .avatar svg { width: 62%; height: 62%; }
+  .post .name { font-weight: 700; color: #f2f3f5; }
+  .post .time { margin-left: 0.6em; font-size: 0.72em; color: #949ba4; font-weight: 400; }
+  .post .body { margin-top: 0.25em; color: #dbdee1; font-weight: 400; }
+  .post .mention { color: #c9cdfb; background: rgba(88, 101, 242, 0.3); border-radius: 0.2em; padding: 0 0.15em; }
+
+  .headline { position: absolute; left: 0; right: 0; text-align: center; font-weight: 800; letter-spacing: -0.01em; }
+  .headline em { font-style: normal; color: var(--moon); }
+  .sub { position: absolute; left: 0; right: 0; text-align: center; color: var(--text-2); font-weight: 500; }
+
+  .copy { position: absolute; }
+  .copy .title { font-weight: 800; line-height: 1.18; letter-spacing: -0.01em; }
+  .copy .title em { font-style: normal; color: var(--moon); }
+  .chips { display: flex; flex-direction: column; gap: 0.55em; margin-top: 1.4em; }
+  .chip { display: inline-flex; align-items: center; gap: 0.6em; align-self: flex-start;
+    padding: 0.45em 0.95em 0.5em 0.7em; border-radius: 999px; font-weight: 700;
+    background: rgba(69, 73, 239, 0.22); box-shadow: inset 0 0 0 3px rgba(123, 127, 251, 0.55); }
+  .chip i { font-style: normal; display: grid; place-items: center; width: 1.5em; height: 1.5em; border-radius: 50%;
+    background: var(--accent); font-size: 0.8em; }
+  .brand { position: absolute; display: flex; align-items: center; gap: 0.6em; font-weight: 800; color: var(--moon); }
+  .brand img { height: 1.9em; border-radius: 22%; }
+</style>
+</head>
+<body>
+<div class="canvas" id="canvas">
+  <div class="stars" id="stars"></div>
+</div>
+<script>
+  const params = new URLSearchParams(location.search);
+  const type = params.get("type") || "header";
+  const lang = params.get("lang") || "ja";
+  document.body.dataset.lang = lang;
+
+  const copy = {
+    ja: {
+      header: { title: "好きな<em>名前</em>と<em>アイコン</em>で、チャンネルに投稿。", sub: "Webhook の URL を貼るだけ。Bot づくりもサーバーもいりません。" },
+      search: { title: "Webhook で、<br><em>思いのまま</em>に投稿。", chips: ["名前とアイコンを自由に", "埋め込みをその場でプレビュー", "テンプレートと一斉送信"] },
+      post: { name: "レイド告知Bot", time: "今日 21:00", body: '<span class="mention">@everyone</span> 今夜のレイド、参加者募集中です！' },
+    },
+    en: {
+      header: { title: "Post to your channels with <em>any name</em> and <em>icon</em>.", sub: "Just paste a webhook URL. No bot to build, no server to run." },
+      search: { title: "Post via webhook,<br><em>your way</em>.", chips: ["Any name and avatar", "Live embed preview", "Templates and broadcasts"] },
+      post: { name: "Raid Bot", time: "Today at 9:00 PM", body: '<span class="mention">@everyone</span> Sign-ups for tonight\'s raid are open!' },
+    },
+  }[lang];
+  // 文言の無い言語は、星だけの画像を書き出さないようここで止める（render_creative_assets.sh でも先に確かめる）
+  if (!copy) {
+    document.body.innerHTML = `<h1 style="color:red;font-size:200px">No copy for "${lang}"</h1>`;
+    throw new Error(`creative.html に ${lang} の文言がありません`);
+  }
+
+  const canvas = document.getElementById("canvas");
+  const W = innerWidth, H = innerHeight;
+  const add = (html) => { canvas.insertAdjacentHTML("beforeend", html); return canvas.lastElementChild; };
+
+  // 星はアイコンと同じ「点」と「きらめき」。毎回同じ位置になるよう乱数の種を固定する。
+  // 文言と投稿の上には置かない（読みにくくなる）
+  const clear = type === "header"
+    ? [[W * 0.05, 80, W * 0.95, 560], [W / 2 + 100, 980, W / 2 + 1500, 1360]]
+    : [[150, 120, 2000, 1750], [W - 2050, 1600, W - 250, 2150]];
+  const blocked = (x, y) => clear.some(([l, t, r, b]) => x > l - 60 && x < r + 60 && y > t - 60 && y < b + 60);
+  let seed = 7;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const stars = document.getElementById("stars");
+  for (let i = 0; i < 90; i++) {
+    const size = 4 + rand() * 9, x = rand() * W, y = rand() * H * 0.9, opacity = 0.25 + rand() * 0.6;
+    if (blocked(x, y)) continue;
+    stars.insertAdjacentHTML("beforeend",
+      `<div class="star" style="left:${x}px;top:${y}px;width:${size}px;height:${size}px;opacity:${opacity}"></div>`);
+  }
+  for (let i = 0; i < 18; i++) {
+    const x = rand() * W, y = rand() * H * 0.85, size = 50 + rand() * 60, opacity = 0.4 + rand() * 0.5;
+    if (blocked(x + size / 2, y + size / 2)) continue;
+    stars.insertAdjacentHTML("beforeend",
+      `<div class="spark" style="left:${x}px;top:${y}px;font-size:${size}px;opacity:${opacity}">✦</div>`);
+  }
+
+  const phone = (screen, x, y, width, rotate = 0, z = 1) => add(
+    `<div class="phone" style="left:${x - width / 2}px;top:${y}px;width:${width}px;transform:rotate(${rotate}deg);z-index:${z}">` +
+    `<img src="screens/${lang}/${screen}.png"></div>`);
+
+  const post = (x, y, fontSize, rotate, z) => add(
+    `<div class="post" style="left:${x}px;top:${y}px;font-size:${fontSize}px;transform:rotate(${rotate}deg);z-index:${z}">` +
+    `<div class="avatar"><svg viewBox="0 0 24 24" fill="#fff"><path d="M7 7h10a5 5 0 0 1 4.9 6l-.8 3.9a2.6 2.6 0 0 1-4.4 1.3L14.4 16H9.6l-2.3 2.2a2.6 2.6 0 0 1-4.4-1.3L2.1 13A5 5 0 0 1 7 7Zm1 3v1.5H6.5V13H8v1.5h1.5V13H11v-1.5H9.5V10H8Zm8.3.4a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Zm-2 2a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"/></svg></div>` +
+    `<div><div class="name">${copy.post.name}<span class="time">${copy.post.time}</span></div>` +
+    `<div class="body">${copy.post.body}</div></div></div>`);
+
+  const moon = (size, x, y) => {
+    add(`<div class="glow" style="width:${size * 1.9}px;height:${size * 1.9}px;left:${x - size * 0.45}px;top:${y - size * 0.45}px"></div>`);
+    add(`<div class="moon" style="width:${size}px;height:${size}px;left:${x}px;top:${y}px"></div>`);
+  };
+
+  if (type === "header") {
+    // 21:9。中央に寄せる（左右は端末によって切れる）
+    moon(1180, W / 2 - 590, 560);
+    const title = add(`<div class="headline" style="top:150px;font-size:${lang === "ja" ? 132 : 128}px">${copy.header.title}</div>`);
+    add(`<div class="sub" style="top:${150 + title.offsetHeight + 34}px;font-size:58px">${copy.header.sub}</div>`);
+    phone("02_embed", W / 2 - 700, 690, 560, -7, 1);
+    phone("04_templates", W / 2 + 700, 690, 560, 7, 1);
+    phone("01_send", W / 2, 560, 640, 0, 2);
+    post(W / 2 + 180, 1040, 48, 0, 3);
+  } else {
+    // 3:2。左に何のアプリかと主な機能、右に実際の画面
+    moon(1500, W - 1560, 420);
+    const fontSize = lang === "ja" ? 150 : 158;
+    add(`<div class="copy" style="left:250px;top:470px;width:1700px;font-size:${fontSize}px">` +
+        `<div class="title">${copy.search.title}</div>` +
+        `<div class="chips" style="font-size:78px;margin-top:110px">` +
+        copy.search.chips.map((c, i) => `<div class="chip"><i>${i + 1}</i>${c}</div>`).join("") +
+        `</div></div>`);
+    add(`<div class="brand" style="left:250px;top:200px;font-size:86px"><img src="icon.png">Ninja Cord</div>`);
+    phone("02_embed", W - 1700, 520, 860, -6, 1);
+    phone("01_send", W - 900, 360, 980, 4, 2);
+    post(W - 1940, 1700, 64, -2, 3);
+  }
+</script>
+</body>
+</html>
