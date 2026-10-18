@@ -27,18 +27,10 @@ struct SendMessageView: View {
         ZStack {
             Color.appBackground
                 .ignoresSafeArea()
-                .onTapGesture {
-                    if self.isEditing {
-                        UIApplication.shared.sendAction(
-                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-                        )
-                        self.isEditing = false
-                    }
-                }
-            VStack(spacing: .zero) {
+                .onTapGesture(perform: dismissKeyboard)
+            // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
+            SendMessageScrollLayout(onTapBackground: dismissKeyboard) {
                 VStack(spacing: Self.fieldSpacing) {
-                    Spacer()
-
                     if viewModel.broadcastTargets.isEmpty {
                         HStack {
                             ClearableIconTextField(
@@ -129,13 +121,13 @@ struct SendMessageView: View {
                     .frame(height: 48.0)
 
                 sendButton
-
+            } bottom: {
                 // Pro 購読中は広告を出さない。購入した瞬間に消え、解約・失効したら戻る
                 if AdConfiguration.isEnabled && !purchaseManager.isPro {
                     BannerView()
                 } else {
-                    // バナーが占めていた下端の可変領域を、空の View で同じように確保する。
-                    // Spacer だと入力欄の上にある Spacer に高さを奪われ、画面全体が下に寄ってしまう
+                    // バナーが占めていた下端の領域を、空の View で同じように確保する。
+                    // 確保しないと入力欄の上の余白に高さを奪われ、画面全体が下に寄ってしまう
                     Color.clear
                         .frame(maxHeight: .infinity)
                 }
@@ -158,6 +150,18 @@ struct SendMessageView: View {
         .onChange(of: adConsent.canRequestAds) { _ in
             // 起動直後は同意の取得を待ってから読み込む
             InterstitialAdManager.shared.preload()
+        }
+    }
+}
+
+extension SendMessageView {
+    /// 背景をタップしたら、入力中のキーボードを閉じる
+    private func dismissKeyboard() {
+        if self.isEditing {
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+            )
+            self.isEditing = false
         }
     }
 }
@@ -224,6 +228,70 @@ extension SendMessageView {
             .accessibilityLabel("一斉送信をやめる")
         }
         .frame(minHeight: 56.0)
+    }
+}
+
+/// 送信画面の縦の配置。`content`（入力欄〜送信ボタン）をスクロールできるようにし、その下に `bottom`（広告など）を置く。
+/// 縦が余るときは、スクロール化する前の Spacer での配置と同じく、`content` の上の余白と `bottom` で残りの高さを等分する。
+/// 縦が足りないときは `content` をスクロールさせる
+private struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
+    let onTapBackground: () -> Void
+    @ViewBuilder let content: Content
+    @ViewBuilder let bottom: Bottom
+
+    /// `content` の本来の高さ（余白を足す前）
+    @State private var contentHeight: CGFloat = 0
+
+    var body: some View {
+        GeometryReader { proxy in
+            let bottomHeight = max(0, (proxy.size.height - contentHeight) / 2)
+            VStack(spacing: .zero) {
+                bouncesOnlyWhenScrollable(ScrollView {
+                    VStack(spacing: .zero) {
+                        content
+                    }
+                    .background {
+                        GeometryReader { contentProxy in
+                            Color.clear
+                                .preference(key: ContentHeightKey.self, value: contentProxy.size.height)
+                        }
+                    }
+                    // 余った高さは上の余白にして、送信ボタンを下に寄せる
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height - bottomHeight, alignment: .bottom)
+                    // ScrollView が背景のタップを受け取るので、中の余白のタップでもキーボードを閉じられるようにする
+                    .background {
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture(perform: onTapBackground)
+                    }
+                })
+                .scrollDismissesKeyboard(.interactively)
+
+                bottom
+                    .frame(height: bottomHeight)
+            }
+        }
+        .onPreferenceChange(ContentHeightKey.self) { height in
+            contentHeight = height
+        }
+    }
+
+    /// 内容が収まっているときは、引っ張っても動かないようにする（スクロール化する前と同じ操作感にする）
+    @ViewBuilder
+    private func bouncesOnlyWhenScrollable(_ scrollView: some View) -> some View {
+        if #available(iOS 16.4, *) {
+            scrollView.scrollBounceBehavior(.basedOnSize)
+        } else {
+            scrollView
+        }
+    }
+
+    private struct ContentHeightKey: PreferenceKey {
+        static let defaultValue: CGFloat = 0
+
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
+        }
     }
 }
 
