@@ -17,6 +17,7 @@ struct SendMessageView: View {
     @ObservedObject private var adConsent = AdConsentManager.shared
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @StateObject private var viewModel = SendMessageViewModel()
+    @StateObject private var webhookProfileStore = WebhookProfileStore()
 
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
@@ -245,14 +246,29 @@ extension SendMessageView {
                     avatarURL: viewModel.inputAvatarURL,
                     content: viewModel.inputContext,
                     embed: viewModel.inputEmbed,
-                    attachment: viewModel.attachment
+                    attachment: viewModel.attachment,
+                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
                 )
                 .padding(.top, Self.fieldSpacing)
                 // 開いても下端の広告の領域は縮めず、入力欄側をスクロールさせる
                 .sendMessageLayoutExcludesHeight()
                 .transition(.opacity)
+                // プレビューを開いている間だけ、URL の入力が止まったら Webhook の名前とアイコンを取得する
+                .task(id: webhookProfileInput) {
+                    await webhookProfileStore.load(for: webhookProfileInput)
+                }
             }
         }
+    }
+
+    /// 名前とアイコンをプレビューに出す Webhook の URL。出さない（取得しない）なら空。
+    /// 一斉送信中は宛先が 1 つに決まらないので出さない。名前とプロフィール画像の URL がどちらも入力済みなら使わないので取得しない
+    private var webhookProfileInput: String {
+        guard viewModel.broadcastTargets.isEmpty,
+              viewModel.inputUsername.isEmpty || viewModel.inputAvatarURL.isEmpty else {
+            return ""
+        }
+        return viewModel.inputURL
     }
 }
 
