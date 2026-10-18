@@ -12,7 +12,7 @@ struct DiscordWebhookURL: Equatable {
     static let pattern = #"^https://((ptb|canary)\.)?discord(app)?\.com"#
         + #"/api(/v[0-9]+)?/webhooks/[0-9]+/[A-Za-z0-9_-]+/?(\?.*)?$"#
 
-    /// 入力された URL からクエリを除いたもの。Webhook の取得（GET）に使う
+    /// 入力された URL からクエリとフラグメントを除いたもの。Webhook の取得（GET）に使う
     let url: URL
 
     /// 前後の空白を除いて判定する。Webhook URL の形でなければ nil
@@ -57,10 +57,17 @@ enum WebhookProfileError: Error, Equatable {
 /// Webhook URL への GET で、Webhook の名前とアイコンを取得する通信
 /// https://discord.com/developers/docs/resources/webhook#get-webhook-with-token
 struct WebhookProfileClient {
+    /// 既定で使う URLSession。レスポンスにトークンが含まれるので、キャッシュ・Cookie をディスクに残さない ephemeral にし、URLCache も持たない
+    static let defaultSession: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.urlCache = nil
+        return URLSession(configuration: configuration)
+    }()
+
     private let session: URLSession
 
     /// - Parameter session: 取得に使う URLSession。テストでは URLProtocol のスタブを入れたものを渡す
-    init(session: URLSession = .shared) {
+    init(session: URLSession = defaultSession) {
         self.session = session
     }
 
@@ -76,6 +83,8 @@ struct WebhookProfileClient {
     func fetch(_ webhookURL: DiscordWebhookURL) async -> Result<WebhookProfile, WebhookProfileError> {
         var request = URLRequest(url: webhookURL.url)
         request.httpMethod = "GET"
+        // レスポンスにはトークンが含まれるので、URLCache から読まない（保存しないのは `defaultSession` で担保する）
+        request.cachePolicy = .reloadIgnoringLocalCacheData
         let data: Data
         let response: URLResponse
         do {
@@ -94,7 +103,8 @@ struct WebhookProfileClient {
         }
         return .success(WebhookProfile(
             name: body.name ?? "",
-            avatarURL: body.avatar.flatMap { Self.avatarURL(webhookID: body.id, avatarHash: $0) }
+            // 空のハッシュでは CDN の URL にならないので、アイコンが無いものとして扱う
+            avatarURL: body.avatar.flatMap { $0.isEmpty ? nil : Self.avatarURL(webhookID: body.id, avatarHash: $0) }
         ))
     }
 

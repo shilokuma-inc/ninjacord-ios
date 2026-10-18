@@ -15,6 +15,16 @@ struct AvatarImageLoaderTests {
         context.fill(CGRect(x: 0, y: 0, width: 2, height: 2))
     }
 
+    /// 指定したピクセル数の単色の PNG
+    private static func png(width: CGFloat, height: CGFloat) -> Data {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: format).pngData { context in
+            UIColor.red.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        }
+    }
+
     private func loader(delay: Duration = .zero) -> AvatarImageLoader {
         AvatarImageLoader(session: StubURLProtocol.session, delay: delay)
     }
@@ -56,6 +66,22 @@ struct AvatarImageLoaderTests {
         let image = await loader().image(from: url.absoluteString)
         #expect(image != nil)
         #expect(StubURLProtocol.requests(to: url).count == 1)
+    }
+
+    @Test("大きな画像は長辺を maxPixelSize に縮めて読む")
+    func downsamplesLargeImage() async throws {
+        let largePNG = Self.png(width: 1000, height: 500)
+        let url = StubURLProtocol.makeURL(returning: .response(statusCode: 200, data: largePNG))
+        let cgImage = try #require(await loader().image(from: url.absoluteString)?.cgImage)
+        #expect(cgImage.width == AvatarImageLoader.maxPixelSize)
+        #expect(cgImage.height == AvatarImageLoader.maxPixelSize / 2)
+    }
+
+    @Test("小さな画像は大きくしない")
+    func doesNotUpscaleSmallImage() throws {
+        let cgImage = try #require(AvatarImageLoader.downsampledImage(from: Self.png(width: 20, height: 10))?.cgImage)
+        #expect(cgImage.width == 20)
+        #expect(cgImage.height == 10)
     }
 
     @Test("2xx 以外なら画像が返っても nil")
