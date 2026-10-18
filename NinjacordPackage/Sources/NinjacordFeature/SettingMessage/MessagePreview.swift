@@ -75,15 +75,12 @@ struct MessagePreview: View {
         }
     }
 
-    /// 出す名前。入力が空なら、送信と同じく決まった名前（Discord 上で Webhook の名前は出ない）
     private var displayName: String {
-        username.isEmpty ? DiscordWebhookRequest.defaultUsername : username
+        MessagePreviewProfile.displayName(username: username)
     }
 
-    /// 読み込むプロフィール画像の URL。入力が空なら Webhook のアイコン。
-    /// 入力された URL が読めないときは、Discord 上と同じく Webhook のアイコンには戻さず既定のアイコンを出す
     private var displayAvatarURL: String {
-        avatarURL.isEmpty ? (webhookProfile?.avatarURL?.absoluteString ?? "") : avatarURL
+        MessagePreviewProfile.displayAvatarURL(avatarURL: avatarURL, webhookProfile: webhookProfile)
     }
 
     private var avatar: some View {
