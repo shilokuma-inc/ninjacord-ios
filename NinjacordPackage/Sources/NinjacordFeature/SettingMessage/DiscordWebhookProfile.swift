@@ -57,10 +57,17 @@ enum WebhookProfileError: Error, Equatable {
 /// Webhook URL への GET で、Webhook の名前とアイコンを取得する通信
 /// https://discord.com/developers/docs/resources/webhook#get-webhook-with-token
 struct WebhookProfileClient {
+    /// 既定で使う URLSession。レスポンスにトークンが含まれるので、キャッシュ・Cookie をディスクに残さない ephemeral にし、URLCache も持たない
+    static let defaultSession: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.urlCache = nil
+        return URLSession(configuration: configuration)
+    }()
+
     private let session: URLSession
 
     /// - Parameter session: 取得に使う URLSession。テストでは URLProtocol のスタブを入れたものを渡す
-    init(session: URLSession = .shared) {
+    init(session: URLSession = defaultSession) {
         self.session = session
     }
 
@@ -76,6 +83,8 @@ struct WebhookProfileClient {
     func fetch(_ webhookURL: DiscordWebhookURL) async -> Result<WebhookProfile, WebhookProfileError> {
         var request = URLRequest(url: webhookURL.url)
         request.httpMethod = "GET"
+        // レスポンスにはトークンが含まれるので、URLCache から読まない（保存しないのは `defaultSession` で担保する）
+        request.cachePolicy = .reloadIgnoringLocalCacheData
         let data: Data
         let response: URLResponse
         do {
