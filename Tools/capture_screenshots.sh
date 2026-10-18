@@ -28,6 +28,8 @@ DERIVED_DATA="${DERIVED_DATA:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/NinjacordScreensho
 # 起動してから画面が落ち着くまで待つ上限と、落ち着いたとみなすまでの最短の待ち（秒）
 SETTLE_TIMEOUT="${SETTLE_TIMEOUT:-40}"
 SETTLE_MINIMUM="${SETTLE_MINIMUM:-4}"
+# 撮影の前の 1 回目の起動で待つ時間（秒）
+WARMUP_SECONDS="${WARMUP_SECONDS:-15}"
 
 CONFIG="python3 Tools/app_store_config.py"
 
@@ -96,20 +98,6 @@ cleanup() {
 trap cleanup EXIT
 
 echo "機種: $DEVICE_NAME ($UDID)"
-xcrun simctl boot "$UDID"
-xcrun simctl bootstatus "$UDID" -b >/dev/null
-
-# App Store のスクリーンショットらしく、上端を整える
-xcrun simctl status_bar "$UDID" override \
-    --time "9:41" \
-    --dataNetwork wifi \
-    --wifiMode active \
-    --wifiBars 3 \
-    --cellularMode active \
-    --cellularBars 4 \
-    --batteryState charged \
-    --batteryLevel 100 \
-    --operatorName ""
 
 # MARK: - ビルド
 
@@ -133,12 +121,42 @@ BUILT_DIR="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ BUILT_PRODUCTS_DIR /{pri
 APP_NAME="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ FULL_PRODUCT_NAME /{print $2; exit}')"
 BUNDLE_ID="$(printf '%s\n' "$SETTINGS" | awk -F' = ' '/ PRODUCT_BUNDLE_IDENTIFIER /{print $2; exit}')"
 
+# Simulator を起動したままビルドすると、非力なランナー（iPhone Duo を撮る xcode-27）が固まったので、ビルドしてから起動する
+xcrun simctl boot "$UDID"
+xcrun simctl bootstatus "$UDID" -b >/dev/null
+
+# App Store のスクリーンショットらしく、上端を整える
+xcrun simctl status_bar "$UDID" override \
+    --time "9:41" \
+    --dataNetwork wifi \
+    --wifiMode active \
+    --wifiBars 3 \
+    --cellularMode active \
+    --cellularBars 4 \
+    --batteryState charged \
+    --batteryLevel 100 \
+    --operatorName ""
+
+# iPhone Duo のように画面が 2 つある機種では、どちらの画面を撮るかが起動のたびに変わる（内側は真っ黒に写る）。
+# screenshots.json の sizes の先頭と同じ寸法の画面を選んで撮る。見つからなければ simctl の既定の画面を撮る
+EXPECTED_SIZE="$($CONFIG sizes "$DISPLAY_TYPE" | head -n 1)"
+DISPLAY_ID="$(xcrun simctl io "$UDID" enumerate | awk -v size="$EXPECTED_SIZE" '
+    /^ *UUID:/ { uuid = $2 }
+    /^ *Default width:/ { width = $3 }
+    /^ *Default height:/ { if (width "x" $3 == size) { print uuid; exit } }
+')" || DISPLAY_ID=""
+DISPLAY_OPTION=()
+if [ -n "$DISPLAY_ID" ]; then
+    DISPLAY_OPTION=(--display="$DISPLAY_ID")
+fi
+echo "撮る画面: ${DISPLAY_ID:-既定}（${EXPECTED_SIZE}）"
+
 xcrun simctl install "$UDID" "$BUILT_DIR/$APP_NAME"
 
 # インストール直後の初回起動は遅く、アプリが出る前のホーム画面を「落ち着いた」と誤って撮ってしまう。
 # 撮影の前に 1 回だけ起動しておく
 xcrun simctl launch "$UDID" "$BUNDLE_ID" -screenshot-demo >/dev/null
-sleep 15
+sleep "$WARMUP_SECONDS"
 xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 
 # MARK: - 撮影
@@ -149,12 +167,12 @@ capture_when_settled() {
     output="$1"
     work="$(mktemp -d)"
     sleep "$SETTLE_MINIMUM"
-    xcrun simctl io "$UDID" screenshot "$work/previous.png" >/dev/null 2>&1
+    xcrun simctl io "$UDID" screenshot ${DISPLAY_OPTION[@]+"${DISPLAY_OPTION[@]}"} "$work/previous.png" >/dev/null 2>&1
     elapsed="$SETTLE_MINIMUM"
     while [ "$elapsed" -lt "$SETTLE_TIMEOUT" ]; do
         sleep 2
         elapsed=$((elapsed + 2))
-        xcrun simctl io "$UDID" screenshot "$work/current.png" >/dev/null 2>&1
+        xcrun simctl io "$UDID" screenshot ${DISPLAY_OPTION[@]+"${DISPLAY_OPTION[@]}"} "$work/current.png" >/dev/null 2>&1
         if cmp -s "$work/previous.png" "$work/current.png"; then
             mv "$work/current.png" "$output"
             rm -rf "$work"

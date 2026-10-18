@@ -71,7 +71,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 
 | ワークフロー | 反映するもの | 元ネタ |
 | --- | --- | --- |
-| `Screenshots/App Store` | スクリーンショット（iPhone 6.9 inch / iPhone 6.3 inch / iPad 13 inch × ja / en-US） | `AppStore/screenshots.json` / `AppStore/languages.json` |
+| `Screenshots/App Store` | スクリーンショット（iPhone 6.9 inch / iPhone 6.3 inch / iPad 13 inch / iPhone Duo × ja / en-US） | `AppStore/screenshots.json` / `AppStore/languages.json` |
 | `Metadata/App Store` | 説明文・キーワード・プロモーションテキスト・最新情報・URL（既定は dry-run） | `AppStore/metadata/*.json` |
 | `Creative assets/App Store` | プロダクトページのヘッダーと検索結果のクリエイティブアセット（iOS 27 以降の App Store に出る。既定は dry-run） | `AppStore/creative_assets.json` / `AppStore/creative/<言語>/` |
 

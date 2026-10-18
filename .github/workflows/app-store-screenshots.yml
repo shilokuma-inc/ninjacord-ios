@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       display_types:
-        description: '撮影する表示サイズ（カンマ区切り）。空なら screenshots.json の全サイズ（APP_IPHONE_67 / APP_IPHONE_61 / APP_IPAD_PRO_3GEN_129）'
+        description: '撮影する表示サイズ（カンマ区切り）。空なら screenshots.json の全サイズ（APP_IPHONE_67 / APP_IPHONE_61 / APP_IPAD_PRO_3GEN_129 / APP_IPHONE_DUO）'
         required: false
         default: ''
       languages:
@@ -62,7 +62,8 @@ jobs:
   screenshots:
     name: ${{ matrix.label }}
     needs: plan
-    runs-on: macos-latest
+    # runner と Xcode は表示サイズごとに screenshots.json の runsOn / xcodeVersion で決める
+    runs-on: ${{ matrix.runs_on }}
     timeout-minutes: 90
     strategy:
       # 片方のサイズが失敗しても、もう片方は撮り切って反映する
@@ -76,10 +77,22 @@ jobs:
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.6'
+          xcode-version: ${{ matrix.xcode_version }}
 
       - name: Checkout
         uses: actions/checkout@v7
+
+      # ランナーのイメージには選んだ Xcode に合う iOS ランタイムが入っていないことがある
+      # （xcode-27 は iOS 27.0 だけで、iPhone Duo には iOS 27.1 が要る）ので、無ければ入れる
+      - name: Prepare iOS runtime
+        run: |
+          set -euo pipefail
+          sdk="$(xcrun --sdk iphonesimulator --show-sdk-version)"
+          if ! xcrun simctl list runtimes | grep -qF "iOS ${sdk} ("; then
+            echo "iOS ${sdk} のランタイムが無いのでダウンロードします"
+            xcodebuild -downloadPlatform iOS
+          fi
+          xcrun simctl list runtimes
 
       - name: ci_post_clone
         run: |
@@ -90,6 +103,10 @@ jobs:
       - name: Capture screenshots
         env:
           LANGUAGES: ${{ inputs.languages }}
+          # xcode-27 のランナー（iPhone Duo）は起動直後の負荷が高く、既定の待ちでは 1 枚目が起動画面のまま撮れた。
+          # 他のサイズも数十秒延びるだけなので、全サイズで同じにする
+          WARMUP_SECONDS: 60
+          SETTLE_MINIMUM: 10
         run: Tools/capture_screenshots.sh "${{ matrix.display_type }}" "$LANGUAGES"
 
       - name: Upload screenshots as artifact
