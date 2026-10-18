@@ -47,6 +47,13 @@ struct WebhookProfileClientTests {
         #expect(result.successValue == WebhookProfile(name: "レイド告知Bot", avatarURL: nil))
     }
 
+    @Test("アイコンのハッシュが空文字なら、アイコンの URL は nil")
+    func emptyAvatar() async {
+        let body = Data(#"{"id": "223704706495545344", "name": "レイド告知Bot", "avatar": ""}"#.utf8)
+        let (result, _) = await fetch(returning: .response(statusCode: 200, data: body))
+        #expect(result.successValue == WebhookProfile(name: "レイド告知Bot", avatarURL: nil))
+    }
+
     @Test("名前が null なら空にする")
     func nullName() async {
         let body = Data(#"{"id": "223704706495545344", "name": null, "avatar": null}"#.utf8)

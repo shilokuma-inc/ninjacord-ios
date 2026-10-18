@@ -103,7 +103,8 @@ struct WebhookProfileClient {
         }
         return .success(WebhookProfile(
             name: body.name ?? "",
-            avatarURL: body.avatar.flatMap { Self.avatarURL(webhookID: body.id, avatarHash: $0) }
+            // 空のハッシュでは CDN の URL にならないので、アイコンが無いものとして扱う
+            avatarURL: body.avatar.flatMap { $0.isEmpty ? nil : Self.avatarURL(webhookID: body.id, avatarHash: $0) }
         ))
     }
 
