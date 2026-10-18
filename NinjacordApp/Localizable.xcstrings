@@ -196,6 +196,22 @@
         }
       }
     },
+    "Discordでの見え方" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How it looks on Discord"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordでの見え方"
+          }
+        }
+      }
+    },
     "Discordで障害が発生しています。しばらく待ってから送信してください" : {
       "localizations" : {
         "en" : {
@@ -1994,6 +2010,22 @@
         }
       }
     },
+    "展開済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expanded"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展開済み"
+          }
+        }
+      }
+    },
     "左端の線の色" : {
       "localizations" : {
         "en" : {
@@ -2070,6 +2102,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "復元できる購入が見つかりませんでした"
+          }
+        }
+      }
+    },
+    "折りたたみ済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapsed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "折りたたみ済み"
           }
         }
       }

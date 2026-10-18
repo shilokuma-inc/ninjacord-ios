@@ -11,6 +11,7 @@ import StoreKit
 struct SendMessageView: View {
 
     @State private var isEditing: Bool = false
+    @State private var isPreviewExpanded = false
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
@@ -118,7 +119,15 @@ struct SendMessageView: View {
                 .frame(maxWidth: Self.contentMaxWidth)
 
                 Spacer()
-                    .frame(height: 48.0)
+                    .frame(height: Self.fieldSpacing)
+
+                // 入力した内容を確かめてから送れるよう、入力欄と送信ボタンの間に置く
+                messagePreviewSection
+                    .padding(.horizontal)
+                    .frame(maxWidth: Self.contentMaxWidth)
+
+                Spacer()
+                    .frame(height: 16.0)
 
                 sendButton
             } bottom: {
@@ -201,6 +210,53 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
+    /// Discord での見え方のプレビュー。入力欄と送信ボタンを画面に収めるため、既定では閉じておく
+    private var messagePreviewSection: some View {
+        VStack(spacing: .zero) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isPreviewExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "eye")
+                        .foregroundStyle(Color.appAccent)
+                        .frame(width: 24.0, height: 24.0)
+                        .accessibilityHidden(true)
+                    Text("Discordでの見え方")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.appTextSecondary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.appTextSecondary)
+                        .rotationEffect(.degrees(isPreviewExpanded ? 90.0 : 0.0))
+                        .accessibilityHidden(true)
+                }
+                .frame(minHeight: 44.0)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(isPreviewExpanded ? Text("展開済み") : Text("折りたたみ済み"))
+
+            if isPreviewExpanded {
+                MessagePreview(
+                    username: viewModel.inputUsername,
+                    avatarURL: viewModel.inputAvatarURL,
+                    content: viewModel.inputContext,
+                    embed: viewModel.inputEmbed,
+                    attachment: viewModel.attachment
+                )
+                .padding(.top, Self.fieldSpacing)
+                // 開いても下端の広告の領域は縮めず、入力欄側をスクロールさせる
+                .sendMessageLayoutExcludesHeight()
+                .transition(.opacity)
+            }
+        }
+    }
+}
+
+extension SendMessageView {
     /// 一斉送信の宛先を選んでいる間、URL 欄の代わりに出す
     private var broadcastTargetsRow: some View {
         HStack {
@@ -233,18 +289,18 @@ extension SendMessageView {
 
 /// 送信画面の縦の配置。`content`（入力欄〜送信ボタン）をスクロールできるようにし、その下に `bottom`（広告など）を置く。
 /// 縦が余るときは、スクロール化する前の Spacer での配置と同じく、`content` の上の余白と `bottom` で残りの高さを等分する。
-/// 縦が足りないときは `content` をスクロールさせる
+/// 縦が足りないときは `content` をスクロールさせる。
+/// `sendMessageLayoutExcludesHeight()` を付けた部分の高さは、等分の計算に入れない（開いたプレビューなど）
 private struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
     let onTapBackground: () -> Void
     @ViewBuilder let content: Content
     @ViewBuilder let bottom: Bottom
 
-    /// `content` の本来の高さ（余白を足す前）
-    @State private var contentHeight: CGFloat = 0
+    @State private var heights = Heights()
 
     var body: some View {
         GeometryReader { proxy in
-            let bottomHeight = max(0, (proxy.size.height - contentHeight) / 2)
+            let bottomHeight = max(0, (proxy.size.height - (heights.content - heights.excluded)) / 2)
             VStack(spacing: .zero) {
                 bouncesOnlyWhenScrollable(ScrollView {
                     VStack(spacing: .zero) {
@@ -253,7 +309,7 @@ private struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
                     .background {
                         GeometryReader { contentProxy in
                             Color.clear
-                                .preference(key: ContentHeightKey.self, value: contentProxy.size.height)
+                                .preference(key: HeightsKey.self, value: Heights(content: contentProxy.size.height))
                         }
                     }
                     // 余った高さは上の余白にして、送信ボタンを下に寄せる
@@ -271,8 +327,8 @@ private struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
                     .frame(height: bottomHeight)
             }
         }
-        .onPreferenceChange(ContentHeightKey.self) { height in
-            contentHeight = height
+        .onPreferenceChange(HeightsKey.self) { heights in
+            self.heights = heights
         }
     }
 
@@ -286,11 +342,34 @@ private struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
         }
     }
 
-    private struct ContentHeightKey: PreferenceKey {
-        static let defaultValue: CGFloat = 0
+}
 
-        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-            value = max(value, nextValue())
+/// `SendMessageScrollLayout` が測る高さ。両方を同じ更新で受け取り、下端の領域が一瞬だけ縮むのを防ぐ
+private struct Heights: Equatable {
+    /// `content` の本来の高さ（余白を足す前）
+    var content: CGFloat = 0
+    /// そのうち、等分の計算に入れない高さ
+    var excluded: CGFloat = 0
+}
+
+private struct HeightsKey: PreferenceKey {
+    static let defaultValue = Heights()
+
+    static func reduce(value: inout Heights, nextValue: () -> Heights) {
+        let next = nextValue()
+        value.content += next.content
+        value.excluded += next.excluded
+    }
+}
+
+private extension View {
+    /// この View の高さを、`SendMessageScrollLayout` の余白の等分の計算から外す
+    func sendMessageLayoutExcludesHeight() -> some View {
+        background {
+            GeometryReader { proxy in
+                Color.clear
+                    .preference(key: HeightsKey.self, value: Heights(excluded: proxy.size.height))
+            }
         }
     }
 }
