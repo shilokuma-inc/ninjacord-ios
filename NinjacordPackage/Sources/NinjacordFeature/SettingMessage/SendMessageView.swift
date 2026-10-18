@@ -11,7 +11,8 @@ import StoreKit
 struct SendMessageView: View {
 
     @State private var isEditing: Bool = false
-    @State private var isPreviewExpanded = false
+    /// App Store 用スクリーンショットの送信画面では、Discord での見え方まで写すため開いておく
+    @State private var isPreviewExpanded = ScreenshotDemo.scene == .send
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
@@ -31,7 +32,11 @@ struct SendMessageView: View {
                 .ignoresSafeArea()
                 .onTapGesture(perform: dismissKeyboard)
             // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
-            SendMessageScrollLayout(onTapBackground: dismissKeyboard) {
+            SendMessageScrollLayout(
+                onTapBackground: dismissKeyboard,
+                // 撮影する送信画面では、開いたプレビューと送信ボタンが写るよう下端までスクロールしておく
+                scrollsToBottomOnAppear: ScreenshotDemo.scene == .send
+            ) {
                 VStack(spacing: Self.fieldSpacing) {
                     if viewModel.broadcastTargets.isEmpty {
                         HStack {
@@ -247,7 +252,11 @@ extension SendMessageView {
                     content: viewModel.inputContext,
                     embed: viewModel.inputEmbed,
                     attachment: viewModel.attachment,
-                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
+                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
+                    // 撮影モードではデモのプロフィール画像の URL を読みに行かず、その場で描いたアイコンを出す
+                    avatarLoader: ScreenshotDemo.isEnabled
+                        ? AvatarImageLoader(fixedImage: ScreenshotDemo.avatarImage)
+                        : AvatarImageLoader()
                 )
                 .padding(.top, Self.fieldSpacing)
                 // 開いても下端の広告の領域は縮めず、入力欄側をスクロールさせる
@@ -262,9 +271,11 @@ extension SendMessageView {
     }
 
     /// 名前とアイコンをプレビューに出す Webhook の URL。出さない（取得しない）なら空。
-    /// 一斉送信中は宛先が 1 つに決まらないので出さない。名前とプロフィール画像の URL がどちらも入力済みなら使わないので取得しない
+    /// 一斉送信中は宛先が 1 つに決まらないので出さない。名前とプロフィール画像の URL がどちらも入力済みなら使わないので取得しない。
+    /// 撮影モードでは通信しないよう、デモの内容に関係なく取得しない
     private var webhookProfileInput: String {
-        guard viewModel.broadcastTargets.isEmpty,
+        guard !ScreenshotDemo.isEnabled,
+              viewModel.broadcastTargets.isEmpty,
               viewModel.inputUsername.isEmpty || viewModel.inputAvatarURL.isEmpty else {
             return ""
         }
@@ -300,93 +311,6 @@ extension SendMessageView {
             .accessibilityLabel("一斉送信をやめる")
         }
         .frame(minHeight: 56.0)
-    }
-}
-
-/// 送信画面の縦の配置。`content`（入力欄〜送信ボタン）をスクロールできるようにし、その下に `bottom`（広告など）を置く。
-/// 縦が余るときは、スクロール化する前の Spacer での配置と同じく、`content` の上の余白と `bottom` で残りの高さを等分する。
-/// 縦が足りないときは `content` をスクロールさせる。
-/// `sendMessageLayoutExcludesHeight()` を付けた部分の高さは、等分の計算に入れない（開いたプレビューなど）
-private struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
-    let onTapBackground: () -> Void
-    @ViewBuilder let content: Content
-    @ViewBuilder let bottom: Bottom
-
-    @State private var heights = Heights()
-
-    var body: some View {
-        GeometryReader { proxy in
-            let bottomHeight = max(0, (proxy.size.height - (heights.content - heights.excluded)) / 2)
-            VStack(spacing: .zero) {
-                bouncesOnlyWhenScrollable(ScrollView {
-                    VStack(spacing: .zero) {
-                        content
-                    }
-                    .background {
-                        GeometryReader { contentProxy in
-                            Color.clear
-                                .preference(key: HeightsKey.self, value: Heights(content: contentProxy.size.height))
-                        }
-                    }
-                    // 余った高さは上の余白にして、送信ボタンを下に寄せる
-                    .frame(maxWidth: .infinity, minHeight: proxy.size.height - bottomHeight, alignment: .bottom)
-                    // ScrollView が背景のタップを受け取るので、中の余白のタップでもキーボードを閉じられるようにする
-                    .background {
-                        Color.clear
-                            .contentShape(Rectangle())
-                            .onTapGesture(perform: onTapBackground)
-                    }
-                })
-                .scrollDismissesKeyboard(.interactively)
-
-                bottom
-                    .frame(height: bottomHeight)
-            }
-        }
-        .onPreferenceChange(HeightsKey.self) { heights in
-            self.heights = heights
-        }
-    }
-
-    /// 内容が収まっているときは、引っ張っても動かないようにする（スクロール化する前と同じ操作感にする）
-    @ViewBuilder
-    private func bouncesOnlyWhenScrollable(_ scrollView: some View) -> some View {
-        if #available(iOS 16.4, *) {
-            scrollView.scrollBounceBehavior(.basedOnSize)
-        } else {
-            scrollView
-        }
-    }
-
-}
-
-/// `SendMessageScrollLayout` が測る高さ。両方を同じ更新で受け取り、下端の領域が一瞬だけ縮むのを防ぐ
-private struct Heights: Equatable {
-    /// `content` の本来の高さ（余白を足す前）
-    var content: CGFloat = 0
-    /// そのうち、等分の計算に入れない高さ
-    var excluded: CGFloat = 0
-}
-
-private struct HeightsKey: PreferenceKey {
-    static let defaultValue = Heights()
-
-    static func reduce(value: inout Heights, nextValue: () -> Heights) {
-        let next = nextValue()
-        value.content += next.content
-        value.excluded += next.excluded
-    }
-}
-
-private extension View {
-    /// この View の高さを、`SendMessageScrollLayout` の余白の等分の計算から外す
-    func sendMessageLayoutExcludesHeight() -> some View {
-        background {
-            GeometryReader { proxy in
-                Color.clear
-                    .preference(key: HeightsKey.self, value: Heights(excluded: proxy.size.height))
-            }
-        }
     }
 }
 
