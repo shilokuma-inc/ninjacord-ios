@@ -3,6 +3,7 @@
 //  NinjacordApp
 //
 
+import ImageIO
 import UIKit
 
 /// メッセージのプレビュー（`MessagePreview`）に出すプロフィール画像を、入力された URL から読み込む。
@@ -10,6 +11,8 @@ import UIKit
 struct AvatarImageLoader {
     /// 入力が止まったとみなすまでの待ち時間
     static let defaultDelay: Duration = .milliseconds(500)
+    /// 読み込んだ画像を縮める長辺の上限。プレビューのアイコンは 40pt なので、3 倍の画面でも足りる大きさにする
+    static let maxPixelSize = 128
 
     private let session: URLSession
     private let delay: Duration
@@ -52,6 +55,23 @@ struct AvatarImageLoader {
               (200..<300).contains(statusCode) else {
             return nil
         }
-        return UIImage(data: data)
+        return Self.downsampledImage(from: data)
+    }
+
+    /// 大きな画像をそのまま展開してメモリを使い切らないよう、長辺を `maxPixelSize` 以下に縮めて読む（元より大きくはしない）
+    static func downsampledImage(from data: Data) -> UIImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            return nil
+        }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return nil
+        }
+        return UIImage(cgImage: cgImage)
     }
 }
