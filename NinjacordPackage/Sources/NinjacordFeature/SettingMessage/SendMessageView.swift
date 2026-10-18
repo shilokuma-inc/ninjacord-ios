@@ -20,6 +20,9 @@ struct SendMessageView: View {
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
 
+    /// 入力欄どうしの間隔。メッセージと埋め込みタイトルの間も同じ値にして、縦の並びをそろえる（Discussion #525）
+    private static let fieldSpacing: CGFloat = 8.0
+
     var body: some View {
         ZStack {
             Color.appBackground
@@ -33,7 +36,7 @@ struct SendMessageView: View {
                     }
                 }
             VStack(spacing: .zero) {
-                VStack(spacing: 8.0) {
+                VStack(spacing: Self.fieldSpacing) {
                     Spacer()
 
                     if viewModel.broadcastTargets.isEmpty {
@@ -103,8 +106,9 @@ struct SendMessageView: View {
                 // 縦の余白の配分が変わらないよう、入力欄をまとめて包まずにブロックごとに付ける
                 .frame(maxWidth: Self.contentMaxWidth)
 
+                // メッセージと埋め込みタイトルの間隔も、ほかの入力欄と同じ値にする
                 Spacer()
-                    .frame(height: 24.0)
+                    .frame(height: Self.fieldSpacing)
 
                 HStack {
                     ClearableIconTextField(
