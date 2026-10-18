@@ -11,35 +11,46 @@ import SwiftUI
 /// `sendMessageLayoutExcludesHeight()` を付けた部分の高さは、等分の計算に入れない（開いたプレビューなど）
 struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
     let onTapBackground: () -> Void
+    /// 表示したときに `content` の下端までスクロールしておくか。収まっているときは動かない
+    var scrollsToBottomOnAppear = false
     @ViewBuilder let content: Content
     @ViewBuilder let bottom: Bottom
 
     @State private var heights = Heights()
 
+    /// `content` の下端へスクロールするための ID
+    private static var contentID: String { "content" }
+
     var body: some View {
         GeometryReader { proxy in
             let bottomHeight = max(0, (proxy.size.height - (heights.content - heights.excluded)) / 2)
             VStack(spacing: .zero) {
-                bouncesOnlyWhenScrollable(ScrollView {
-                    VStack(spacing: .zero) {
-                        content
-                    }
-                    .background {
-                        GeometryReader { contentProxy in
-                            Color.clear
-                                .preference(key: HeightsKey.self, value: Heights(content: contentProxy.size.height))
+                ScrollViewReader { scrollProxy in
+                    bouncesOnlyWhenScrollable(ScrollView {
+                        VStack(spacing: .zero) {
+                            content
                         }
+                        .id(Self.contentID)
+                        .background {
+                            GeometryReader { contentProxy in
+                                Color.clear
+                                    .preference(key: HeightsKey.self, value: Heights(content: contentProxy.size.height))
+                            }
+                        }
+                        // 余った高さは上の余白にして、送信ボタンを下に寄せる
+                        .frame(maxWidth: .infinity, minHeight: proxy.size.height - bottomHeight, alignment: .bottom)
+                        // ScrollView が背景のタップを受け取るので、中の余白のタップでもキーボードを閉じられるようにする
+                        .background {
+                            Color.clear
+                                .contentShape(Rectangle())
+                                .onTapGesture(perform: onTapBackground)
+                        }
+                    })
+                    .scrollDismissesKeyboard(.interactively)
+                    .task {
+                        await scrollToBottom(scrollProxy)
                     }
-                    // 余った高さは上の余白にして、送信ボタンを下に寄せる
-                    .frame(maxWidth: .infinity, minHeight: proxy.size.height - bottomHeight, alignment: .bottom)
-                    // ScrollView が背景のタップを受け取るので、中の余白のタップでもキーボードを閉じられるようにする
-                    .background {
-                        Color.clear
-                            .contentShape(Rectangle())
-                            .onTapGesture(perform: onTapBackground)
-                    }
-                })
-                .scrollDismissesKeyboard(.interactively)
+                }
 
                 bottom
                     .frame(height: bottomHeight)
@@ -48,6 +59,18 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
         .onPreferenceChange(HeightsKey.self) { heights in
             self.heights = heights
         }
+    }
+
+    /// `scrollsToBottomOnAppear` のとき、`content` の下端までスクロールする。
+    /// 添付画像やアイコンの読み込みで `content` の高さが決まるのを待ってから動かす
+    private func scrollToBottom(_ scrollProxy: ScrollViewProxy) async {
+        guard scrollsToBottomOnAppear else { return }
+        do {
+            try await Task.sleep(for: .milliseconds(500))
+        } catch {
+            return
+        }
+        scrollProxy.scrollTo(Self.contentID, anchor: .bottom)
     }
 
     /// 内容が収まっているときは、引っ張っても動かないようにする（スクロール化する前と同じ操作感にする）

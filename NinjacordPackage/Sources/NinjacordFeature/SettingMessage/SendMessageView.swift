@@ -11,7 +11,8 @@ import StoreKit
 struct SendMessageView: View {
 
     @State private var isEditing: Bool = false
-    @State private var isPreviewExpanded = false
+    /// App Store 用スクリーンショットの送信画面では、Discord での見え方まで写すため開いておく
+    @State private var isPreviewExpanded = ScreenshotDemo.scene == .send
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
@@ -31,7 +32,11 @@ struct SendMessageView: View {
                 .ignoresSafeArea()
                 .onTapGesture(perform: dismissKeyboard)
             // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
-            SendMessageScrollLayout(onTapBackground: dismissKeyboard) {
+            SendMessageScrollLayout(
+                onTapBackground: dismissKeyboard,
+                // 撮影する送信画面では、開いたプレビューと送信ボタンが写るよう下端までスクロールしておく
+                scrollsToBottomOnAppear: ScreenshotDemo.scene == .send
+            ) {
                 VStack(spacing: Self.fieldSpacing) {
                     if viewModel.broadcastTargets.isEmpty {
                         HStack {

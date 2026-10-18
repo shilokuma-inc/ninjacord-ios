@@ -11,7 +11,7 @@ import UIKit
 enum ScreenshotDemo {
     /// 撮影する画面。並び順は `AppStore/screenshots.json` で決める
     enum Scene: String {
-        /// 送信画面（入力済み・画像添付あり）
+        /// 送信画面（入力済み・画像添付あり・プレビューを開いた状態）
         case send
         /// 埋め込みエディタのライブプレビュー
         case embed
@@ -69,14 +69,15 @@ enum ScreenshotDemo {
         return content.broadcastTargetIndices.compactMap { items.indices.contains($0) ? items[$0] : nil }
     }
 
-    /// 送信画面に添付しておく画像。実在の写真を写さないよう、その場で描く
+    /// 送信画面に添付しておく画像。実在の写真を写さないよう、その場で描く。
+    /// 開いたプレビューで縦に場所を取りすぎないよう、横長にする
     static var attachment: ImageAttachment? {
         let image = drawDemoImage(
-            size: CGSize(width: 640, height: 640),
+            size: CGSize(width: 640, height: 360),
             colors: [UIColor(red: 0x58 / 255, green: 0x65 / 255, blue: 0xF2 / 255, alpha: 1),
                      UIColor(red: 0xEB / 255, green: 0x45 / 255, blue: 0x9F / 255, alpha: 1)],
             symbolName: "gamecontroller.fill",
-            symbolPointSize: 280
+            symbolPointSize: 200
         )
         guard let data = image.pngData() else { return nil }
         return ImageAttachment(data: data, fileName: "image.png", mimeType: "image/png")
