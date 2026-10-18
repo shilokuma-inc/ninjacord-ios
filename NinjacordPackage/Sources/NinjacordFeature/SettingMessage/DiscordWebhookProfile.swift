@@ -12,7 +12,7 @@ struct DiscordWebhookURL: Equatable {
     static let pattern = #"^https://((ptb|canary)\.)?discord(app)?\.com"#
         + #"/api(/v[0-9]+)?/webhooks/[0-9]+/[A-Za-z0-9_-]+/?(\?.*)?$"#
 
-    /// 入力された URL からクエリを除いたもの。Webhook の取得（GET）に使う
+    /// 入力された URL からクエリとフラグメントを除いたもの。Webhook の取得（GET）に使う
     let url: URL
 
     /// 前後の空白を除いて判定する。Webhook URL の形でなければ nil
