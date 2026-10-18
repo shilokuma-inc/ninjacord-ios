@@ -618,6 +618,22 @@
         }
       }
     },
+    "Webhookの名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook name"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhookの名前"
+          }
+        }
+      }
+    },
     "Webhookを使って、好きな名前・アイコンでDiscordのチャンネルにメッセージを送れます" : {
       "localizations" : {
         "en" : {
@@ -790,6 +806,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "よく使うURLは保存"
+          }
+        }
+      }
+    },
+    "アプリ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "APP"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ"
           }
         }
       }
@@ -1382,6 +1414,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メッセージが入力されていません"
+          }
+        }
+      }
+    },
+    "メッセージの本文" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message text"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージの本文"
           }
         }
       }
