@@ -228,6 +228,22 @@
         }
       }
     },
+    "Discordの送信者名を上書き。空ならWebhookの名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overrides the sender name. Blank uses the webhook's name."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordの送信者名を上書き。空ならWebhookの名前"
+          }
+        }
+      }
+    },
     "Discordへかんたん送信" : {
       "localizations" : {
         "en" : {
