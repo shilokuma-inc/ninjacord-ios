@@ -247,7 +247,11 @@ extension SendMessageView {
                     content: viewModel.inputContext,
                     embed: viewModel.inputEmbed,
                     attachment: viewModel.attachment,
-                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
+                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
+                    // 撮影モードではデモのプロフィール画像の URL を読みに行かず、その場で描いたアイコンを出す
+                    avatarLoader: ScreenshotDemo.isEnabled
+                        ? AvatarImageLoader(fixedImage: ScreenshotDemo.avatarImage)
+                        : AvatarImageLoader()
                 )
                 .padding(.top, Self.fieldSpacing)
                 // 開いても下端の広告の領域は縮めず、入力欄側をスクロールさせる
@@ -262,9 +266,11 @@ extension SendMessageView {
     }
 
     /// 名前とアイコンをプレビューに出す Webhook の URL。出さない（取得しない）なら空。
-    /// 一斉送信中は宛先が 1 つに決まらないので出さない。名前とプロフィール画像の URL がどちらも入力済みなら使わないので取得しない
+    /// 一斉送信中は宛先が 1 つに決まらないので出さない。名前とプロフィール画像の URL がどちらも入力済みなら使わないので取得しない。
+    /// 撮影モードでは通信しないよう、デモの内容に関係なく取得しない
     private var webhookProfileInput: String {
-        guard viewModel.broadcastTargets.isEmpty,
+        guard !ScreenshotDemo.isEnabled,
+              viewModel.broadcastTargets.isEmpty,
               viewModel.inputUsername.isEmpty || viewModel.inputAvatarURL.isEmpty else {
             return ""
         }

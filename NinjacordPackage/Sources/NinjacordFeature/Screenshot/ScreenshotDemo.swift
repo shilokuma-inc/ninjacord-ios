@@ -71,13 +71,40 @@ enum ScreenshotDemo {
 
     /// 送信画面に添付しておく画像。実在の写真を写さないよう、その場で描く
     static var attachment: ImageAttachment? {
-        let size = CGSize(width: 640, height: 640)
-        let image = UIGraphicsImageRenderer(size: size).image { context in
-            let colors = [
-                UIColor(red: 0x58 / 255, green: 0x65 / 255, blue: 0xF2 / 255, alpha: 1).cgColor,
-                UIColor(red: 0xEB / 255, green: 0x45 / 255, blue: 0x9F / 255, alpha: 1).cgColor
-            ]
-            if let gradient = CGGradient(colorsSpace: nil, colors: colors as CFArray, locations: [0, 1]) {
+        let image = drawDemoImage(
+            size: CGSize(width: 640, height: 640),
+            colors: [UIColor(red: 0x58 / 255, green: 0x65 / 255, blue: 0xF2 / 255, alpha: 1),
+                     UIColor(red: 0xEB / 255, green: 0x45 / 255, blue: 0x9F / 255, alpha: 1)],
+            symbolName: "gamecontroller.fill",
+            symbolPointSize: 280
+        )
+        guard let data = image.pngData() else { return nil }
+        return ImageAttachment(data: data, fileName: "image.png", mimeType: "image/png")
+    }
+
+    /// プレビューに出すデモのプロフィール画像。デモの URL（example.com）を読みに行かないよう、その場で描く。
+    /// プレビューのアイコン（40pt）に合わせた大きさで、丸く切り抜くのはプレビュー側
+    static let avatarImage = drawDemoImage(
+        size: CGSize(width: 40, height: 40),
+        colors: [UIColor(red: 0xFE / 255, green: 0xE7 / 255, blue: 0x5C / 255, alpha: 1),
+                 UIColor(red: 0xED / 255, green: 0x42 / 255, blue: 0x45 / 255, alpha: 1)],
+        symbolName: "shield.fill",
+        symbolPointSize: 18
+    )
+
+    /// 斜めのグラデーションの中央に、白い SF Symbol を置いた画像を描く
+    private static func drawDemoImage(
+        size: CGSize,
+        colors: [UIColor],
+        symbolName: String,
+        symbolPointSize: CGFloat
+    ) -> UIImage {
+        UIGraphicsImageRenderer(size: size).image { context in
+            if let gradient = CGGradient(
+                colorsSpace: nil,
+                colors: colors.map(\.cgColor) as CFArray,
+                locations: [0, 1]
+            ) {
                 context.cgContext.drawLinearGradient(
                     gradient,
                     start: .zero,
@@ -85,8 +112,8 @@ enum ScreenshotDemo {
                     options: []
                 )
             }
-            let configuration = UIImage.SymbolConfiguration(pointSize: 280, weight: .bold)
-            if let symbol = UIImage(systemName: "gamecontroller.fill", withConfiguration: configuration)?
+            let configuration = UIImage.SymbolConfiguration(pointSize: symbolPointSize, weight: .bold)
+            if let symbol = UIImage(systemName: symbolName, withConfiguration: configuration)?
                 .withTintColor(.white, renderingMode: .alwaysOriginal) {
                 symbol.draw(at: CGPoint(
                     x: (size.width - symbol.size.width) / 2,
@@ -94,8 +121,6 @@ enum ScreenshotDemo {
                 ))
             }
         }
-        guard let data = image.pngData() else { return nil }
-        return ImageAttachment(data: data, fileName: "image.png", mimeType: "image/png")
     }
 
     /// 撮影する言語のデモ内容。`-AppleLanguages` で切り替えた言語に合わせる

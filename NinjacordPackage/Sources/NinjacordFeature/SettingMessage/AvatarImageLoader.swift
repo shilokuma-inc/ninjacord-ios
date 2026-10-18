@@ -16,6 +16,8 @@ struct AvatarImageLoader {
 
     private let session: URLSession
     private let delay: Duration
+    /// 通信せずに返す画像。撮影モードでデモのアイコンを出すときに使う
+    private let fixedImage: UIImage?
 
     /// - Parameters:
     ///   - session: 読み込みに使う URLSession。テストでは URLProtocol のスタブを入れたものを渡す
@@ -23,6 +25,14 @@ struct AvatarImageLoader {
     init(session: URLSession = .shared, delay: Duration = defaultDelay) {
         self.session = session
         self.delay = delay
+        self.fixedImage = nil
+    }
+
+    /// 通信も待ちもせず、読み込む URL のときは常に `image` を返す（App Store 用スクリーンショットの撮影モード用）
+    init(fixedImage image: UIImage) {
+        self.session = .shared
+        self.delay = .zero
+        self.fixedImage = image
     }
 
     /// 読み込む URL。https でホストを持つものだけ（http は ATS で読めない）。読まないなら nil
@@ -40,6 +50,9 @@ struct AvatarImageLoader {
     func image(from string: String) async -> UIImage? {
         guard let url = Self.url(from: string) else {
             return nil
+        }
+        if let fixedImage {
+            return fixedImage
         }
         do {
             try await Task.sleep(for: delay)
