@@ -5,20 +5,20 @@
 
 import SwiftUI
 
+/// Discord のダークテーマの配色。メッセージのプレビュー（`MessagePreview`）でも使う
+enum DiscordPalette {
+    static let background = Color(red: 0x2B / 255, green: 0x2D / 255, blue: 0x31 / 255)
+    static let defaultAccent = Color(red: 0x1E / 255, green: 0x1F / 255, blue: 0x22 / 255)
+    static let title = Color(red: 0xF2 / 255, green: 0xF3 / 255, blue: 0xF5 / 255)
+    static let text = Color(red: 0xDB / 255, green: 0xDE / 255, blue: 0xE1 / 255)
+    static let secondary = Color(red: 0xB5 / 255, green: 0xBA / 255, blue: 0xC1 / 255)
+}
+
 /// 埋め込みが Discord 上でどう見えるかの簡易プレビュー。
 /// Discussion #259 の決定により、色つき縦線 + title / description / fields / footer 程度に留め、完全には再現しない。
 /// Discord 上での見え方を示すため、アプリのテーマに関係なく Discord のダークテーマ風の配色で描く
 struct EmbedPreview: View {
     let embed: MessageEmbedEntity
-
-    /// Discord のダークテーマの配色
-    private enum Palette {
-        static let background = Color(red: 0x2B / 255, green: 0x2D / 255, blue: 0x31 / 255)
-        static let defaultAccent = Color(red: 0x1E / 255, green: 0x1F / 255, blue: 0x22 / 255)
-        static let title = Color(red: 0xF2 / 255, green: 0xF3 / 255, blue: 0xF5 / 255)
-        static let text = Color(red: 0xDB / 255, green: 0xDE / 255, blue: 0xE1 / 255)
-        static let secondary = Color(red: 0xB5 / 255, green: 0xBA / 255, blue: 0xC1 / 255)
-    }
 
     /// Discord は inline の fields を 1 行に最大 3 件まで並べる
     private static let maxInlineFieldsPerRow = 3
@@ -33,12 +33,12 @@ struct EmbedPreview: View {
                 if !embed.title.isEmpty {
                     Text(embed.title)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Palette.title)
+                        .foregroundStyle(DiscordPalette.title)
                 }
                 if !embed.description.isEmpty {
                     Text(embed.description)
                         .font(.system(size: 14))
-                        .foregroundStyle(Palette.text)
+                        .foregroundStyle(DiscordPalette.text)
                 }
                 ForEach(Array(fieldRows.enumerated()), id: \.offset) { _, row in
                     HStack(alignment: .top, spacing: 12.0) {
@@ -50,19 +50,19 @@ struct EmbedPreview: View {
                 if !embed.footerText.isEmpty {
                     Text(embed.footerText)
                         .font(.system(size: 12))
-                        .foregroundStyle(Palette.secondary)
+                        .foregroundStyle(DiscordPalette.secondary)
                 }
             }
             .padding(12.0)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Palette.background)
+        .background(DiscordPalette.background)
         .clipShape(RoundedRectangle(cornerRadius: 4.0))
         .accessibilityElement(children: .combine)
     }
 
     private var accentColor: Color {
-        guard let rgb = embed.color else { return Palette.defaultAccent }
+        guard let rgb = embed.color else { return DiscordPalette.defaultAccent }
         return Color(
             red: Double((rgb >> 16) & 0xFF) / 255,
             green: Double((rgb >> 8) & 0xFF) / 255,
@@ -90,10 +90,10 @@ struct EmbedPreview: View {
         VStack(alignment: .leading, spacing: 2.0) {
             Text(field.name)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Palette.title)
+                .foregroundStyle(DiscordPalette.title)
             Text(field.value)
                 .font(.system(size: 14))
-                .foregroundStyle(Palette.text)
+                .foregroundStyle(DiscordPalette.text)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

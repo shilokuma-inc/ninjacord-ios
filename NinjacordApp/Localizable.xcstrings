@@ -196,6 +196,22 @@
         }
       }
     },
+    "Discordでの見え方" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How it looks on Discord"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordでの見え方"
+          }
+        }
+      }
+    },
     "Discordで障害が発生しています。しばらく待ってから送信してください" : {
       "localizations" : {
         "en" : {
@@ -212,6 +228,22 @@
         }
       }
     },
+    "Discordのアイコンを上書き。空ならWebhookのアイコン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overrides the sender icon. Blank uses the webhook's icon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordのアイコンを上書き。空ならWebhookのアイコン"
+          }
+        }
+      }
+    },
     "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします" : {
       "localizations" : {
         "en" : {
@@ -224,6 +256,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします"
+          }
+        }
+      }
+    },
+    "Discordの送信者名を上書き。空なら既定の名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overrides the sender name. Blank uses the default name."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordの送信者名を上書き。空なら既定の名前"
           }
         }
       }
@@ -554,6 +602,22 @@
         }
       }
     },
+    "Webhook URL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URL"
+          }
+        }
+      }
+    },
     "Webhook URLが正しくありません。Discordでコピーし直してください" : {
       "localizations" : {
         "en" : {
@@ -790,6 +854,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "よく使うURLは保存"
+          }
+        }
+      }
+    },
+    "アプリ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "APP"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ"
           }
         }
       }
@@ -1354,6 +1434,22 @@
         }
       }
     },
+    "プロフィール画像のURL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile image URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロフィール画像のURL"
+          }
+        }
+      }
+    },
     "プロフィール画像のURLを入れてください" : {
       "localizations" : {
         "en" : {
@@ -1370,6 +1466,22 @@
         }
       }
     },
+    "メッセージ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージ"
+          }
+        }
+      }
+    },
     "メッセージが入力されていません" : {
       "localizations" : {
         "en" : {
@@ -1382,6 +1494,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メッセージが入力されていません"
+          }
+        }
+      }
+    },
+    "メッセージの本文" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message text"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージの本文"
           }
         }
       }
@@ -1882,6 +2010,22 @@
         }
       }
     },
+    "埋め込みタイトル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Embed title"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "埋め込みタイトル"
+          }
+        }
+      }
+    },
     "埋め込みタイトルを入れてください" : {
       "localizations" : {
         "en" : {
@@ -1942,6 +2086,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "宛先の選択を解除して1件ずつ送るか、Proにしてください"
+          }
+        }
+      }
+    },
+    "展開済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expanded"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展開済み"
           }
         }
       }
@@ -2022,6 +2182,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "復元できる購入が見つかりませんでした"
+          }
+        }
+      }
+    },
+    "折りたたみ済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapsed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "折りたたみ済み"
           }
         }
       }
