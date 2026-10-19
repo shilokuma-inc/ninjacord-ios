@@ -63,6 +63,8 @@ struct MessagePreview: View {
         .background(DiscordPalette.messageBackground)
         .clipShape(RoundedRectangle(cornerRadius: 8.0))
         .task(id: displayAvatarURL) {
+            // URL が変わったら、新しい画像を読み込むまで前の URL の画像を出したままにしない
+            avatarImage = nil
             let image = await avatarLoader.image(from: displayAvatarURL)
             // 読み込み中に URL が変わったら、古い URL の画像は出さない
             guard !Task.isCancelled else {
