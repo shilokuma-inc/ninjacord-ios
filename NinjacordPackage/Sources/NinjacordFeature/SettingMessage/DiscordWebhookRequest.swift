@@ -17,6 +17,10 @@ struct DiscordWebhookRequest {
         let mimeType: String
     }
 
+    /// 名前が空のときに送る名前。ローカライズしない（Discussion #459 の Q4 の 1）。
+    /// Discord 上では Webhook に設定された名前の代わりにこれが出るので、プレビューでも同じものを出す
+    static let defaultUsername = "以下、名無しにかわりましてVIPがお送りします"
+
     let messageEntity: MessageEntity
     /// 添付する画像。あれば multipart/form-data で送る
     let attachment: ImageAttachment?
@@ -32,7 +36,7 @@ struct DiscordWebhookRequest {
     /// Execute Webhook の JSON パラメータ
     var parameters: [String: Any] {
         var param: [String: Any] = [
-            "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
+            "username": messageEntity.username.isEmpty ? Self.defaultUsername : messageEntity.username,
             "avatar_url": messageEntity.avatarURL,
             "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
         ]

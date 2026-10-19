@@ -14,7 +14,7 @@ struct MessagePreview: View {
     let content: String
     let embed: MessageEmbedEntity
     let attachment: ImageAttachment?
-    /// Discord 側で Webhook に設定されている名前とアイコン。名前・プロフィール画像の URL が空のときに代わりに出す。未取得なら nil
+    /// Discord 側で Webhook に設定されているアイコン。プロフィール画像の URL が空のときに代わりに出す。未取得なら nil
     var webhookProfile: WebhookProfile?
     var avatarLoader = AvatarImageLoader()
 
@@ -63,6 +63,8 @@ struct MessagePreview: View {
         .background(DiscordPalette.messageBackground)
         .clipShape(RoundedRectangle(cornerRadius: 8.0))
         .task(id: displayAvatarURL) {
+            // URL が変わったら、新しい画像を読み込むまで前の URL の画像を出したままにしない
+            avatarImage = nil
             let image = await avatarLoader.image(from: displayAvatarURL)
             // 読み込み中に URL が変わったら、古い URL の画像は出さない
             guard !Task.isCancelled else {
@@ -75,15 +77,12 @@ struct MessagePreview: View {
         }
     }
 
-    /// 出す名前。入力が空なら Webhook の名前。どちらも空なら空（仮の文言を出す）
     private var displayName: String {
-        username.isEmpty ? (webhookProfile?.name ?? "") : username
+        MessagePreviewProfile.displayName(username: username)
     }
 
-    /// 読み込むプロフィール画像の URL。入力が空なら Webhook のアイコン。
-    /// 入力された URL が読めないときは、Discord 上と同じく Webhook のアイコンには戻さず既定のアイコンを出す
     private var displayAvatarURL: String {
-        avatarURL.isEmpty ? (webhookProfile?.avatarURL?.absoluteString ?? "") : avatarURL
+        MessagePreviewProfile.displayAvatarURL(avatarURL: avatarURL, webhookProfile: webhookProfile)
     }
 
     private var avatar: some View {
@@ -110,10 +109,10 @@ struct MessagePreview: View {
     /// 名前と、Webhook から送ったメッセージに付くバッジ
     private var header: some View {
         HStack(spacing: 6.0) {
-            // Webhook の名前も Discord 上では入力した名前と同じ見え方なので、色は分けない
-            Text(displayName.isEmpty ? String(localized: "Webhookの名前") : displayName)
+            // 名前が空のときに送る決まった名前も Discord 上では入力した名前と同じ見え方なので、色は分けない
+            Text(displayName)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(displayName.isEmpty ? DiscordPalette.placeholder : DiscordPalette.title)
+                .foregroundStyle(DiscordPalette.title)
                 .lineLimit(1)
             Text("アプリ")
                 .font(.system(size: 10, weight: .semibold))
@@ -184,7 +183,7 @@ private extension ImageAttachment {
         .padding()
 }
 
-#Preview("Webhook の名前とアイコン") {
+#Preview("Webhook のアイコン") {
     MessagePreview(
         username: "",
         avatarURL: "",

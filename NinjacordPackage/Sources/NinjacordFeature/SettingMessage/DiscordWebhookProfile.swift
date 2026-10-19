@@ -33,7 +33,8 @@ struct DiscordWebhookURL: Equatable {
 }
 
 /// Webhook に Discord 側で設定されている名前とアイコン。
-/// 送信画面で名前・プロフィール画像の URL が空のとき、プレビューに出すために使う
+/// 送信画面でプロフィール画像の URL が空のとき、プレビューにアイコンを出すために使う。
+/// 名前は空でも送信時に決まった名前（`DiscordWebhookRequest.defaultUsername`）を送り、Discord 上に Webhook の名前は出ないので使わない
 struct WebhookProfile: Equatable {
     /// Webhook の名前。Discord が名前を返さなかったときは空
     let name: String

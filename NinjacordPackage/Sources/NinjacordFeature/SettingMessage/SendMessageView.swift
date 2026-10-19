@@ -278,16 +278,13 @@ extension SendMessageView {
         }
     }
 
-    /// 名前とアイコンをプレビューに出す Webhook の URL。出さない（取得しない）なら空。
-    /// 一斉送信中は宛先が 1 つに決まらないので出さない。名前とプロフィール画像の URL がどちらも入力済みなら使わないので取得しない。
-    /// 撮影モードでは通信しないよう、デモの内容に関係なく取得しない
     private var webhookProfileInput: String {
-        guard !ScreenshotDemo.isEnabled,
-              viewModel.broadcastTargets.isEmpty,
-              viewModel.inputUsername.isEmpty || viewModel.inputAvatarURL.isEmpty else {
-            return ""
-        }
-        return viewModel.inputURL
+        MessagePreviewProfile.webhookProfileInput(
+            webhookURL: viewModel.inputURL,
+            avatarURL: viewModel.inputAvatarURL,
+            isBroadcasting: !viewModel.broadcastTargets.isEmpty,
+            isScreenshotDemo: ScreenshotDemo.isEnabled
+        )
     }
 }
 
