@@ -39,11 +39,13 @@ struct SendMessageView: View {
             ) {
                 VStack(spacing: Self.fieldSpacing) {
                     if viewModel.broadcastTargets.isEmpty {
-                        HStack {
+                        // 見出しの分だけ高くなるので、横のボタンは入力欄の中央にそろえる
+                        HStack(alignment: .textFieldCenter) {
                             ClearableIconTextField(
                                 icon: Image(systemName: "link.icloud.fill"),
                                 placeholder: "URLを入れてください",
-                                text: $viewModel.inputURL
+                                text: $viewModel.inputURL,
+                                title: "Webhook URL"
                             )
                             .onTapGesture {
                                 self.isEditing = true
@@ -76,7 +78,9 @@ struct SendMessageView: View {
                     ClearableIconTextField(
                         icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
                         placeholder: "名前を入れてください",
-                        text: $viewModel.inputUsername
+                        text: $viewModel.inputUsername,
+                        title: "名前",
+                        note: "Discordの送信者名を上書き。空なら既定の名前"
                     )
                     .onTapGesture {
                         self.isEditing = true
@@ -85,7 +89,9 @@ struct SendMessageView: View {
                     ClearableIconTextField(
                         icon: Image(systemName: "person.crop.square"),
                         placeholder: "プロフィール画像のURLを入れてください",
-                        text: $viewModel.inputAvatarURL
+                        text: $viewModel.inputAvatarURL,
+                        title: "プロフィール画像のURL",
+                        note: "Discordのアイコンを上書き。空ならWebhookのアイコン"
                     )
                     .onTapGesture {
                         self.isEditing = true
@@ -94,7 +100,8 @@ struct SendMessageView: View {
                     ClearableIconTextField(
                         icon: Image(systemName: "square.and.pencil"),
                         placeholder: "メッセージを入れてください",
-                        text: $viewModel.inputContext
+                        text: $viewModel.inputContext,
+                        title: "メッセージ"
                     )
                     .onTapGesture {
                         self.isEditing = true
@@ -109,11 +116,12 @@ struct SendMessageView: View {
                 Spacer()
                     .frame(height: Self.fieldSpacing)
 
-                HStack {
+                HStack(alignment: .textFieldCenter) {
                     ClearableIconTextField(
                         icon: Image(systemName: "list.clipboard"),
                         placeholder: "埋め込みタイトルを入れてください",
-                        text: $viewModel.inputEmbed.title
+                        text: $viewModel.inputEmbed.title,
+                        title: "埋め込みタイトル"
                     )
                     .onTapGesture {
                         self.isEditing = true

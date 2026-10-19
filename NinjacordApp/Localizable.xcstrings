@@ -228,6 +228,22 @@
         }
       }
     },
+    "Discordのアイコンを上書き。空ならWebhookのアイコン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overrides the sender icon. Blank uses the webhook's icon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordのアイコンを上書き。空ならWebhookのアイコン"
+          }
+        }
+      }
+    },
     "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします" : {
       "localizations" : {
         "en" : {
@@ -240,6 +256,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします"
+          }
+        }
+      }
+    },
+    "Discordの送信者名を上書き。空なら既定の名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overrides the sender name. Blank uses the default name."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordの送信者名を上書き。空なら既定の名前"
           }
         }
       }
@@ -566,6 +598,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "URL設定"
+          }
+        }
+      }
+    },
+    "Webhook URL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URL"
           }
         }
       }
@@ -1402,6 +1450,22 @@
         }
       }
     },
+    "プロフィール画像のURL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile image URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロフィール画像のURL"
+          }
+        }
+      }
+    },
     "プロフィール画像のURLを入れてください" : {
       "localizations" : {
         "en" : {
@@ -1414,6 +1478,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "プロフィール画像のURLを入れてください"
+          }
+        }
+      }
+    },
+    "メッセージ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージ"
           }
         }
       }
@@ -1942,6 +2022,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "埋め込みを編集"
+          }
+        }
+      }
+    },
+    "埋め込みタイトル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Embed title"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "埋め込みタイトル"
           }
         }
       }
