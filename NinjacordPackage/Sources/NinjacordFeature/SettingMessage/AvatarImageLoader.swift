@@ -35,7 +35,8 @@ struct AvatarImageLoader {
         self.fixedImage = image
     }
 
-    /// 読み込む URL。https でホストを持つものだけ（http は ATS で読めない）。読まないなら nil
+    /// 読み込む URL。https でホストを持つものだけ。読まないなら nil。
+    /// http の URL は ATS（App Transport Security）で読み込めないため、読まずに既定のアイコンを出す
     static func url(from string: String) -> URL? {
         guard let components = URLComponents(string: string),
               components.scheme?.lowercased() == "https",
