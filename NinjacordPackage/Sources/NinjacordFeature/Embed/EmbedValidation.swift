@@ -71,6 +71,14 @@ extension MessageEmbedEntity {
         fields.filter { !$0.name.isEmpty || !$0.value.isEmpty }
     }
 
+    /// 送った埋め込みに、Discord 上で表示される中身があるか。
+    /// 空のフィールド行だけのとき（`hasContent` は true で、中身の無い embed を送る）や、色・送信日時だけのときは false
+    var hasDisplayedContent: Bool {
+        let texts = [title, description, footerText, imageURL, thumbnailURL]
+        return texts.contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            || !sendableFields.isEmpty
+    }
+
     /// 上限違反などの誤りを、画面の上から順に返す。問題が無ければ空
     func validationIssues() -> [EmbedValidationIssue] {
         var issues: [EmbedValidationIssue] = []

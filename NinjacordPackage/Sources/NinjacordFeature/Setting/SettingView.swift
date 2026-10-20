@@ -16,6 +16,8 @@ struct SettingView: View {
     @StateObject private var topAdModel = NativeAdModel()
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
+    /// 送信画面の確認ダイアログと同じキー。未設定ならオン
+    @AppStorage(DefaultValueConfirmationSetting.isEnabledKey) private var isDefaultValueConfirmationEnabled = true
     @State private var isURLSettingPresented = false
     @State private var isLicensePresented = false
     @State private var isPrivacyPolicyPresented = false
@@ -116,6 +118,19 @@ struct SettingView: View {
                         Text("送信先URL設定")
                             .foregroundStyle(Color.appTextSecondary)
                     })
+
+                    Section {
+                        Toggle("初期値で送る前に確認する", isOn: $isDefaultValueConfirmationEnabled)
+                            .foregroundStyle(Color.appTextPrimary)
+                            .tint(Color.appAccent)
+                            .listRowBackground(Color.appSurface)
+                    } header: {
+                        Text("送信")
+                            .foregroundStyle(Color.appTextSecondary)
+                    } footer: {
+                        Text("名前や本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します")
+                            .foregroundStyle(Color.appTextSecondary)
+                    }
 
                     SendHistorySettingsSection()
 
