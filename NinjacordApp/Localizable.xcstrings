@@ -778,6 +778,22 @@
         }
       }
     },
+    "このまま送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Anyway"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このまま送信"
+          }
+        }
+      }
+    },
     "このアプリのURL欄に貼り付けます" : {
       "localizations" : {
         "en" : {
@@ -1866,6 +1882,22 @@
         }
       }
     },
+    "名前: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前: %@"
+          }
+        }
+      }
+    },
     "名前を入れてください" : {
       "localizations" : {
         "en" : {
@@ -2198,6 +2230,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "折りたたみ済み"
+          }
+        }
+      }
+    },
+    "未入力の項目があります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some Fields Are Empty"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未入力の項目があります"
+          }
+        }
+      }
+    },
+    "未入力の項目は、次の内容で送られます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty fields will be sent as follows."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未入力の項目は、次の内容で送られます。"
+          }
+        }
+      }
+    },
+    "本文: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文: %@"
           }
         }
       }
@@ -2646,6 +2726,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信"
+          }
+        }
+      }
+    },
+    "送信して今後は表示しない" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send and Don't Ask Again"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信して今後は表示しない"
           }
         }
       }
