@@ -41,6 +41,7 @@ final class SendMessageDefaultValueConfirmationTests {
         StubURLProtocol.requests(to: url).count
     }
 
+    @discardableResult
     private func confirm(disablesConfirmation: Bool = false) async -> Bool {
         let task = viewModel.confirmDefaultValueSend(
             disablesConfirmation: disablesConfirmation,
@@ -88,6 +89,19 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(confirmation.defaultedFields == [.username, .content])
         #expect(confirmation.message.contains("以下、名無しにかわりましてVIPがお送りします"))
         #expect(confirmation.message.contains("なんか書いてね"))
+    }
+
+    @Test("名前が入っていて、本文・埋め込み・画像が無ければ、本文の初期文言だけを出す")
+    func emptyContentOnlyShowsContentValue() async throws {
+        inputURL()
+        viewModel.inputUsername = "忍者"
+
+        #expect(await fixture.send() == false)
+
+        let confirmation = try #require(viewModel.defaultValueConfirmation)
+        #expect(confirmation.defaultedFields == [.content])
+        #expect(confirmation.message.contains("なんか書いてね"))
+        #expect(!confirmation.message.contains("以下、名無しにかわりましてVIPがお送りします"))
     }
 
     @Test("名前・本文が入っていれば、確認を出さずに送る。プロフィール画像が空でも出さない")
@@ -206,10 +220,42 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(!setting.isEnabled)
         #expect(requests(to: url) == 1)
 
+        // 画面では、ボタンを押すと SwiftUI のアラートが閉じてこの値を戻す。ViewModel は戻さないので、ここで閉じる
         viewModel.isDefaultValueConfirmationPresented = false
         #expect(await fixture.send())
         #expect(!viewModel.isDefaultValueConfirmationPresented)
         #expect(requests(to: url) == 2)
+    }
+
+    @Test("ダイアログを開いたまま画像を外しても、押した時点の画像を添付して送る")
+    func confirmSendsPendingAttachment() async throws {
+        let url = inputURL()
+        viewModel.inputContext = "スクリーンショット"
+        viewModel.attachment = Self.attachment
+        await fixture.send()
+
+        viewModel.attachment = nil
+        #expect(await confirm())
+
+        let request = try #require(StubURLProtocol.requests(to: url).first?.request)
+        let contentType = try #require(request.value(forHTTPHeaderField: "Content-Type"))
+        #expect(contentType.hasPrefix("multipart/form-data; boundary="))
+    }
+
+    /// 設定画面の @AppStorage は同じキーに Bool を書く
+    @Test("「今後は表示しない」の後に設定画面と同じキーでオンに戻せば、次の送信で再び確認を出す")
+    func reEnabledFromSettingViewKey() async {
+        let url = inputURL()
+        viewModel.inputContext = "こんにちは"
+        await fixture.send()
+        await confirm(disablesConfirmation: true)
+        #expect(requests(to: url) == 1)
+
+        fixture.userDefaults.set(true, forKey: DefaultValueConfirmationSetting.isEnabledKey)
+        viewModel.isDefaultValueConfirmationPresented = false
+        #expect(await fixture.send() == false)
+        #expect(viewModel.isDefaultValueConfirmationPresented)
+        #expect(requests(to: url) == 1)
     }
 
     @Test("設定をオンに戻せば、次の送信で再び確認を出す")
@@ -240,6 +286,34 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(viewModel.defaultValueConfirmation?.defaultedFields == [.username])
 
         #expect(await confirm())
+        #expect(fixture.historyStore.items.map(\.isSuccess) == [true, true])
+    }
+
+    @Test("一斉送信でダイアログを開いたまま宛先を変えても、押した時点の宛先に送る")
+    func broadcastConfirmSendsPendingTargets() async {
+        let first = fixture.savedURL("作戦室", returning: Self.noContent)
+        let second = fixture.savedURL("雑談", returning: Self.noContent)
+        viewModel.broadcastTargets = [first, second]
+        viewModel.inputContext = "こんにちは"
+        await fixture.send(isPro: true)
+
+        viewModel.broadcastTargets = [first]
+        #expect(await confirm())
+
+        #expect(fixture.historyStore.items.map(\.url) == [second.url, first.url])
+    }
+
+    @Test("一斉送信で「送信して今後は表示しない」を押すと、設定をオフにして全宛先に送る")
+    func broadcastConfirmAndDisable() async {
+        let first = fixture.savedURL("作戦室", returning: Self.noContent)
+        let second = fixture.savedURL("雑談", returning: Self.noContent)
+        viewModel.broadcastTargets = [first, second]
+        viewModel.inputContext = "こんにちは"
+        await fixture.send(isPro: true)
+
+        #expect(await confirm(disablesConfirmation: true))
+
+        #expect(!setting.isEnabled)
         #expect(fixture.historyStore.items.map(\.isSuccess) == [true, true])
     }
 
