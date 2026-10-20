@@ -922,6 +922,22 @@
         }
       }
     },
+    "アプリの配色を選べます。「自動」は端末の外観設定に合わせて切り替わります。あとから設定でも変えられます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the app's color scheme. Automatic follows your device's appearance setting. You can change it later in Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリの配色を選べます。「自動」は端末の外観設定に合わせて切り替わります。あとから設定でも変えられます"
+          }
+        }
+      }
+    },
     "アプリバージョン" : {
       "localizations" : {
         "en" : {
@@ -1238,6 +1254,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "テーマ"
+          }
+        }
+      }
+    },
+    "テーマを選ぶ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a Theme"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テーマを選ぶ"
           }
         }
       }
@@ -2502,6 +2534,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画像を添付できませんでした。10MBまでの画像を選んでください"
+          }
+        }
+      }
+    },
+    "自動" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
           }
         }
       }

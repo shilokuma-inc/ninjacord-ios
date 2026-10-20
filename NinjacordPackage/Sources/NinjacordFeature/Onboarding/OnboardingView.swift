@@ -5,8 +5,8 @@
 
 import SwiftUI
 
-/// 初回起動時に表示する、Webhook URL の用意から送信までの流れの説明。
-/// どのページでも右上の「スキップ」で閉じられる
+/// 初回起動時に表示する、Webhook URL の用意から送信までの流れの説明と、最後のテーマの選択。
+/// 説明のページでは右上の「スキップ」で閉じられる（テーマのページは出さず、テーマは今のまま）
 struct OnboardingView: View {
     /// スキップ・完了のどちらで閉じたときも呼ばれる
     let onFinish: () -> Void
@@ -14,6 +14,14 @@ struct OnboardingView: View {
     @State private var selection = 0
 
     private let pages = OnboardingPage.all
+
+    /// 説明のページの後ろに置くテーマのページを含めたページ数。決定事項により 5 ページ以内に収める
+    static let pageCount = OnboardingPage.all.count + 1
+
+    /// テーマのページの位置（最後のページ）
+    private var themePageIndex: Int { pages.count }
+
+    private var pageCount: Int { Self.pageCount }
 
     var body: some View {
         ZStack {
@@ -24,7 +32,7 @@ struct OnboardingView: View {
                 HStack {
                     Spacer()
                     // 離脱を防ぐため、スキップはどのページでも同じ位置に目立つ色で表示する。
-                    // 最後のページは「はじめる」と同じ動作になるので、位置だけ残して隠す
+                    // 最後のページ（テーマ）は「はじめる」と同じ動作になるので、位置だけ残して隠す
                     Button("スキップ", action: onFinish)
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(Color.appAccent)
@@ -39,10 +47,13 @@ struct OnboardingView: View {
                         OnboardingPageView(page: pages[index])
                             .tag(index)
                     }
+
+                    OnboardingThemePageView()
+                        .tag(themePageIndex)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
 
-                PageIndicator(count: pages.count, selection: selection)
+                PageIndicator(count: pageCount, selection: selection)
                     .padding(.bottom, 24.0)
 
                 primaryButton
@@ -53,7 +64,7 @@ struct OnboardingView: View {
     }
 
     private var isLastPage: Bool {
-        selection == pages.count - 1
+        selection == pageCount - 1
     }
 
     private var primaryButton: some View {
@@ -82,7 +93,7 @@ struct OnboardingPage {
     let title: LocalizedStringKey
     let message: LocalizedStringKey
 
-    /// 決定事項により 5 ページ以内に収める
+    /// 決定事項により、後ろに置くテーマのページを含めて 5 ページ以内に収める
     static let all: [OnboardingPage] = [
         OnboardingPage(
             systemImage: "paperplane.fill",
@@ -134,6 +145,51 @@ private struct OnboardingPageView: View {
                 .foregroundStyle(Color.appTextSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
+
+            Spacer()
+        }
+        .padding(.horizontal, 32.0)
+    }
+}
+
+/// オンボーディングの最後のページ。設定画面と同じテーマを選べ、選んだ瞬間にアプリ全体の配色が切り替わる。
+/// 最初は今のテーマ（未設定ならダーク）を選んだ状態で、何も触らずに進めればそのまま
+private struct OnboardingThemePageView: View {
+    @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
+
+    var body: some View {
+        VStack(spacing: 24.0) {
+            Spacer()
+
+            Image(systemName: "circle.lefthalf.filled")
+                .font(.system(size: 64, weight: .semibold))
+                .foregroundStyle(Color.appAccent)
+                .frame(width: 128.0, height: 128.0)
+                .background(
+                    Circle()
+                        .fill(Color.appSurface)
+                )
+                .accessibilityHidden(true)
+
+            Text("テーマを選ぶ")
+                .font(.system(size: 26, weight: .bold))
+                .foregroundStyle(Color.appTextPrimary)
+                .multilineTextAlignment(.center)
+
+            Text("アプリの配色を選べます。「自動」は端末の外観設定に合わせて切り替わります。あとから設定でも変えられます")
+                .font(.system(size: 17))
+                .foregroundStyle(Color.appTextSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Picker("テーマ", selection: $appTheme) {
+                ForEach(AppTheme.allCases) { theme in
+                    Text(theme.localizedTitle)
+                        .tag(theme.rawValue)
+                }
+            }
+            .pickerStyle(.segmented)
+            .accessibilityLabel("アプリのテーマ")
 
             Spacer()
         }
