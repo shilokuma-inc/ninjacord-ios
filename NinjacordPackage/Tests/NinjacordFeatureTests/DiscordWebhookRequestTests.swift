@@ -60,6 +60,32 @@ struct DiscordWebhookRequestTests {
         #expect(parameters.dictionary["embeds"] as? NSArray == [["title": "お知らせ"]])
     }
 
+    @Test(
+        "本文が空でも、埋め込みに表示される中身があれば本文を送らない",
+        arguments: [
+            MessageEmbedEntity(description: "説明"),
+            MessageEmbedEntity(fields: [MessageEmbedField(name: "集合", value: "", isInline: false)]),
+            MessageEmbedEntity(footerText: "フッター"),
+            MessageEmbedEntity(imageURL: "https://example.com/image.png"),
+            MessageEmbedEntity(thumbnailURL: "https://example.com/thumbnail.png")
+        ]
+    )
+    func noContentWithDisplayedEmbed(embed: MessageEmbedEntity) {
+        #expect(request(.make(embed: embed)).parameters["content"] == nil)
+    }
+
+    @Test(
+        "埋め込みに表示される中身が無ければ、本文には「なんか書いてね」が入る",
+        arguments: [
+            MessageEmbedEntity(title: " "),
+            MessageEmbedEntity(color: 0x5865F2),
+            MessageEmbedEntity(includesTimestamp: true)
+        ]
+    )
+    func defaultContentWithoutDisplayedEmbed(embed: MessageEmbedEntity) {
+        #expect(request(.make(embed: embed)).parameters["content"] as? String == "なんか書いてね")
+    }
+
     @Test("本文が空でも、画像を添付すれば本文を送らない")
     func noContentWithAttachmentOnly() {
         #expect(request(.make(), attachment: .sample).parameters["content"] == nil)
