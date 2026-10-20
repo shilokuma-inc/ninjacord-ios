@@ -1,8 +1,19 @@
-name: Upload/develop
+name: Upload
+
+# develop / release/** への push で Archive → App Store Connect へアップロードする。
+# epic ブランチなどの作業ブランチを TestFlight で確認したいときは、手動実行（workflow_dispatch）でそのブランチを選ぶ
+# （AskHub の「マージ待ち」からもこのワークフローを起動する。ファイル名 upload.yml は AskHub との取り決め）。
+# 作業ブランチの push ごとに上げると App Store Connect の 1 日あたりのアップロード上限に当たるため、自動では上げない。
 
 on:
   push:
-    branches: develop
+    branches:
+      - develop
+      - 'release/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 # App Store Connect へのアップロードが並走すると、同じビルド番号で衝突して 409 になる。
 # upload 系ワークフロー全体で 1 本ずつ実行する。
@@ -12,16 +23,16 @@ concurrency:
 
 jobs:          
   build:
-    name: Upload/develop
+    name: Upload (${{ github.ref_name }})
     runs-on: macos-latest
 
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: '26.6'
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: ci_post_clone
         run: |
@@ -104,15 +115,22 @@ jobs:
             -exportOptionsPlist ExportOptions.plist \
             -exportPath app.ipa
 
+      # アップロードは App Store Connect API Key で認証する。altool は --apiKey の Key ID から
+      # ./private_keys/AuthKey_<Key ID>.p8 を探す
+      - name: Create Private Key
+        run: |
+          mkdir -p private_keys
+          echo -n '${{ secrets.APPLE_API_KEY_BASE64 }}' | base64 --decode > ./private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+
       - name: Upload IPA to App Store Connect
         run: |
           xcrun altool --upload-app -f app.ipa/NinjacordApp.ipa \
-                       -u ${{ secrets.APPLE_ID }} \
-                       -p ${{ secrets.APP_SPECIFIC_PASSWORD }} \
+                       --apiKey ${{ secrets.APPLE_API_KEY_ID }} \
+                       --apiIssuer ${{ secrets.APPLE_API_ISSUER_ID }} \
                        --type ios
 
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: NinjacordApp-ipa
           path: app.ipa/NinjacordApp.ipa

@@ -16,7 +16,6 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/Alamofire/Alamofire", from: "5.9.1"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "10.24.0"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "11.3.0"),
         .package(
@@ -29,10 +28,8 @@ let package = Package(
         .target(
             name: "NinjacordFeature",
             dependencies: [
-                .product(name: "Alamofire", package: "Alamofire"),
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads"),
                 .product(
                     name: "GoogleUserMessagingPlatform",
@@ -40,6 +37,11 @@ let package = Package(
                 ),
                 .product(name: "LicenseList", package: "LicenseList")
             ]
+        ),
+        // NinjacordApp の scheme の TestAction から実行する（CI の Build ワークフローでも流す）
+        .testTarget(
+            name: "NinjacordFeatureTests",
+            dependencies: ["NinjacordFeature"]
         )
     ]
 )

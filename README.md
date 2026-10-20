@@ -3,7 +3,7 @@
 DiscordのWebhookを使って、好きな名前・アイコンでメッセージを送信できるアプリ（bot tokenによる送信には対応していません）
 
 ## Environment
-- Xcode26.3
+- Xcode 26.6
 - Swift5
 
 <table>
@@ -45,8 +45,8 @@ DiscordのWebhookを使って、好きな名前・アイコンでメッセージ
           </a>
         </td>
         <td style="border:2px double #000080;text-align:center;">
-          <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/upload-develop.yml">
-            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/upload-develop.yml/badge.svg" alt="Upload/develop">
+          <a href="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/upload.yml?query=branch%3Adevelop">
+            <img src="https://github.com/shilokuma-inc/ninjacord-ios/actions/workflows/upload.yml/badge.svg?branch=develop" alt="Upload">
           </a>
         </td>
       </tr>

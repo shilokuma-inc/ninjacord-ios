@@ -7,6 +7,8 @@ import SwiftUI
 
 /// Webhook URL の取得方法を表示する「?」ボタン。保存済み URL ボタンと同じく 44pt 角の当たり判定にする
 struct WebhookURLHelpButton: View {
+    /// シートで貼り付けた Webhook URL を入れる先（送信画面の URL 欄）
+    @Binding var url: String
     @State private var isPresented = ScreenshotDemo.scene == .webhookHelp
 
     var body: some View {
@@ -21,7 +23,11 @@ struct WebhookURLHelpButton: View {
         .accessibilityLabel("Webhook URLの取得方法")
         .sheet(isPresented: $isPresented) {
             NavigationStack {
-                WebhookURLHelpView()
+                WebhookURLHelpView(onPasteWebhookURL: { pastedURL in
+                    // ユーザーが自分で押した操作なので、URL 欄に入っている値は上書きする
+                    url = pastedURL
+                    isPresented = false
+                })
                     .navigationTitle("Webhook URLの取得方法")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {

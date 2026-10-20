@@ -164,6 +164,22 @@
         }
       }
     },
+    "App Storeで入手" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get on App Store"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Storeで入手"
+          }
+        }
+      }
+    },
     "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます" : {
       "localizations" : {
         "en" : {
@@ -224,6 +240,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discordへかんたん送信"
+          }
+        }
+      }
+    },
+    "Discordアプリが見つかりません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord app not found"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordアプリが見つかりません"
+          }
+        }
+      }
+    },
+    "Discordアプリを開く" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the Discord App"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordアプリを開く"
           }
         }
       }
@@ -842,6 +890,22 @@
         }
       }
     },
+    "コピーされている内容はWebhook URLではありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copied text is not a Webhook URL."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーされている内容はWebhook URLではありません"
+          }
+        }
+      }
+    },
     "コピーしたURLを貼り付けて、メッセージを入力したら「メッセージを送信！」を押すだけです" : {
       "localizations" : {
         "en" : {
@@ -854,6 +918,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "コピーしたURLを貼り付けて、メッセージを入力したら「メッセージを送信！」を押すだけです"
+          }
+        }
+      }
+    },
+    "コピーしたWebhook URLをURL欄に入れられます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can put the copied Webhook URL into the URL field."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしたWebhook URLをURL欄に入れられます"
           }
         }
       }
@@ -1206,6 +1286,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フッターは%lld文字までです"
+          }
+        }
+      }
+    },
+    "ブラウザで開く" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in Browser"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブラウザで開く"
           }
         }
       }

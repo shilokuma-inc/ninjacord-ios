@@ -6,7 +6,7 @@
 import Foundation
 
 /// メッセージ送信に成功した回数の永続化を担う（保存先は UserDefaults）。
-/// 初回送信の計測や、ATT 要求・レビュー依頼を出すタイミングの判定に使う
+/// 初回送信の計測や、レビュー依頼・全画面広告を出すタイミングの判定に使う
 struct SendSuccessCounter {
     private static let storageKey = "sendSuccessCount"
 

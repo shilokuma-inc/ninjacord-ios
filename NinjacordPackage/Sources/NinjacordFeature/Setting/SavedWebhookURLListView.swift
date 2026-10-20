@@ -15,6 +15,7 @@ struct SavedWebhookURLListView: View {
     var initialURL = ""
 
     @StateObject private var store = WebhookURLStore()
+    @StateObject private var adModel = InlineBannerAdModel()
     @State private var isAddFormPresented = false
 
     var body: some View {
@@ -27,14 +28,22 @@ struct SavedWebhookURLListView: View {
                     .foregroundStyle(Color.appTextSecondary)
             } else {
                 List {
-                    ForEach(store.items) { item in
-                        row(item)
-                            .listRowBackground(Color.appSurface)
+                    // 広告の行はスワイプでの削除の対象にしないよう、ForEach の外の別 Section に置く
+                    Section {
+                        InlineBannerAdRow(model: adModel)
                     }
-                    .onDelete { offsets in
-                        store.remove(at: offsets)
+
+                    Section {
+                        ForEach(store.items) { item in
+                            row(item)
+                                .listRowBackground(Color.appSurface)
+                        }
+                        .onDelete { offsets in
+                            store.remove(at: offsets)
+                        }
                     }
                 }
+                .loadsInlineBannerAd(adModel, when: !store.items.isEmpty)
                 .scrollContentBackground(.hidden)
                 .background(.clear)
             }
