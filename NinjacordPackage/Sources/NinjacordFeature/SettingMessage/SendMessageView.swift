@@ -165,6 +165,23 @@ struct SendMessageView: View {
                 Text(recoverySuggestion)
             }
         }
+        .alert(
+            "未入力の項目があります",
+            isPresented: $viewModel.isDefaultValueConfirmationPresented,
+            presenting: viewModel.defaultValueConfirmation
+        ) { _ in
+            Button("このまま送信") {
+                viewModel.confirmDefaultValueSend(disablesConfirmation: false, screenActions: screenActions)
+            }
+            Button("送信して今後は表示しない") {
+                viewModel.confirmDefaultValueSend(disablesConfirmation: true, screenActions: screenActions)
+            }
+            Button("キャンセル", role: .cancel) {
+                viewModel.cancelDefaultValueSend()
+            }
+        } message: { confirmation in
+            Text(confirmation.message)
+        }
         .tint(Color(uiColor: .systemBlue))
         .toast($viewModel.toast)
         .onAppear {
@@ -190,15 +207,17 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
+    /// 送信に成功したあとの流れで使う、View の環境から来るもの（レビュー依頼・全画面広告の表示元）
+    private var screenActions: SendMessageScreenActions {
+        SendMessageScreenActions(
+            requestReview: { requestReview() },
+            rootViewController: { sceneDelegate.window?.rootViewController }
+        )
+    }
+
     private var sendButton: some View {
         Button(action: {
-            viewModel.sendMessage(
-                isPro: purchaseManager.isPro,
-                screenActions: SendMessageScreenActions(
-                    requestReview: { requestReview() },
-                    rootViewController: { sceneDelegate.window?.rootViewController }
-                )
-            )
+            viewModel.sendMessage(isPro: purchaseManager.isPro, screenActions: screenActions)
         }, label: {
             // ローディング中もボタンの大きさが変わらないよう、文言は透明にして残し上に重ねる
             Text("メッセージを送信！")
