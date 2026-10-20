@@ -258,10 +258,11 @@ extension SendMessageViewModel {
     ) -> Task<Void, Never>? {
         guard let confirmation = defaultValueConfirmation else { return nil }
         defaultValueConfirmation = nil
+        // ダイアログ中は送信を始めないので通常は通らない。送らないときは設定も変えない
+        guard !isSending else { return nil }
         if disablesConfirmation {
             defaultValueConfirmationSetting.isEnabled = false
         }
-        guard !isSending else { return nil }
         return send(confirmation.pendingSend, screenActions: screenActions)
     }
 
