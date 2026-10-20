@@ -20,6 +20,24 @@ struct DiscordWebhookRequest {
     /// 名前が空のときに送る名前。ローカライズしない（Discussion #459 の Q4 の 1）。
     /// Discord 上では Webhook に設定された名前の代わりにこれが出るので、プレビューでも同じものを出す
     static let defaultUsername = "以下、名無しにかわりましてVIPがお送りします"
+    /// 本文が空で、埋め込みも画像も無いときに送る本文。名前の初期値と同じくローカライズしない
+    static let defaultContent = "なんか書いてね"
+
+    /// 未入力のため、アプリの初期文言に置き換えて送る項目
+    enum DefaultedField: Equatable {
+        case username
+        case content
+
+        /// 置き換えて送る値
+        var value: String {
+            switch self {
+            case .username:
+                return DiscordWebhookRequest.defaultUsername
+            case .content:
+                return DiscordWebhookRequest.defaultContent
+            }
+        }
+    }
 
     let messageEntity: MessageEntity
     /// 添付する画像。あれば multipart/form-data で送る
@@ -33,13 +51,38 @@ struct DiscordWebhookRequest {
         self.sentAt = sentAt
     }
 
+    /// アプリの初期文言に置き換えて送る項目（名前・本文の順）。送る中身（`parameters`）はこれに従って組み立てる。
+    /// 本文は、空でも埋め込みに表示する中身があるか画像を添付するなら、置き換えずに送らない
+    var defaultedFields: [DefaultedField] {
+        var fields: [DefaultedField] = []
+        if messageEntity.username.isEmpty {
+            fields.append(.username)
+        }
+        if messageEntity.content.isEmpty
+            && !messageEntity.messageEmbedEntity.hasDisplayedContent
+            && attachment == nil {
+            fields.append(.content)
+        }
+        return fields
+    }
+
+    /// 本文の場所を送るか。本文が空で、初期文言にも置き換えないときは content のキーを送らない
+    var sendsContent: Bool {
+        !messageEntity.content.isEmpty || defaultedFields.contains(.content)
+    }
+
     /// Execute Webhook の JSON パラメータ
     var parameters: [String: Any] {
+        let defaulted = defaultedFields
         var param: [String: Any] = [
-            "username": messageEntity.username.isEmpty ? Self.defaultUsername : messageEntity.username,
-            "avatar_url": messageEntity.avatarURL,
-            "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
+            "username": defaulted.contains(.username) ? Self.defaultUsername : messageEntity.username,
+            "avatar_url": messageEntity.avatarURL
         ]
+        if defaulted.contains(.content) {
+            param["content"] = Self.defaultContent
+        } else if !messageEntity.content.isEmpty {
+            param["content"] = messageEntity.content
+        }
         if messageEntity.messageEmbedEntity.hasContent {
             param["embeds"] = [embedParameters(messageEntity.messageEmbedEntity)]
         }
