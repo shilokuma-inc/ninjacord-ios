@@ -39,10 +39,12 @@ struct MessagePreview: View {
 
             VStack(alignment: .leading, spacing: 4.0) {
                 header
-                // Discord 上では本文が空でも何かしらの本文が送られるので、本文の場所は常に示す
-                Text(content.isEmpty ? String(localized: "メッセージの本文") : content)
-                    .font(.system(size: 16))
-                    .foregroundStyle(content.isEmpty ? DiscordPalette.placeholder : DiscordPalette.text)
+                // 本文が空でも初期文言を送るときは、本文の場所を示す。埋め込みや画像があって本文を送らないときは出さない
+                if sendsContent {
+                    Text(content.isEmpty ? String(localized: "メッセージの本文") : content)
+                        .font(.system(size: 16))
+                        .foregroundStyle(content.isEmpty ? DiscordPalette.placeholder : DiscordPalette.text)
+                }
                 if embed.hasContent {
                     EmbedPreview(embed: embed)
                         .padding(.top, 4.0)
@@ -75,6 +77,17 @@ struct MessagePreview: View {
         .task(id: attachment) {
             attachmentThumbnail = makeAttachmentThumbnail()
         }
+    }
+
+    /// 本文の場所を送るか。送る中身と同じ判定（`DiscordWebhookRequest`）を使う
+    private var sendsContent: Bool {
+        let message = MessageEntity(
+            username: username,
+            avatarURL: avatarURL,
+            content: content,
+            messageEmbedEntity: embed
+        )
+        return DiscordWebhookRequest(messageEntity: message, attachment: attachment).sendsContent
     }
 
     private var displayName: String {
@@ -181,6 +194,17 @@ private extension ImageAttachment {
 #Preview("未入力") {
     MessagePreview(username: "", avatarURL: "", content: "", embed: MessageEmbedEntity(), attachment: nil)
         .padding()
+}
+
+#Preview("埋め込みだけ") {
+    MessagePreview(
+        username: "レイド告知Bot",
+        avatarURL: "",
+        content: "",
+        embed: MessageEmbedEntity(title: "お知らせ", description: "本日18時からメンテナンスです"),
+        attachment: nil
+    )
+    .padding()
 }
 
 #Preview("Webhook のアイコン") {

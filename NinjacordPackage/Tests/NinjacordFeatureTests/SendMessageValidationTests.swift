@@ -19,9 +19,15 @@ struct SendMessageValidationTests {
     private func validate(
         url: String = Self.webhookURL,
         message: MessageEntity = .make(content: "こんにちは"),
+        hasAttachment: Bool = false,
         canUseProFeatures: Bool = false
     ) -> SendMessageValidationError? {
-        viewModel.validate(url: url, messageEntity: message, canUseProFeatures: canUseProFeatures)
+        viewModel.validate(
+            url: url,
+            messageEntity: message,
+            hasAttachment: hasAttachment,
+            canUseProFeatures: canUseProFeatures
+        )
     }
 
     // MARK: - URL
@@ -64,9 +70,16 @@ struct SendMessageValidationTests {
 
     // MARK: - メッセージ
 
-    @Test("名前・アイコン URL・本文・埋め込みがすべて空なら emptyMessage")
+    @Test("名前・アイコン URL・本文・埋め込みがすべて空で、画像も添付していなければ emptyMessage")
     func emptyMessage() {
         #expect(validate(message: .make()) == .emptyMessage)
+    }
+
+    @Test("ほかの項目がすべて空でも、画像を添付していれば通る")
+    func attachmentOnly() {
+        #expect(validate(message: .make(), hasAttachment: true) == nil)
+        // 空白だけの入力と画像でも通る
+        #expect(validate(message: .make(username: " ", content: "\n"), hasAttachment: true) == nil)
     }
 
     @Test("空白だけの入力は空とみなす")

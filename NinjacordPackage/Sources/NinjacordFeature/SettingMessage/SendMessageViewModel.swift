@@ -206,6 +206,7 @@ extension SendMessageViewModel {
         if let error = validate(
             url: inputURL,
             messageEntity: messageEntity,
+            hasAttachment: attachment != nil,
             canUseProFeatures: ProFeatureAccess.canUse(isPro: isPro)
         ) {
             validationError = error
@@ -249,7 +250,9 @@ extension SendMessageViewModel {
         let urls = broadcastTargets.map(\.url)
         // 宛先を選んだあとに Pro でなくなった場合は送らない
         let error: SendMessageValidationError? = ProFeatureAccess.canUse(isPro: isPro)
-            ? validate(url: urls[0], messageEntity: messageEntity, canUseProFeatures: true)
+            ? validate(
+                url: urls[0], messageEntity: messageEntity, hasAttachment: attachment != nil, canUseProFeatures: true
+            )
             : .proBroadcast
         if let error {
             validationError = error
@@ -310,7 +313,7 @@ enum SendMessageValidationError: LocalizedError, Equatable {
     case emptyURL
     /// 送信先 URL が URL の形式になっていない
     case invalidURL
-    /// URL 以外の項目がすべて未入力
+    /// URL 以外の項目がすべて未入力で、画像も添付していない
     case emptyMessage
     /// 埋め込みが Discord の上限を超えているなど
     case invalidEmbed(EmbedValidationIssue)
@@ -356,8 +359,11 @@ enum SendMessageValidationError: LocalizedError, Equatable {
 
 extension SendMessageViewModel {
     /// 送信前に入力内容を検証する。問題がなければ nil を返す
-    /// - Parameter canUseProFeatures: Pro 限定の項目を使えるか（Pro 購読中など）
-    func validate(url: String, messageEntity: MessageEntity, canUseProFeatures: Bool) -> SendMessageValidationError? {
+    /// - Parameters:
+    ///   - hasAttachment: 画像を添付しているか。画像だけでも送れる
+    ///   - canUseProFeatures: Pro 限定の項目を使えるか（Pro 購読中など）
+    func validate(url: String, messageEntity: MessageEntity, hasAttachment: Bool, canUseProFeatures: Bool)
+        -> SendMessageValidationError? {
         let trimmedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedURL.isEmpty {
             return .emptyURL
@@ -365,7 +371,7 @@ extension SendMessageViewModel {
         if !isValidURL(trimmedURL) {
             return .invalidURL
         }
-        if !messageEntity.hasContent {
+        if !messageEntity.hasContent && !hasAttachment {
             return .emptyMessage
         }
         if !canUseProFeatures && messageEntity.messageEmbedEntity.usesProFeatures {

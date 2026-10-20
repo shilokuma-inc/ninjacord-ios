@@ -53,11 +53,58 @@ struct DiscordWebhookRequestTests {
         #expect(parameters["content"] as? String == "\n")
     }
 
-    @Test("埋め込みだけを送るときも、本文には「なんか書いてね」が入る")
-    func defaultContentWithEmbedOnly() {
+    @Test("本文が空でも、埋め込みがあれば本文を送らない")
+    func noContentWithEmbedOnly() {
         let parameters = request(.make(embed: MessageEmbedEntity(title: "お知らせ"))).parameters
-        #expect(parameters["content"] as? String == "なんか書いてね")
+        #expect(parameters["content"] == nil)
         #expect(parameters.dictionary["embeds"] as? NSArray == [["title": "お知らせ"]])
+    }
+
+    @Test("本文が空でも、画像を添付すれば本文を送らない")
+    func noContentWithAttachmentOnly() {
+        #expect(request(.make(), attachment: .sample).parameters["content"] == nil)
+    }
+
+    /// 中身の無い embed だけでは Discord に何も表示されないので、本文を省かない
+    @Test("空のフィールド行だけの埋め込みなら、本文には「なんか書いてね」が入る")
+    func defaultContentWithBlankFieldRowOnly() {
+        let embed = MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)])
+        #expect(request(.make(embed: embed)).parameters["content"] as? String == "なんか書いてね")
+    }
+
+    // MARK: - 初期文言に置き換える項目
+
+    @Test("名前・本文が空なら、どちらも初期文言に置き換える")
+    func defaultedUsernameAndContent() {
+        #expect(request(.make()).defaultedFields == [.username, .content])
+        #expect(DiscordWebhookRequest.DefaultedField.username.value == "以下、名無しにかわりましてVIPがお送りします")
+        #expect(DiscordWebhookRequest.DefaultedField.content.value == "なんか書いてね")
+    }
+
+    @Test("名前・本文が入っていれば、初期文言に置き換えない")
+    func noDefaultedFields() {
+        #expect(request(.make(username: "忍者", content: "こんにちは")).defaultedFields.isEmpty)
+        // 空白だけでも入力とみなす
+        #expect(request(.make(username: " ", content: "\n")).defaultedFields.isEmpty)
+        // プロフィール画像の URL が空でも置き換えない
+        #expect(request(.make(username: "忍者", avatarURL: "", content: "こんにちは")).defaultedFields.isEmpty)
+    }
+
+    @Test("本文が空でも、埋め込みか画像があれば本文は置き換えない")
+    func contentIsNotDefaultedWithEmbedOrAttachment() {
+        let embed = MessageEmbedEntity(title: "お知らせ")
+        #expect(request(.make(embed: embed)).defaultedFields == [.username])
+        #expect(request(.make(username: "忍者", embed: embed)).defaultedFields.isEmpty)
+        #expect(request(.make(username: "忍者"), attachment: .sample).defaultedFields.isEmpty)
+    }
+
+    /// プレビューは、これで本文の場所を出すかを決める
+    @Test("本文の場所を送るかは、本文があるか初期文言に置き換えるときだけ")
+    func sendsContent() {
+        #expect(request(.make(content: "こんにちは")).sendsContent)
+        #expect(request(.make()).sendsContent)
+        #expect(!request(.make(embed: MessageEmbedEntity(title: "お知らせ"))).sendsContent)
+        #expect(!request(.make(), attachment: .sample).sendsContent)
     }
 
     // MARK: - 埋め込み
@@ -216,6 +263,13 @@ struct DiscordWebhookRequestTests {
         #expect(parts.file == attachment.data)
     }
 
+    @Test("画像だけを添付するときは、payload_json にも本文を入れない")
+    func multipartPayloadWithoutContent() throws {
+        let parts = try #require(request(.make(username: "忍者"), attachment: .sample).multipartParts)
+        let payload = try #require(try JSONSerialization.jsonObject(with: parts[0].data) as? NSDictionary)
+        #expect(payload == ["username": "忍者", "avatar_url": ""])
+    }
+
     /// 埋め込みだけを送るメッセージを組み立て、embeds の 1 件目を返す。embeds が無ければ nil
     private func embedParameters(of embed: MessageEmbedEntity) -> NSDictionary? {
         let embeds = request(.make(content: "本文", embed: embed)).parameters["embeds"] as? [[String: Any]]
@@ -228,6 +282,10 @@ private extension Dictionary where Key == String, Value == Any {
     var dictionary: NSDictionary {
         NSDictionary(dictionary: self)
     }
+}
+
+private extension ImageAttachment {
+    static let sample = ImageAttachment(data: Data([0xFF, 0xD8, 0xFF]), fileName: "image.jpg", mimeType: "image/jpeg")
 }
 
 private extension MessageEntity {
