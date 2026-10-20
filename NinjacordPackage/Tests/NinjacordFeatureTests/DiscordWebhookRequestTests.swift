@@ -98,6 +98,15 @@ struct DiscordWebhookRequestTests {
         #expect(request(.make(username: "忍者"), attachment: .sample).defaultedFields.isEmpty)
     }
 
+    /// プレビューは、これで本文の場所を出すかを決める
+    @Test("本文の場所を送るかは、本文があるか初期文言に置き換えるときだけ")
+    func sendsContent() {
+        #expect(request(.make(content: "こんにちは")).sendsContent)
+        #expect(request(.make()).sendsContent)
+        #expect(!request(.make(embed: MessageEmbedEntity(title: "お知らせ"))).sendsContent)
+        #expect(!request(.make(), attachment: .sample).sendsContent)
+    }
+
     // MARK: - 埋め込み
 
     @Test("埋め込みに内容が無ければ embeds を送らない")
