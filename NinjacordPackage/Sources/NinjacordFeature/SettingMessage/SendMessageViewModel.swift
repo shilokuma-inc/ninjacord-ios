@@ -30,6 +30,9 @@ final class SendMessageViewModel: ObservableObject {
     @Published private(set) var isSending = false
     /// 送信結果を知らせるトースト
     @Published var toast: Toast?
+    /// 初期文言で送る前の確認ダイアログの中身。出していないときは nil
+    @Published private(set) var defaultValueConfirmation: DefaultValueConfirmation?
+    @Published var isDefaultValueConfirmationPresented = false
 
     private let client: DiscordWebhookClient
     private let historyStore: SendHistoryStore
@@ -38,6 +41,7 @@ final class SendMessageViewModel: ObservableObject {
     private let rewardedUnlock: RewardedUnlockConsuming
     private let interstitialAd: InterstitialAdPresenting
     private let haptics: HapticFeedbackPlaying
+    private let defaultValueConfirmationSetting: DefaultValueConfirmationSetting
     /// 指定した時間だけ待つ。テストでは待たずに、待った時間を記録する
     private let sleep: @MainActor (Duration) async -> Void
 
@@ -53,6 +57,7 @@ final class SendMessageViewModel: ObservableObject {
             rewardedUnlock: RewardedUnlockState.shared,
             interstitialAd: InterstitialAdManager.shared,
             haptics: HapticFeedback(),
+            defaultValueConfirmationSetting: DefaultValueConfirmationSetting(),
             sleep: { duration in try? await Task.sleep(for: duration) }
         )
     }
@@ -66,6 +71,7 @@ final class SendMessageViewModel: ObservableObject {
     ///   - rewardedUnlock: リワード広告の一時解放
     ///   - interstitialAd: 送信のあとに出す全画面広告
     ///   - haptics: 送信ボタンを押したとき・送信が終わったときの振動
+    ///   - defaultValueConfirmationSetting: 初期文言で送る前に確認するかの設定
     ///   - sleep: 全画面広告の前にトーストを見せるための待ち
     init(
         client: DiscordWebhookClient,
@@ -75,6 +81,7 @@ final class SendMessageViewModel: ObservableObject {
         rewardedUnlock: RewardedUnlockConsuming,
         interstitialAd: InterstitialAdPresenting,
         haptics: HapticFeedbackPlaying,
+        defaultValueConfirmationSetting: DefaultValueConfirmationSetting,
         sleep: @escaping @MainActor (Duration) async -> Void
     ) {
         self.client = client
@@ -84,6 +91,7 @@ final class SendMessageViewModel: ObservableObject {
         self.rewardedUnlock = rewardedUnlock
         self.interstitialAd = interstitialAd
         self.haptics = haptics
+        self.defaultValueConfirmationSetting = defaultValueConfirmationSetting
         self.sleep = sleep
 
         // App Store 用スクリーンショットの撮影モードでは、デモの内容を入力しておく
@@ -186,7 +194,8 @@ extension SendMessageViewModel {
         inputEmbed = template.message.messageEmbedEntity
     }
 
-    /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する
+    /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する。
+    /// アプリの初期文言に置き換わる項目があり、確認の設定がオンなら、送らずに確認ダイアログを出す
     /// - Parameters:
     ///   - isPro: Pro 購読中か。Pro 限定の項目・一斉送信を使えるかの判定に使う
     ///   - screenActions: 送信に成功したあとの流れで使う、View の環境から来るもの（レビュー依頼・全画面広告の表示元）
@@ -198,30 +207,90 @@ extension SendMessageViewModel {
         haptics.playImpact()
 
         let messageEntity = currentMessage
-
+        let hasAttachment = attachment != nil
+        let destination: PendingSend.Destination
+        let error: SendMessageValidationError?
         if !broadcastTargets.isEmpty {
-            return sendBroadcast(messageEntity, isPro: isPro, screenActions: screenActions)
+            let urls = broadcastTargets.map(\.url)
+            destination = .broadcast(urls: urls)
+            // 宛先を選んだあとに Pro でなくなった場合は送らない
+            error = ProFeatureAccess.canUse(isPro: isPro)
+                ? validate(
+                    url: urls[0], messageEntity: messageEntity, hasAttachment: hasAttachment, canUseProFeatures: true
+                )
+                : .proBroadcast
+        } else {
+            // 送信中に URL 欄が書き換えられても、実際に送った先を履歴に残す
+            destination = .single(url: inputURL)
+            error = validate(
+                url: inputURL,
+                messageEntity: messageEntity,
+                hasAttachment: hasAttachment,
+                canUseProFeatures: ProFeatureAccess.canUse(isPro: isPro)
+            )
         }
-
-        if let error = validate(
-            url: inputURL,
-            messageEntity: messageEntity,
-            hasAttachment: attachment != nil,
-            canUseProFeatures: ProFeatureAccess.canUse(isPro: isPro)
-        ) {
+        if let error {
             validationError = error
             isValidationAlertPresented = true
             return nil
         }
 
+        let pendingSend = PendingSend(destination: destination, messageEntity: messageEntity, attachment: attachment)
+        let defaultedFields = pendingSend.defaultedFields
+        if !defaultedFields.isEmpty && defaultValueConfirmationSetting.isEnabled {
+            defaultValueConfirmation = DefaultValueConfirmation(
+                pendingSend: pendingSend,
+                defaultedFields: defaultedFields
+            )
+            isDefaultValueConfirmationPresented = true
+            return nil
+        }
+        return send(pendingSend, screenActions: screenActions)
+    }
+
+    /// 確認ダイアログで「このまま送信」「送信して今後は表示しない」を押したとき。ボタンを押した時点の中身を送る
+    /// - Parameter disablesConfirmation: 確認の設定をオフにしてから送るか
+    /// - Returns: 送信を始めたときは、その Task。始めなかったときは nil
+    @discardableResult
+    func confirmDefaultValueSend(
+        disablesConfirmation: Bool,
+        screenActions: SendMessageScreenActions
+    ) -> Task<Void, Never>? {
+        guard let confirmation = defaultValueConfirmation else { return nil }
+        defaultValueConfirmation = nil
+        if disablesConfirmation {
+            defaultValueConfirmationSetting.isEnabled = false
+        }
+        guard !isSending else { return nil }
+        return send(confirmation.pendingSend, screenActions: screenActions)
+    }
+
+    /// 確認ダイアログで「キャンセル」を押したとき。何も送らず、入力も消さない
+    func cancelDefaultValueSend() {
+        defaultValueConfirmation = nil
+    }
+
+    private func send(_ pendingSend: PendingSend, screenActions: SendMessageScreenActions) -> Task<Void, Never> {
+        switch pendingSend.destination {
+        case .single(let url):
+            return sendSingle(pendingSend, to: url, screenActions: screenActions)
+        case .broadcast(let urls):
+            return sendBroadcast(pendingSend, to: urls, screenActions: screenActions)
+        }
+    }
+
+    private func sendSingle(
+        _ pendingSend: PendingSend,
+        to url: String,
+        screenActions: SendMessageScreenActions
+    ) -> Task<Void, Never> {
+        let messageEntity = pendingSend.messageEntity
         isSending = true
-        // 送信中に URL 欄が書き換えられても、実際に送った先を履歴に残す
-        let url = inputURL
         return Task {
             let result = await postDiscordWebhook(
                 url: url,
                 messageEntity: messageEntity,
-                attachment: attachment
+                attachment: pendingSend.attachment
             )
             isSending = false
             // 設定で「送信履歴を保存する」が ON のときだけ記録される
@@ -243,26 +312,14 @@ extension SendMessageViewModel {
 
     /// 選んだ宛先に一斉送信する（Pro 限定）
     private func sendBroadcast(
-        _ messageEntity: MessageEntity,
-        isPro: Bool,
+        _ pendingSend: PendingSend,
+        to urls: [String],
         screenActions: SendMessageScreenActions
-    ) -> Task<Void, Never>? {
-        let urls = broadcastTargets.map(\.url)
-        // 宛先を選んだあとに Pro でなくなった場合は送らない
-        let error: SendMessageValidationError? = ProFeatureAccess.canUse(isPro: isPro)
-            ? validate(
-                url: urls[0], messageEntity: messageEntity, hasAttachment: attachment != nil, canUseProFeatures: true
-            )
-            : .proBroadcast
-        if let error {
-            validationError = error
-            isValidationAlertPresented = true
-            return nil
-        }
-
+    ) -> Task<Void, Never> {
+        let messageEntity = pendingSend.messageEntity
         isSending = true
         return Task {
-            let results = await broadcast(to: urls, messageEntity: messageEntity, attachment: attachment)
+            let results = await broadcast(to: urls, messageEntity: messageEntity, attachment: pendingSend.attachment)
             isSending = false
             let failureCount = results.filter { (try? $0.result.get()) == nil }.count
             for result in results {

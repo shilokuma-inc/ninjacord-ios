@@ -30,6 +30,8 @@ final class SendMessageViewModelFixture {
         userDefaults = try #require(UserDefaults(suiteName: suiteName))
         // 送信履歴の保存は既定で OFF なので、記録を確かめるために ON にする
         userDefaults.set(true, forKey: SendHistoryStore.isEnabledKey)
+        // 既定はオンだが、名前を空にして送るテストが多いので切っておく。確認ダイアログのテストではオンにする
+        userDefaults.set(false, forKey: DefaultValueConfirmationSetting.isEnabledKey)
         historyStore = SendHistoryStore(userDefaults: userDefaults)
         sendSuccessCounter = SendSuccessCounter(userDefaults: userDefaults)
         let analytics = AnalyticsSpy()
@@ -47,6 +49,7 @@ final class SendMessageViewModelFixture {
             rewardedUnlock: RewardedUnlockSpy(recorder: recorder),
             interstitialAd: InterstitialAdSpy(recorder: recorder),
             haptics: haptics,
+            defaultValueConfirmationSetting: DefaultValueConfirmationSetting(userDefaults: userDefaults),
             sleep: { duration in
                 recorder.record(.sleep(duration))
             }
