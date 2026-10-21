@@ -300,6 +300,7 @@ extension SendMessageView {
     private var webhookProfileInput: String {
         MessagePreviewProfile.webhookProfileInput(
             webhookURL: viewModel.inputURL,
+            username: viewModel.inputUsername,
             avatarURL: viewModel.inputAvatarURL,
             isBroadcasting: !viewModel.broadcastTargets.isEmpty,
             isScreenshotDemo: ScreenshotDemo.isEnabled

@@ -36,14 +36,15 @@ struct DiscordWebhookRequestTests {
         ])
     }
 
-    /// 既定の文言はローカライズされていない（今の挙動。Discussion #459 の Q4 の 1）
-    @Test("名前が空なら「以下、名無しにかわりましてVIPがお送りします」、本文が空なら「なんか書いてね」を送る")
-    func defaultUsernameAndContent() {
+    /// 本文の既定の文言はローカライズされていない（Discussion #459 の Q4 の 1）。
+    /// 名前は空なら送らず、Discord 側で Webhook の名前で出す（Discussion #586 の Q7）
+    @Test("名前が空なら username を送らず、本文が空なら「なんか書いてね」を送る")
+    func omittedUsernameAndDefaultContent() {
         #expect(request(.make()).parameters.dictionary == [
-            "username": "以下、名無しにかわりましてVIPがお送りします",
             "avatar_url": "",
             "content": "なんか書いてね"
         ])
+        #expect(request(.make(content: "こんにちは")).parameters["username"] == nil)
     }
 
     @Test("空白だけの名前・本文は空とみなさず、そのまま送る")
@@ -100,16 +101,17 @@ struct DiscordWebhookRequestTests {
 
     // MARK: - 初期文言に置き換える項目
 
-    @Test("名前・本文が空なら、どちらも初期文言に置き換える")
-    func defaultedUsernameAndContent() {
-        #expect(request(.make()).defaultedFields == [.username, .content])
-        #expect(DiscordWebhookRequest.DefaultedField.username.value == "以下、名無しにかわりましてVIPがお送りします")
+    @Test("名前・本文が空なら、本文だけを初期文言に置き換える")
+    func defaultedContentOnly() {
+        #expect(request(.make()).defaultedFields == [.content])
         #expect(DiscordWebhookRequest.DefaultedField.content.value == "なんか書いてね")
     }
 
     @Test("名前・本文が入っていれば、初期文言に置き換えない")
     func noDefaultedFields() {
         #expect(request(.make(username: "忍者", content: "こんにちは")).defaultedFields.isEmpty)
+        // 名前が空でも置き換えない
+        #expect(request(.make(content: "こんにちは")).defaultedFields.isEmpty)
         // 空白だけでも入力とみなす
         #expect(request(.make(username: " ", content: "\n")).defaultedFields.isEmpty)
         // プロフィール画像の URL が空でも置き換えない
@@ -119,9 +121,10 @@ struct DiscordWebhookRequestTests {
     @Test("本文が空でも、埋め込みか画像があれば本文は置き換えない")
     func contentIsNotDefaultedWithEmbedOrAttachment() {
         let embed = MessageEmbedEntity(title: "お知らせ")
-        #expect(request(.make(embed: embed)).defaultedFields == [.username])
+        #expect(request(.make(embed: embed)).defaultedFields.isEmpty)
         #expect(request(.make(username: "忍者", embed: embed)).defaultedFields.isEmpty)
         #expect(request(.make(username: "忍者"), attachment: .sample).defaultedFields.isEmpty)
+        #expect(request(.make(), attachment: .sample).defaultedFields.isEmpty)
     }
 
     /// プレビューは、これで本文の場所を出すかを決める
@@ -294,6 +297,13 @@ struct DiscordWebhookRequestTests {
         let parts = try #require(request(.make(username: "忍者"), attachment: .sample).multipartParts)
         let payload = try #require(try JSONSerialization.jsonObject(with: parts[0].data) as? NSDictionary)
         #expect(payload == ["username": "忍者", "avatar_url": ""])
+    }
+
+    @Test("名前が空なら、payload_json にも username を入れない")
+    func multipartPayloadWithoutUsername() throws {
+        let parts = try #require(request(.make(content: "スクリーンショット"), attachment: .sample).multipartParts)
+        let payload = try #require(try JSONSerialization.jsonObject(with: parts[0].data) as? NSDictionary)
+        #expect(payload == ["avatar_url": "", "content": "スクリーンショット"])
     }
 
     /// 埋め込みだけを送るメッセージを組み立て、embeds の 1 件目を返す。embeds が無ければ nil

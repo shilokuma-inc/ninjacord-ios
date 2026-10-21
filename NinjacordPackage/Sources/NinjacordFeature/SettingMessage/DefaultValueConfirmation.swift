@@ -47,16 +47,15 @@ struct DefaultValueConfirmation {
     /// 初期文言に置き換えて送る項目（空ではない）
     let defaultedFields: [DiscordWebhookRequest.DefaultedField]
 
-    /// ダイアログの本文。未入力の項目と、実際に送られる値を並べる
+    /// ダイアログの本文。未入力の項目と、実際に送られる値を並べる。
+    /// 名前は空なら送らず Webhook の名前で出るので、確認しない（Discussion #586 の Q7）
     var message: String {
         let lines = defaultedFields.map { field in
             switch field {
-            case .username:
-                return String(localized: "名前: \(field.value)")
             case .content:
                 return String(localized: "本文: \(field.value)")
             }
         }
-        return ([String(localized: "未入力の項目は、次の内容で送られます。")] + lines).joined(separator: "\n")
+        return ([String(localized: "本文が未入力のため、次の内容で送られます。")] + lines).joined(separator: "\n")
     }
 }

@@ -63,45 +63,45 @@ final class SendMessageDefaultValueConfirmationTests {
 
     // MARK: - 確認を出すか
 
-    @Test("名前が空なら、確認ダイアログを出して送らない")
-    func emptyUsernameShowsConfirmation() async throws {
+    @Test("本文・埋め込み・画像が無ければ、確認ダイアログに本文の初期文言を出して送らない")
+    func emptyContentShowsConfirmation() async throws {
         let url = inputURL()
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
 
         #expect(await fixture.send() == false)
 
         #expect(viewModel.isDefaultValueConfirmationPresented)
         let confirmation = try #require(viewModel.defaultValueConfirmation)
-        #expect(confirmation.defaultedFields == [.username])
-        #expect(confirmation.message.contains("以下、名無しにかわりましてVIPがお送りします"))
+        #expect(confirmation.defaultedFields == [.content])
+        #expect(confirmation.message.contains("なんか書いてね"))
         #expect(requests(to: url) == 0)
         #expect(!viewModel.isSending)
     }
 
-    @Test("名前・本文が空なら、本文に送られる値を両方出す")
-    func emptyUsernameAndContentShowsBothValues() async throws {
+    /// 名前は空なら送らず Webhook の名前で出るので、初期文言に置き換えない（Discussion #586 の Q7）
+    @Test("名前・本文が空なら、本文の初期文言だけを出す")
+    func emptyUsernameAndContentShowsContentValueOnly() async throws {
         inputURL()
         viewModel.inputAvatarURL = "https://example.com/avatar.png"
 
         await fixture.send()
 
         let confirmation = try #require(viewModel.defaultValueConfirmation)
-        #expect(confirmation.defaultedFields == [.username, .content])
-        #expect(confirmation.message.contains("以下、名無しにかわりましてVIPがお送りします"))
-        #expect(confirmation.message.contains("なんか書いてね"))
-    }
-
-    @Test("名前が入っていて、本文・埋め込み・画像が無ければ、本文の初期文言だけを出す")
-    func emptyContentOnlyShowsContentValue() async throws {
-        inputURL()
-        viewModel.inputUsername = "忍者"
-
-        #expect(await fixture.send() == false)
-
-        let confirmation = try #require(viewModel.defaultValueConfirmation)
         #expect(confirmation.defaultedFields == [.content])
         #expect(confirmation.message.contains("なんか書いてね"))
         #expect(!confirmation.message.contains("以下、名無しにかわりましてVIPがお送りします"))
+    }
+
+    @Test("名前が空なだけなら、確認を出さずに送る")
+    func emptyUsernameIsSentWithoutConfirmation() async {
+        let url = inputURL()
+        viewModel.inputContext = "こんにちは"
+
+        #expect(await fixture.send())
+
+        #expect(!viewModel.isDefaultValueConfirmationPresented)
+        #expect(viewModel.defaultValueConfirmation == nil)
+        #expect(requests(to: url) == 1)
     }
 
     @Test("名前・本文が入っていれば、確認を出さずに送る。プロフィール画像が空でも出さない")
@@ -117,31 +117,29 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(requests(to: url) == 1)
     }
 
-    @Test("本文が空でも、名前と埋め込みがあれば確認を出さずに送る")
-    func embedOnlyWithUsernameIsSentWithoutConfirmation() async {
+    @Test("本文が空でも、埋め込みがあれば確認を出さずに送る。名前が空でも出さない")
+    func embedOnlyIsSentWithoutConfirmation() async {
         let url = inputURL()
-        viewModel.inputUsername = "忍者"
         viewModel.inputEmbed = MessageEmbedEntity(title: "お知らせ")
 
         #expect(await fixture.send())
         #expect(requests(to: url) == 1)
     }
 
-    @Test("本文が空でも、名前と画像があれば確認を出さずに送る")
-    func attachmentOnlyWithUsernameIsSentWithoutConfirmation() async {
+    @Test("本文が空でも、画像があれば確認を出さずに送る。名前が空でも出さない")
+    func attachmentOnlyIsSentWithoutConfirmation() async {
         let url = inputURL()
-        viewModel.inputUsername = "忍者"
         viewModel.attachment = Self.attachment
 
         #expect(await fixture.send())
         #expect(requests(to: url) == 1)
     }
 
-    @Test("確認の設定がオフなら、名前が空でも確認を出さずに送る")
+    @Test("確認の設定がオフなら、本文が空でも確認を出さずに送る")
     func settingOffSendsWithoutConfirmation() async {
         setting.isEnabled = false
         let url = inputURL()
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
 
         #expect(await fixture.send())
 
@@ -162,7 +160,7 @@ final class SendMessageDefaultValueConfirmationTests {
     @Test("確認を出すときも、送信ボタンを押したときに 1 回だけ振動させる")
     func hapticsOnceWhenConfirming() async {
         inputURL()
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
 
         await fixture.send()
         await confirm()
@@ -175,9 +173,11 @@ final class SendMessageDefaultValueConfirmationTests {
     @Test("「このまま送信」で、ボタンを押した時点の中身を送る。設定はオンのまま")
     func confirmSendsPendingMessage() async throws {
         let url = inputURL()
-        viewModel.inputContext = "こんにちは"
+        // すべて空だと入力チェックで止まるので、名前は空のままプロフィール画像の URL を入れる
+        viewModel.inputAvatarURL = "https://example.com/avatar.png"
         await fixture.send()
         // ダイアログを開いたまま入力が変わっても、押した時点の中身を送る
+        viewModel.inputUsername = "書き換えた名前"
         viewModel.inputContext = "書き換えた本文"
         viewModel.inputURL = "https://discord.com/api/webhooks/999/other"
 
@@ -187,17 +187,19 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(requests(to: url) == 1)
         let body = try #require(StubURLProtocol.requests(to: url).first?.body)
         let parameters = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
-        #expect(parameters["content"] as? String == "こんにちは")
-        #expect(parameters["username"] as? String == "以下、名無しにかわりましてVIPがお送りします")
+        #expect(parameters["content"] as? String == "なんか書いてね")
+        // 名前が空なら username を送らず、Webhook の名前で出す
+        #expect(parameters["username"] == nil)
         #expect(setting.isEnabled)
-        // 送信履歴には入力したそのままの値（空の名前）を残す
+        // 送信履歴には入力したそのままの値（空の名前・本文）を残す
         #expect(fixture.historyStore.items.first?.message.username == "")
+        #expect(fixture.historyStore.items.first?.message.content == "")
     }
 
     @Test("「キャンセル」では送らず、入力も消さない")
     func cancelDoesNotSend() async {
         let url = inputURL()
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
         await fixture.send()
 
         viewModel.cancelDefaultValueSend()
@@ -205,14 +207,14 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(viewModel.defaultValueConfirmation == nil)
         #expect(await confirm() == false)
         #expect(requests(to: url) == 0)
-        #expect(viewModel.inputContext == "こんにちは")
+        #expect(viewModel.inputUsername == "忍者")
         #expect(setting.isEnabled)
     }
 
     @Test("「送信して今後は表示しない」で設定をオフにして送り、次からは確認を出さない")
     func confirmAndDisable() async {
         let url = inputURL()
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
         await fixture.send()
 
         #expect(await confirm(disablesConfirmation: true))
@@ -227,26 +229,26 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(requests(to: url) == 2)
     }
 
-    @Test("ダイアログを開いたまま画像を外しても、押した時点の画像を添付して送る")
+    /// 画像を添付していれば確認を出さないので、確認を出すのは画像が無いときだけ
+    @Test("ダイアログを開いたまま画像を付けても、押した時点の中身（画像なし）で送る")
     func confirmSendsPendingAttachment() async throws {
         let url = inputURL()
-        viewModel.inputContext = "スクリーンショット"
-        viewModel.attachment = Self.attachment
+        viewModel.inputUsername = "忍者"
         await fixture.send()
 
-        viewModel.attachment = nil
+        viewModel.attachment = Self.attachment
         #expect(await confirm())
 
         let request = try #require(StubURLProtocol.requests(to: url).first?.request)
         let contentType = try #require(request.value(forHTTPHeaderField: "Content-Type"))
-        #expect(contentType.hasPrefix("multipart/form-data; boundary="))
+        #expect(contentType == "application/json")
     }
 
     /// 設定画面の @AppStorage は同じキーに Bool を書く
     @Test("「今後は表示しない」の後に設定画面と同じキーでオンに戻せば、次の送信で再び確認を出す")
     func reEnabledFromSettingViewKey() async {
         let url = inputURL()
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
         await fixture.send()
         await confirm(disablesConfirmation: true)
         #expect(requests(to: url) == 1)
@@ -262,7 +264,7 @@ final class SendMessageDefaultValueConfirmationTests {
     func reEnabledSettingShowsConfirmationAgain() async {
         setting.isEnabled = false
         let url = inputURL()
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
         await fixture.send()
         #expect(requests(to: url) == 1)
 
@@ -274,16 +276,16 @@ final class SendMessageDefaultValueConfirmationTests {
 
     // MARK: - 一斉送信
 
-    @Test("一斉送信でも、名前が空なら確認を出し、「このまま送信」で全宛先に送る")
+    @Test("一斉送信でも、本文が空なら確認を出し、「このまま送信」で全宛先に送る")
     func broadcastShowsConfirmation() async {
         let first = fixture.savedURL("作戦室", returning: Self.noContent)
         let second = fixture.savedURL("雑談", returning: Self.noContent)
         viewModel.broadcastTargets = [first, second]
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
 
         #expect(await fixture.send(isPro: true) == false)
         #expect(viewModel.isDefaultValueConfirmationPresented)
-        #expect(viewModel.defaultValueConfirmation?.defaultedFields == [.username])
+        #expect(viewModel.defaultValueConfirmation?.defaultedFields == [.content])
 
         #expect(await confirm())
         #expect(fixture.historyStore.items.map(\.isSuccess) == [true, true])
@@ -294,7 +296,7 @@ final class SendMessageDefaultValueConfirmationTests {
         let first = fixture.savedURL("作戦室", returning: Self.noContent)
         let second = fixture.savedURL("雑談", returning: Self.noContent)
         viewModel.broadcastTargets = [first, second]
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
         await fixture.send(isPro: true)
 
         viewModel.broadcastTargets = [first]
@@ -308,7 +310,7 @@ final class SendMessageDefaultValueConfirmationTests {
         let first = fixture.savedURL("作戦室", returning: Self.noContent)
         let second = fixture.savedURL("雑談", returning: Self.noContent)
         viewModel.broadcastTargets = [first, second]
-        viewModel.inputContext = "こんにちは"
+        viewModel.inputUsername = "忍者"
         await fixture.send(isPro: true)
 
         #expect(await confirm(disablesConfirmation: true))
@@ -317,10 +319,9 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(fixture.historyStore.items.map(\.isSuccess) == [true, true])
     }
 
-    @Test("一斉送信でも、名前・本文が入っていれば確認を出さずに送る")
+    @Test("一斉送信でも、本文が入っていれば名前が空でも確認を出さずに送る")
     func broadcastWithoutConfirmation() async {
         viewModel.broadcastTargets = [fixture.savedURL("作戦室", returning: Self.noContent)]
-        viewModel.inputUsername = "忍者"
         viewModel.inputContext = "こんにちは"
 
         #expect(await fixture.send(isPro: true))
