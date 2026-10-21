@@ -11,7 +11,7 @@ import UIKit
 enum ScreenshotDemo {
     /// 撮影する画面。並び順は `AppStore/screenshots.json` で決める
     enum Scene: String {
-        /// 送信画面（入力済み・画像添付あり・プレビューを開いた状態）
+        /// 送信画面（入力済み・画像添付あり・送信者を閉じてプレビューを開き、送信者の上端までスクロールした状態）
         case send
         /// 埋め込みエディタのライブプレビュー
         case embed

@@ -7,7 +7,8 @@ import Foundation
 
 /// 送信画面で開閉できるもの（送信者セクション・Discordでの見え方）の開閉の状態（Discussion #586 の Q3・Q6）。
 /// 保存先は UserDefaults で、未設定なら開いた状態。
-/// 撮影モードでは撮るたびに同じ画面になるよう、保存値を読まずに開いた状態にし、開閉しても保存しない
+/// 撮影モードでは撮るたびに同じ画面になるよう、保存値を読まずに開いた状態にし、開閉しても保存しない。
+/// ただし撮影する送信画面では、セクションの並びとプレビューを 1 枚に収めるため送信者を閉じる
 struct SendMessageDisclosure {
     enum Item: CaseIterable {
         /// 送信者セクション（名前・プロフィール画像の URL）
@@ -28,16 +29,23 @@ struct SendMessageDisclosure {
 
     let userDefaults: UserDefaults
     let isScreenshotDemo: Bool
+    /// 撮影モードで送信画面（`ScreenshotDemo.Scene.send`）を撮るか
+    let isSendSceneScreenshot: Bool
 
-    init(userDefaults: UserDefaults = .standard, isScreenshotDemo: Bool = ScreenshotDemo.isEnabled) {
+    init(
+        userDefaults: UserDefaults = .standard,
+        isScreenshotDemo: Bool = ScreenshotDemo.isEnabled,
+        isSendSceneScreenshot: Bool = ScreenshotDemo.scene == .send
+    ) {
         self.userDefaults = userDefaults
         self.isScreenshotDemo = isScreenshotDemo
+        self.isSendSceneScreenshot = isSendSceneScreenshot
     }
 
-    /// 開いているか。未設定・撮影モードなら開いた状態
+    /// 開いているか。未設定なら開いた状態。撮影モードでは、送信画面の送信者だけ閉じ、ほかは開いた状態
     func isExpanded(_ item: Item) -> Bool {
         guard !isScreenshotDemo else {
-            return true
+            return !(item == .sender && isSendSceneScreenshot)
         }
         return userDefaults.object(forKey: item.userDefaultsKey) as? Bool ?? true
     }

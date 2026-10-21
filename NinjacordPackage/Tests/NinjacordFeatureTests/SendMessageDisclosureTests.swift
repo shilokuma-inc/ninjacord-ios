@@ -20,8 +20,12 @@ final class SendMessageDisclosureTests {
         userDefaults.removePersistentDomain(forName: suiteName)
     }
 
-    private func disclosure(isScreenshotDemo: Bool = false) -> SendMessageDisclosure {
-        SendMessageDisclosure(userDefaults: userDefaults, isScreenshotDemo: isScreenshotDemo)
+    private func disclosure(isScreenshotDemo: Bool = false, isSendScene: Bool = false) -> SendMessageDisclosure {
+        SendMessageDisclosure(
+            userDefaults: userDefaults,
+            isScreenshotDemo: isScreenshotDemo,
+            isSendSceneScreenshot: isScreenshotDemo && isSendScene
+        )
     }
 
     @Test("未設定なら開いた状態", arguments: SendMessageDisclosure.Item.allCases)
@@ -54,5 +58,12 @@ final class SendMessageDisclosureTests {
 
         disclosure(isScreenshotDemo: true).setExpanded(true, for: item)
         #expect(!disclosure().isExpanded(item))
+    }
+
+    /// App Store 用の送信画面に、セクションの並びとプレビューを 1 枚に収めるため
+    @Test("撮影モードの送信画面では、送信者だけを閉じ、プレビューは開く")
+    func sendSceneCollapsesSender() {
+        #expect(!disclosure(isScreenshotDemo: true, isSendScene: true).isExpanded(.sender))
+        #expect(disclosure(isScreenshotDemo: true, isSendScene: true).isExpanded(.preview))
     }
 }

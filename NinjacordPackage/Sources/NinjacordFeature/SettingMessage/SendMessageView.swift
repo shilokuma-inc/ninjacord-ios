@@ -9,7 +9,6 @@ import SwiftUI
 import StoreKit
 
 struct SendMessageView: View {
-
     @State private var isEditing: Bool = false
     /// 送信者セクションと Discordでの見え方の開閉。前回の状態で始め、開閉したら覚える（撮影モードでは常に開いて始める）
     @State private var isSenderExpanded = SendMessageDisclosure().isExpanded(.sender)
@@ -51,8 +50,8 @@ struct SendMessageView: View {
             // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
             SendMessageScrollLayout(
                 onTapBackground: dismissKeyboard,
-                // 撮影する送信画面では、開いたプレビューと送信ボタンが写るよう下端までスクロールしておく
-                scrollsToBottomOnAppear: ScreenshotDemo.scene == .send,
+                // 撮影する送信画面では、セクションの並びとプレビューが 1 枚に収まるよう、送信者の上端までスクロールしておく
+                scrollTargetOnAppear: ScreenshotDemo.scene == .send ? "sender" : nil,
                 minimumBottomHeight: minimumBottomHeight(width:)
             ) {
                 VStack(spacing: Self.sectionSpacing) {
@@ -63,6 +62,7 @@ struct SendMessageView: View {
 
                     destinationSection
                     senderSection
+                        .id("sender")
                     contentSection
                     embedSection
                     attachmentSection
