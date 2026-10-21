@@ -1082,6 +1082,22 @@
         }
       }
     },
+    "サムネイル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thumbnail"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サムネイル"
+          }
+        }
+      }
+    },
     "サムネイルのURL" : {
       "localizations" : {
         "en" : {
@@ -1142,6 +1158,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タイトル"
+          }
+        }
+      }
+    },
+    "タイトルなし" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No title"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトルなし"
+          }
+        }
+      }
+    },
+    "タイトルのみ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title only"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトルのみ"
           }
         }
       }
@@ -1350,6 +1398,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フィールド"
+          }
+        }
+      }
+    },
+    "フィールド%lld件" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fields: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィールド%lld件"
           }
         }
       }
@@ -2090,38 +2154,6 @@
         }
       }
     },
-    "埋め込みタイトル" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Embed title"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "埋め込みタイトル"
-          }
-        }
-      }
-    },
-    "埋め込みタイトルを入れてください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter embedded title"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "埋め込みタイトルを入れてください"
-          }
-        }
-      }
-    },
     "基本" : {
       "localizations" : {
         "en" : {
@@ -2294,6 +2326,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "折りたたみ済み"
+          }
+        }
+      }
+    },
+    "未設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未設定"
           }
         }
       }
@@ -2618,6 +2666,22 @@
         }
       }
     },
+    "色と送信日時だけでは送られません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color and timestamp alone won't be sent"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色と送信日時だけでは送られません"
+          }
+        }
+      }
+    },
     "色を指定する" : {
       "localizations" : {
         "en" : {
@@ -2662,6 +2726,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表示あり"
+          }
+        }
+      }
+    },
+    "表示される内容がありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to display"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示される内容がありません"
           }
         }
       }
@@ -3110,6 +3190,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信成功"
+          }
+        }
+      }
+    },
+    "送信日時" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timestamp"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信日時"
           }
         }
       }

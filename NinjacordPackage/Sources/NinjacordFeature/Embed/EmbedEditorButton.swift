@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// 埋め込みのタイトル以外の項目を入力する embed エディタを開くボタン
+/// 埋め込みの項目（タイトルを含む）を入力する embed エディタを開くボタン
 struct EmbedEditorButton: View {
     @Binding var embed: MessageEmbedEntity
 
@@ -16,12 +16,12 @@ struct EmbedEditorButton: View {
         Button(action: {
             isPresented = true
         }, label: {
-            Image(systemName: "slider.horizontal.3")
-                .foregroundStyle(Color.appAccent)
-                .frame(width: 44.0, height: 44.0)
-                .contentShape(Rectangle())
+            Label("埋め込みを編集", systemImage: "slider.horizontal.3")
         })
-        .accessibilityLabel("埋め込みを編集")
+        // 送信画面のほかの補助ボタン（複数の宛先に送る・画像を添付）とそろえる
+        .font(.system(size: 15, weight: .semibold))
+        .tint(Color.appAccent)
+        .frame(minHeight: 44.0)
         .sheet(isPresented: $isPresented) {
             NavigationStack {
                 EmbedEditorView(embed: $embed)
