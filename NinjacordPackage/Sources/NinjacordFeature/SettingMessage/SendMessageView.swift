@@ -260,7 +260,7 @@ extension SendMessageView {
                 // 見出しの分だけ高くなるので、横のボタンは入力欄の中央にそろえる
                 HStack(alignment: .textFieldCenter) {
                     ClearableIconTextField(
-                        icon: Image(systemName: "link.icloud.fill"),
+                        icon: MessagePartIcon(part: .destination),
                         placeholder: "URLを入れてください",
                         text: $viewModel.inputURL,
                         title: "Webhook URL"
@@ -286,7 +286,7 @@ extension SendMessageView {
     private var senderSection: some View {
         SendMessageSection(title: "送信者", isExpanded: $isSenderExpanded, collapsedSummary: senderSummary) {
             ClearableIconTextField(
-                icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
+                icon: MessagePartIcon(part: .name),
                 placeholder: "名前を入れてください",
                 text: $viewModel.inputUsername,
                 title: "名前",
@@ -297,7 +297,7 @@ extension SendMessageView {
             }
 
             ClearableIconTextField(
-                icon: Image(systemName: "person.crop.square"),
+                icon: MessagePartIcon(part: .avatar),
                 placeholder: "プロフィール画像のURLを入れてください",
                 text: $viewModel.inputAvatarURL,
                 title: "プロフィール画像のURL",
@@ -329,7 +329,7 @@ extension SendMessageView {
     private var contentSection: some View {
         SendMessageSection(title: "本文") {
             ClearableIconTextField(
-                icon: Image(systemName: "square.and.pencil"),
+                icon: MessagePartIcon(part: .content),
                 placeholder: "メッセージを入れてください",
                 text: $viewModel.inputContext,
                 title: "メッセージ"
@@ -353,10 +353,13 @@ extension SendMessageView {
     /// 添付: 本文と一緒に送る画像
     private var attachmentSection: some View {
         SendMessageSection(title: "添付") {
-            ImageAttachmentButton(attachment: $viewModel.attachment) {
-                viewModel.toast = Toast(style: .failure, message: "画像を添付できませんでした。10MBまでの画像を選んでください")
+            // ほかのセクションの入力欄と同じく左にアイコンを置き、ボタンの頭は入力欄の文字（左から 44pt）にそろえる
+            HStack(spacing: 44.0 - MessagePartIcon.gridSize) {
+                MessagePartIcon(part: .attachment)
+                ImageAttachmentButton(attachment: $viewModel.attachment) {
+                    viewModel.toast = Toast(style: .failure, message: "画像を添付できませんでした。10MBまでの画像を選んでください")
+                }
             }
-            .padding(.leading, 44.0)
         }
     }
 }

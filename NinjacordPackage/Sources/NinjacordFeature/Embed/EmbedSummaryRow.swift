@@ -12,9 +12,7 @@ struct EmbedSummaryRow: View {
     var body: some View {
         // 入力欄の行と同じく、左にアイコン・右に中身を並べる
         HStack(alignment: .top) {
-            Image(systemName: "list.clipboard")
-                .foregroundStyle(Color.appAccent)
-                .frame(width: 24.0, height: 24.0)
+            MessagePartIcon(part: .embed)
 
             VStack(alignment: .leading, spacing: 2.0) {
                 // 何も入力していないときは、タイトルの行を出さず 2 行目の「未設定」だけにする
