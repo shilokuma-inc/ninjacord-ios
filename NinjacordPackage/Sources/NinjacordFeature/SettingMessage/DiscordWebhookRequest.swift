@@ -17,22 +17,17 @@ struct DiscordWebhookRequest {
         let mimeType: String
     }
 
-    /// 名前が空のときに送る名前。ローカライズしない（Discussion #459 の Q4 の 1）。
-    /// Discord 上では Webhook に設定された名前の代わりにこれが出るので、プレビューでも同じものを出す
-    static let defaultUsername = "以下、名無しにかわりましてVIPがお送りします"
-    /// 本文が空で、埋め込みも画像も無いときに送る本文。名前の初期値と同じくローカライズしない
+    /// 本文が空で、埋め込みも画像も無いときに送る本文。ローカライズしない（Discussion #459 の Q4 の 1）。
+    /// 名前は空なら送らず、Discord に Webhook の名前で出す（Discussion #586 の Q7）
     static let defaultContent = "なんか書いてね"
 
     /// 未入力のため、アプリの初期文言に置き換えて送る項目
     enum DefaultedField: Equatable {
-        case username
         case content
 
         /// 置き換えて送る値
         var value: String {
             switch self {
-            case .username:
-                return DiscordWebhookRequest.defaultUsername
             case .content:
                 return DiscordWebhookRequest.defaultContent
             }
@@ -51,13 +46,10 @@ struct DiscordWebhookRequest {
         self.sentAt = sentAt
     }
 
-    /// アプリの初期文言に置き換えて送る項目（名前・本文の順）。送る中身（`parameters`）はこれに従って組み立てる。
+    /// アプリの初期文言に置き換えて送る項目。送る中身（`parameters`）はこれに従って組み立てる。
     /// 本文は、空でも埋め込みに表示する中身があるか画像を添付するなら、置き換えずに送らない
     var defaultedFields: [DefaultedField] {
         var fields: [DefaultedField] = []
-        if messageEntity.username.isEmpty {
-            fields.append(.username)
-        }
         if messageEntity.content.isEmpty
             && !messageEntity.messageEmbedEntity.hasDisplayedContent
             && attachment == nil {
@@ -75,9 +67,12 @@ struct DiscordWebhookRequest {
     var parameters: [String: Any] {
         let defaulted = defaultedFields
         var param: [String: Any] = [
-            "username": defaulted.contains(.username) ? Self.defaultUsername : messageEntity.username,
             "avatar_url": messageEntity.avatarURL
         ]
+        // 名前が空なら username のキーを送らず、Discord 側で Webhook に設定した名前で出す
+        if !messageEntity.username.isEmpty {
+            param["username"] = messageEntity.username
+        }
         if defaulted.contains(.content) {
             param["content"] = Self.defaultContent
         } else if !messageEntity.content.isEmpty {

@@ -28,14 +28,50 @@ struct MessagePreviewProfileTests {
 
     // MARK: - 名前
 
-    @Test("出す名前は送る名前と同じ（空なら決まった名前、空白だけならそのまま）", arguments: ["", "レイド告知Bot", " "])
+    @Test("名前が入っていれば、送る名前と同じものを出す（空白だけならそのまま）", arguments: ["レイド告知Bot", " "])
     func displayNameMatchesSentUsername(username: String) {
-        #expect(MessagePreviewProfile.displayName(username: username) == sentUsername(username))
+        let name = MessagePreviewProfile.displayName(username: username, webhookProfile: Self.webhookProfile)
+        #expect(name == sentUsername(username))
     }
 
-    @Test("名前が空なら、Webhook の名前ではなく送信と同じ決まった名前を出す")
-    func displayNameIgnoresWebhookName() {
-        #expect(MessagePreviewProfile.displayName(username: "") == "以下、名無しにかわりましてVIPがお送りします")
+    /// 名前が空なら username を送らないので、Discord 上には Webhook の名前が出る
+    @Test("名前が空なら、username を送らず Webhook の名前を出す")
+    func displayNameFallsBackToWebhookName() {
+        #expect(sentUsername("") == nil)
+        #expect(MessagePreviewProfile.displayName(username: "", webhookProfile: Self.webhookProfile) == "Captain Hook")
+    }
+
+    @Test("名前が空で、Webhook の名前が未取得・空なら nil（仮の文言を出す）")
+    func displayNameUnknown() {
+        #expect(MessagePreviewProfile.displayName(username: "", webhookProfile: nil) == nil)
+        let profile = WebhookProfile(name: "", avatarURL: nil)
+        #expect(MessagePreviewProfile.displayName(username: "", webhookProfile: profile) == nil)
+    }
+
+    // MARK: - 送信者の要約
+
+    @Test("送信者の要約の名前は、入力があれば入力、空なら Webhook の名前")
+    func senderSummaryName() {
+        let profile = Self.webhookProfile
+        let typed = MessagePreviewProfile.senderSummary(username: "忍者", avatarURL: "", webhookProfile: profile)
+        #expect(typed.contains("忍者"))
+        #expect(!typed.contains("Captain Hook"))
+        let empty = MessagePreviewProfile.senderSummary(username: "", avatarURL: "", webhookProfile: profile)
+        #expect(empty.contains("Captain Hook"))
+    }
+
+    @Test("送信者の要約は、名前が分からないときも、プロフィール画像の URL の有無で文言が変わる")
+    func senderSummaryVariants() {
+        let unknown = MessagePreviewProfile.senderSummary(username: "", avatarURL: "", webhookProfile: nil)
+        let withAvatar = MessagePreviewProfile.senderSummary(
+            username: "",
+            avatarURL: "https://example.com/avatar.png",
+            webhookProfile: nil
+        )
+        #expect(!unknown.isEmpty)
+        #expect(unknown != withAvatar)
+        // URL そのものは要約に出さない
+        #expect(!withAvatar.contains("example.com"))
     }
 
     // MARK: - アイコン
@@ -65,26 +101,30 @@ struct MessagePreviewProfileTests {
     // MARK: - Webhook の情報を取得するか
 
     private func webhookProfileInput(
+        username: String = "",
         avatarURL: String = "",
         isBroadcasting: Bool = false,
         isScreenshotDemo: Bool = false
     ) -> String {
         MessagePreviewProfile.webhookProfileInput(
             webhookURL: Self.webhookURL,
+            username: username,
             avatarURL: avatarURL,
             isBroadcasting: isBroadcasting,
             isScreenshotDemo: isScreenshotDemo
         )
     }
 
-    @Test("プロフィール画像の URL が空なら、入力された Webhook の URL から取得する")
-    func webhookProfileInputWhenAvatarEmpty() {
+    @Test("名前かプロフィール画像の URL が空なら、入力された Webhook の URL から取得する")
+    func webhookProfileInputWhenNameOrAvatarEmpty() {
         #expect(webhookProfileInput() == Self.webhookURL)
+        #expect(webhookProfileInput(username: "忍者") == Self.webhookURL)
+        #expect(webhookProfileInput(avatarURL: "https://example.com/avatar.png") == Self.webhookURL)
     }
 
-    @Test("プロフィール画像の URL が入力済みなら取得しない")
-    func webhookProfileInputWhenAvatarFilled() {
-        #expect(webhookProfileInput(avatarURL: "https://example.com/avatar.png").isEmpty)
+    @Test("名前とプロフィール画像の URL がどちらも入力済みなら取得しない")
+    func webhookProfileInputWhenNameAndAvatarFilled() {
+        #expect(webhookProfileInput(username: "忍者", avatarURL: "https://example.com/avatar.png").isEmpty)
     }
 
     @Test("一斉送信中は取得しない")

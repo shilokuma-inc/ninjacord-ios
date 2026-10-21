@@ -9,10 +9,10 @@ import SwiftUI
 import StoreKit
 
 struct SendMessageView: View {
-
     @State private var isEditing: Bool = false
-    /// App Store 用スクリーンショットの送信画面では、Discord での見え方まで写すため開いておく
-    @State private var isPreviewExpanded = ScreenshotDemo.scene == .send
+    /// 送信者セクションと Discordでの見え方の開閉。前回の状態で始め、開閉したら覚える（撮影モードでは常に開いて始める）
+    @State private var isSenderExpanded = SendMessageDisclosure().isExpanded(.sender)
+    @State private var isPreviewExpanded = SendMessageDisclosure().isExpanded(.preview)
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
@@ -22,9 +22,24 @@ struct SendMessageView: View {
 
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
-
-    /// 入力欄どうしの間隔。メッセージと埋め込みタイトルの間も同じ値にして、縦の並びをそろえる（Discussion #525）
+    /// 入力欄どうしの間隔（Discussion #525）
     private static let fieldSpacing: CGFloat = 8.0
+
+    /// セクションどうしの間隔。セクションの中の入力欄どうしより広げて、まとまりを見分けやすくする
+    private static let sectionSpacing: CGFloat = 12.0
+
+    /// 広告を出さないときに、送信ボタンの下に必ず残す余白
+    private static let minimumBottomSpacing: CGFloat = 16.0
+
+    /// 下端にバナー広告を出すか。Pro 購読中は広告を出さない。購入した瞬間に消え、解約・失効したら戻る
+    private var showsBannerAd: Bool {
+        AdConfiguration.isEnabled && !purchaseManager.isPro
+    }
+
+    /// 入力欄が画面に収まらなくても下端に残す高さ。広告を出すなら広告の高さ、出さないなら送信ボタンの下の余白
+    private func minimumBottomHeight(width: CGFloat) -> CGFloat {
+        showsBannerAd ? BannerView.adHeight(width: width) : Self.minimumBottomSpacing
+    }
 
     var body: some View {
         ZStack {
@@ -34,106 +49,29 @@ struct SendMessageView: View {
             // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
             SendMessageScrollLayout(
                 onTapBackground: dismissKeyboard,
-                // 撮影する送信画面では、開いたプレビューと送信ボタンが写るよう下端までスクロールしておく
-                scrollsToBottomOnAppear: ScreenshotDemo.scene == .send
+                // 撮影する送信画面では、セクションの並びとプレビューが 1 枚に収まるよう、送信者の上端までスクロールしておく
+                scrollTargetOnAppear: ScreenshotDemo.scene == .send ? "sender" : nil,
+                minimumBottomHeight: minimumBottomHeight(width:)
             ) {
-                VStack(spacing: Self.fieldSpacing) {
-                    if viewModel.broadcastTargets.isEmpty {
-                        // 見出しの分だけ高くなるので、横のボタンは入力欄の中央にそろえる
-                        HStack(alignment: .textFieldCenter) {
-                            ClearableIconTextField(
-                                icon: Image(systemName: "link.icloud.fill"),
-                                placeholder: "URLを入れてください",
-                                text: $viewModel.inputURL,
-                                title: "Webhook URL"
-                            )
-                            .onTapGesture {
-                                self.isEditing = true
-                            }
-
-                            WebhookURLHelpButton(url: $viewModel.inputURL)
-
-                            SavedWebhookURLButton(url: $viewModel.inputURL)
-                        }
-                    } else {
-                        broadcastTargetsRow
-                    }
-
-                    // 宛先を選ぶボタンなので、宛先（URL）の直下に置く
-                    HStack {
-                        BroadcastButton(targets: $viewModel.broadcastTargets)
-                        Spacer()
-                        ImageAttachmentButton(attachment: $viewModel.attachment) {
-                            viewModel.toast = Toast(style: .failure, message: "画像を添付できませんでした。10MBまでの画像を選んでください")
-                        }
-                    }
-                    .padding(.leading, 44.0)
-
-                    // 宛先（URL）ではなく中身の入力欄の上に置く
+                VStack(spacing: Self.sectionSpacing) {
+                    // 宛先にも中身にも属さないので、セクションの外の先頭にまとめる（Discussion #586 の Q4）
                     MessageTemplateButtons(message: viewModel.currentMessage, onApply: viewModel.applyTemplate) {
                         viewModel.toast = Toast(style: .success, message: "テンプレートを保存しました")
                     }
-                    .padding(.leading, 44.0)
 
-                    ClearableIconTextField(
-                        icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
-                        placeholder: "名前を入れてください",
-                        text: $viewModel.inputUsername,
-                        title: "名前",
-                        note: "Discordの送信者名を上書き。空なら既定の名前"
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
-                    }
-
-                    ClearableIconTextField(
-                        icon: Image(systemName: "person.crop.square"),
-                        placeholder: "プロフィール画像のURLを入れてください",
-                        text: $viewModel.inputAvatarURL,
-                        title: "プロフィール画像のURL",
-                        note: "Discordのアイコンを上書き。空ならWebhookのアイコン"
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
-                    }
-
-                    ClearableIconTextField(
-                        icon: Image(systemName: "square.and.pencil"),
-                        placeholder: "メッセージを入れてください",
-                        text: $viewModel.inputContext,
-                        title: "メッセージ"
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
-                    }
+                    destinationSection
+                    senderSection
+                        .id("sender")
+                    contentSection
+                    embedSection
+                    attachmentSection
                 }
                 .padding(.horizontal)
-                // iPad では入力欄が画面幅いっぱいに伸びて間延びするため、最大幅を設けて中央に寄せる。
-                // 縦の余白の配分が変わらないよう、入力欄をまとめて包まずにブロックごとに付ける
-                .frame(maxWidth: Self.contentMaxWidth)
-
-                // メッセージと埋め込みタイトルの間隔も、ほかの入力欄と同じ値にする
-                Spacer()
-                    .frame(height: Self.fieldSpacing)
-
-                HStack(alignment: .textFieldCenter) {
-                    ClearableIconTextField(
-                        icon: Image(systemName: "list.clipboard"),
-                        placeholder: "埋め込みタイトルを入れてください",
-                        text: $viewModel.inputEmbed.title,
-                        title: "埋め込みタイトル"
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
-                    }
-
-                    EmbedEditorButton(embed: $viewModel.inputEmbed)
-                }
-                .padding(.horizontal)
+                // iPad では入力欄が画面幅いっぱいに伸びて間延びするため、最大幅を設けて中央に寄せる
                 .frame(maxWidth: Self.contentMaxWidth)
 
                 Spacer()
-                    .frame(height: Self.fieldSpacing)
+                    .frame(height: Self.sectionSpacing)
 
                 // 入力した内容を確かめてから送れるよう、入力欄と送信ボタンの間に置く
                 messagePreviewSection
@@ -145,8 +83,7 @@ struct SendMessageView: View {
 
                 sendButton
             } bottom: {
-                // Pro 購読中は広告を出さない。購入した瞬間に消え、解約・失効したら戻る
-                if AdConfiguration.isEnabled && !purchaseManager.isPro {
+                if showsBannerAd {
                     BannerView()
                 } else {
                     // バナーが占めていた下端の領域を、空の View で同じように確保する。
@@ -156,6 +93,7 @@ struct SendMessageView: View {
                 }
             }
         }
+        .screenshotDemoCoversStatusBar()
         // iOS 26 のアラートはボタン文字に周囲の tint を使う。画面には AppAccent を付け直し、アラートだけシステム標準の青にする
         .tint(Color.appAccent)
         .alert(isPresented: $viewModel.isValidationAlertPresented, error: viewModel.validationError) { _ in
@@ -166,7 +104,7 @@ struct SendMessageView: View {
             }
         }
         .alert(
-            "未入力の項目があります",
+            "本文が未入力です",
             isPresented: $viewModel.isDefaultValueConfirmationPresented,
             presenting: viewModel.defaultValueConfirmation
         ) { _ in
@@ -186,6 +124,12 @@ struct SendMessageView: View {
         .toast($viewModel.toast)
         .onAppear {
             InterstitialAdManager.shared.preload()
+        }
+        .onChange(of: isSenderExpanded) { isExpanded in
+            SendMessageDisclosure().setExpanded(isExpanded, for: .sender)
+        }
+        .onChange(of: isPreviewExpanded) { isExpanded in
+            SendMessageDisclosure().setExpanded(isExpanded, for: .preview)
         }
         .onChange(of: adConsent.canRequestAds) { _ in
             // 起動直後は同意の取得を待ってから読み込む
@@ -243,7 +187,7 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
-    /// Discord での見え方のプレビュー。入力欄と送信ボタンを画面に収めるため、既定では閉じておく
+    /// Discord での見え方のプレビュー。入力した内容がどこに出るか分かるよう、既定では開いておく（Discussion #586 の Q3）
     private var messagePreviewSection: some View {
         VStack(spacing: .zero) {
             Button {
@@ -289,7 +233,7 @@ extension SendMessageView {
                 // 開いても下端の広告の領域は縮めず、入力欄側をスクロールさせる
                 .sendMessageLayoutExcludesHeight()
                 .transition(.opacity)
-                // プレビューを開いている間だけ、URL の入力が止まったら Webhook の名前とアイコンを取得する
+                // プレビューを開いている間は、URL の入力が止まったら Webhook の名前とアイコンを取得する
                 .task(id: webhookProfileInput) {
                     await webhookProfileStore.load(for: webhookProfileInput)
                 }
@@ -300,10 +244,123 @@ extension SendMessageView {
     private var webhookProfileInput: String {
         MessagePreviewProfile.webhookProfileInput(
             webhookURL: viewModel.inputURL,
+            username: viewModel.inputUsername,
             avatarURL: viewModel.inputAvatarURL,
             isBroadcasting: !viewModel.broadcastTargets.isEmpty,
             isScreenshotDemo: ScreenshotDemo.isEnabled
         )
+    }
+}
+
+extension SendMessageView {
+    /// 宛先: Webhook URL と、URL を選ぶ・調べるボタン、一斉送信
+    private var destinationSection: some View {
+        SendMessageSection(title: "宛先") {
+            if viewModel.broadcastTargets.isEmpty {
+                // 見出しの分だけ高くなるので、横のボタンは入力欄の中央にそろえる
+                HStack(alignment: .textFieldCenter) {
+                    ClearableIconTextField(
+                        icon: MessagePartIcon(part: .destination),
+                        placeholder: "URLを入れてください",
+                        text: $viewModel.inputURL,
+                        title: "Webhook URL"
+                    )
+                    .onTapGesture {
+                        self.isEditing = true
+                    }
+
+                    WebhookURLHelpButton(url: $viewModel.inputURL)
+
+                    SavedWebhookURLButton(url: $viewModel.inputURL)
+                }
+            } else {
+                broadcastTargetsRow
+            }
+
+            BroadcastButton(targets: $viewModel.broadcastTargets)
+                .padding(.leading, 44.0)
+        }
+    }
+
+    /// 送信者: Discord のメッセージの名前とアイコン。閉じている間は要約だけを出す（Discussion #586 の Q6）
+    private var senderSection: some View {
+        SendMessageSection(title: "送信者", isExpanded: $isSenderExpanded, collapsedSummary: senderSummary) {
+            ClearableIconTextField(
+                icon: MessagePartIcon(part: .name),
+                placeholder: "名前を入れてください",
+                text: $viewModel.inputUsername,
+                title: "名前",
+                note: "Discordの送信者名を上書き。空ならWebhookの名前"
+            )
+            .onTapGesture {
+                self.isEditing = true
+            }
+
+            ClearableIconTextField(
+                icon: MessagePartIcon(part: .avatar),
+                placeholder: "プロフィール画像のURLを入れてください",
+                text: $viewModel.inputAvatarURL,
+                title: "プロフィール画像のURL",
+                note: "Discordのアイコンを上書き。空ならWebhookのアイコン"
+            )
+            .onTapGesture {
+                self.isEditing = true
+            }
+        }
+        // 閉じている間は、要約に出す Webhook の名前を取得する（プレビューを開いていなくても出せるように）
+        .task(id: isSenderExpanded ? "" : webhookProfileInput) {
+            guard !isSenderExpanded else {
+                return
+            }
+            await webhookProfileStore.load(for: webhookProfileInput)
+        }
+    }
+
+    /// 送信者セクションを閉じているときの要約
+    private var senderSummary: String {
+        MessagePreviewProfile.senderSummary(
+            username: viewModel.inputUsername,
+            avatarURL: viewModel.inputAvatarURL,
+            webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
+        )
+    }
+
+    /// 本文: Discord のメッセージの本文
+    private var contentSection: some View {
+        SendMessageSection(title: "本文") {
+            ClearableIconTextField(
+                icon: MessagePartIcon(part: .content),
+                placeholder: "メッセージを入れてください",
+                text: $viewModel.inputContext,
+                title: "メッセージ"
+            )
+            .onTapGesture {
+                self.isEditing = true
+            }
+        }
+    }
+
+    /// 埋め込み: 入力済みの内容の要約と、すべての項目を編集するシートを開くボタン（Discussion #586 の Q5）
+    private var embedSection: some View {
+        SendMessageSection(title: "埋め込み") {
+            EmbedSummaryRow(summary: EmbedSummary(embed: viewModel.inputEmbed))
+
+            EmbedEditorButton(embed: $viewModel.inputEmbed)
+                .padding(.leading, 44.0)
+        }
+    }
+
+    /// 添付: 本文と一緒に送る画像
+    private var attachmentSection: some View {
+        SendMessageSection(title: "添付") {
+            // ほかのセクションの入力欄と同じく左にアイコンを置き、ボタンの頭は入力欄の文字（左から 44pt）にそろえる
+            HStack(spacing: 44.0 - MessagePartIcon.gridSize) {
+                MessagePartIcon(part: .attachment)
+                ImageAttachmentButton(attachment: $viewModel.attachment) {
+                    viewModel.toast = Toast(style: .failure, message: "画像を添付できませんでした。10MBまでの画像を選んでください")
+                }
+            }
+        }
     }
 }
 

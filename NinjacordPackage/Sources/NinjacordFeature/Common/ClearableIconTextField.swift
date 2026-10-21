@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-/// 左にアイコン、右端に入力クリア用のバツボタンを持つカプセル型 TextField
-struct ClearableIconTextField: View {
-    let icon: Image
+/// 左にアイコン、右端に入力クリア用のバツボタンを持つカプセル型 TextField。
+/// アイコンは SF Symbols の `Image` のほか、`MessagePartIcon` など 24pt 角に収まる View を渡せる
+struct ClearableIconTextField<Icon: View>: View {
+    let icon: Icon
     let placeholder: LocalizedStringResource
     @Binding var text: String
     /// 入力欄の上に出す見出し。プレースホルダーは入力すると消えるため、入力後も何の欄か分かるように残す
@@ -110,7 +111,7 @@ extension VerticalAlignment {
             placeholder: "名前を入れてください",
             text: .constant("Ninja"),
             title: "名前",
-            note: "Discordの送信者名を上書き。空なら既定の名前"
+            note: "Discordの送信者名を上書き。空ならWebhookの名前"
         )
     }
     .padding()

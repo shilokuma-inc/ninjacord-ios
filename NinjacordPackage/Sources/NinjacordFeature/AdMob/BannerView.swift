@@ -14,6 +14,11 @@ struct BannerView: UIViewControllerRepresentable {
     @ObservedObject private var adConsent = AdConsentManager.shared
     private let adUnitID = AdUnitIdProvider.banner
 
+    /// 幅 `width` で読み込むバナーの高さ。読み込むときと同じ大きさ（アンカー付きアダプティブバナー）で求める
+    static func adHeight(width: CGFloat) -> CGFloat {
+        GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width).size.height
+    }
+
     func makeUIViewController(context: Context) -> some UIViewController {
         let bannerViewController = BannerViewController()
         // struct は親の再描画のたびに作り直されるため、画面に載せる GADBannerView は Coordinator で保持する
