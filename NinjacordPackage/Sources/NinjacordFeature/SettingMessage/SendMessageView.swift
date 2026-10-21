@@ -29,6 +29,19 @@ struct SendMessageView: View {
     /// セクションどうしの間隔。セクションの中の入力欄どうしより広げて、まとまりを見分けやすくする
     private static let sectionSpacing: CGFloat = 12.0
 
+    /// 広告を出さないときに、送信ボタンの下に必ず残す余白
+    private static let minimumBottomSpacing: CGFloat = 16.0
+
+    /// 下端にバナー広告を出すか。Pro 購読中は広告を出さない。購入した瞬間に消え、解約・失効したら戻る
+    private var showsBannerAd: Bool {
+        AdConfiguration.isEnabled && !purchaseManager.isPro
+    }
+
+    /// 入力欄が画面に収まらなくても下端に残す高さ。広告を出すなら広告の高さ、出さないなら送信ボタンの下の余白
+    private func minimumBottomHeight(width: CGFloat) -> CGFloat {
+        showsBannerAd ? BannerView.adHeight(width: width) : Self.minimumBottomSpacing
+    }
+
     var body: some View {
         ZStack {
             Color.appBackground
@@ -38,7 +51,8 @@ struct SendMessageView: View {
             SendMessageScrollLayout(
                 onTapBackground: dismissKeyboard,
                 // 撮影する送信画面では、開いたプレビューと送信ボタンが写るよう下端までスクロールしておく
-                scrollsToBottomOnAppear: ScreenshotDemo.scene == .send
+                scrollsToBottomOnAppear: ScreenshotDemo.scene == .send,
+                minimumBottomHeight: minimumBottomHeight(width:)
             ) {
                 VStack(spacing: Self.sectionSpacing) {
                     // 宛先にも中身にも属さないので、セクションの外の先頭にまとめる（Discussion #586 の Q4）
@@ -69,8 +83,7 @@ struct SendMessageView: View {
 
                 sendButton
             } bottom: {
-                // Pro 購読中は広告を出さない。購入した瞬間に消え、解約・失効したら戻る
-                if AdConfiguration.isEnabled && !purchaseManager.isPro {
+                if showsBannerAd {
                     BannerView()
                 } else {
                     // バナーが占めていた下端の領域を、空の View で同じように確保する。
