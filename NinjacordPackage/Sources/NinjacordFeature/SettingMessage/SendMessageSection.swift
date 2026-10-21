@@ -87,7 +87,7 @@ struct SendMessageSection<Content: View>: View {
         SendMessageSection(
             title: "送信者",
             isExpanded: .constant(false),
-            collapsedSummary: "名前: レイド告知Bot・アイコン: 指定済み"
+            collapsedSummary: "名前: レイド告知Bot・アイコンは指定済み"
         ) {
             EmptyView()
         }
