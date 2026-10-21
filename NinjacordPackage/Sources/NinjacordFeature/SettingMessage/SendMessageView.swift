@@ -80,7 +80,7 @@ struct SendMessageView: View {
                         placeholder: "名前を入れてください",
                         text: $viewModel.inputUsername,
                         title: "名前",
-                        note: "Discordの送信者名を上書き。空なら既定の名前"
+                        note: "Discordの送信者名を上書き。空ならWebhookの名前"
                     )
                     .onTapGesture {
                         self.isEditing = true
@@ -166,7 +166,7 @@ struct SendMessageView: View {
             }
         }
         .alert(
-            "未入力の項目があります",
+            "本文が未入力です",
             isPresented: $viewModel.isDefaultValueConfirmationPresented,
             presenting: viewModel.defaultValueConfirmation
         ) { _ in

@@ -128,7 +128,7 @@ struct SettingView: View {
                         Text("送信")
                             .foregroundStyle(Color.appTextSecondary)
                     } footer: {
-                        Text("名前や本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します")
+                        Text("本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します")
                             .foregroundStyle(Color.appTextSecondary)
                     }
 
