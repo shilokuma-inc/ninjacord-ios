@@ -11,17 +11,15 @@ import SwiftUI
 /// `sendMessageLayoutExcludesHeight()` を付けた部分の高さは、等分の計算に入れない（開いたプレビューなど）
 struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
     let onTapBackground: () -> Void
-    /// 表示したときに `content` の下端までスクロールしておくか。収まっているときは動かない
-    var scrollsToBottomOnAppear = false
+    /// 表示したときに、`content` の中のこの ID（`.id(_:)`）の View の上端までスクロールしておく。nil なら動かさない。
+    /// 収まっているときは動かない
+    var scrollTargetOnAppear: String?
     /// `bottom` に必ず残す高さ。引数は画面の幅（バナー広告の高さは幅で決まるため）
     var minimumBottomHeight: (CGFloat) -> CGFloat = { _ in 0 }
     @ViewBuilder let content: Content
     @ViewBuilder let bottom: Bottom
 
     @State private var heights = Heights()
-
-    /// `content` の下端へスクロールするための ID
-    private static var contentID: String { "content" }
 
     var body: some View {
         GeometryReader { proxy in
@@ -37,7 +35,6 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
                         VStack(spacing: .zero) {
                             content
                         }
-                        .id(Self.contentID)
                         .background {
                             GeometryReader { contentProxy in
                                 Color.clear
@@ -55,7 +52,7 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
                     })
                     .scrollDismissesKeyboard(.interactively)
                     .task {
-                        await scrollToBottom(scrollProxy)
+                        await scrollToTarget(scrollProxy)
                     }
                 }
 
@@ -68,16 +65,16 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
         }
     }
 
-    /// `scrollsToBottomOnAppear` のとき、`content` の下端までスクロールする。
+    /// `scrollTargetOnAppear` があれば、その View の上端までスクロールする。
     /// 添付画像やアイコンの読み込みで `content` の高さが決まるのを待ってから動かす
-    private func scrollToBottom(_ scrollProxy: ScrollViewProxy) async {
-        guard scrollsToBottomOnAppear else { return }
+    private func scrollToTarget(_ scrollProxy: ScrollViewProxy) async {
+        guard let scrollTargetOnAppear else { return }
         do {
             try await Task.sleep(for: .milliseconds(500))
         } catch {
             return
         }
-        scrollProxy.scrollTo(Self.contentID, anchor: .bottom)
+        scrollProxy.scrollTo(scrollTargetOnAppear, anchor: .top)
     }
 
     /// 内容が収まっているときは、引っ張っても動かないようにする（スクロール化する前と同じ操作感にする）

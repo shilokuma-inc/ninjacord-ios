@@ -102,12 +102,16 @@ echo "機種: $DEVICE_NAME ($UDID)"
 # MARK: - ビルド
 
 echo "$SCHEME をビルドします"
+# CI は defaults の IDESkipPackagePluginFingerprintValidatation で LicenseList のプラグインの確認を飛ばしている。
+# 手元では defaults を書き換えずに撮れるよう、引数でも飛ばす（CI では defaults と重なるだけで変わらない）
 xcodebuild build \
     -project NinjacordApp.xcodeproj \
     -scheme "$SCHEME" \
     -configuration "$CONFIGURATION" \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath "$DERIVED_DATA" \
+    -skipPackagePluginValidation \
+    -skipMacroValidation \
     -quiet \
     CODE_SIGNING_ALLOWED=NO
 

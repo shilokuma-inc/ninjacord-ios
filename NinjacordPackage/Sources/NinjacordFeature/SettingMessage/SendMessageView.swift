@@ -9,7 +9,6 @@ import SwiftUI
 import StoreKit
 
 struct SendMessageView: View {
-
     @State private var isEditing: Bool = false
     /// 送信者セクションと Discordでの見え方の開閉。前回の状態で始め、開閉したら覚える（撮影モードでは常に開いて始める）
     @State private var isSenderExpanded = SendMessageDisclosure().isExpanded(.sender)
@@ -23,7 +22,6 @@ struct SendMessageView: View {
 
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
-
     /// 入力欄どうしの間隔（Discussion #525）
     private static let fieldSpacing: CGFloat = 8.0
 
@@ -51,8 +49,8 @@ struct SendMessageView: View {
             // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
             SendMessageScrollLayout(
                 onTapBackground: dismissKeyboard,
-                // 撮影する送信画面では、開いたプレビューと送信ボタンが写るよう下端までスクロールしておく
-                scrollsToBottomOnAppear: ScreenshotDemo.scene == .send,
+                // 撮影する送信画面では、セクションの並びとプレビューが 1 枚に収まるよう、送信者の上端までスクロールしておく
+                scrollTargetOnAppear: ScreenshotDemo.scene == .send ? "sender" : nil,
                 minimumBottomHeight: minimumBottomHeight(width:)
             ) {
                 VStack(spacing: Self.sectionSpacing) {
@@ -63,6 +61,7 @@ struct SendMessageView: View {
 
                     destinationSection
                     senderSection
+                        .id("sender")
                     contentSection
                     embedSection
                     attachmentSection
@@ -94,6 +93,7 @@ struct SendMessageView: View {
                 }
             }
         }
+        .screenshotDemoCoversStatusBar()
         // iOS 26 のアラートはボタン文字に周囲の tint を使う。画面には AppAccent を付け直し、アラートだけシステム標準の青にする
         .tint(Color.appAccent)
         .alert(isPresented: $viewModel.isValidationAlertPresented, error: viewModel.validationError) { _ in
