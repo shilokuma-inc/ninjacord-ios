@@ -38,11 +38,9 @@ struct MessagePartIcon: View {
         Canvas { context, canvasSize in
             // 24 × 24 の格子で描き、渡された大きさに合わせて伸ばす
             context.scaleBy(x: canvasSize.width / Self.gridSize, y: canvasSize.height / Self.gridSize)
+            let muted = Color.appTextSecondary.opacity(Self.mutedOpacity)
             for shape in MessagePartIconShape.shapes(for: part) {
-                context.fill(
-                    shape.path,
-                    with: .color(shape.isHighlighted ? Color.appAccent : Color.appTextSecondary.opacity(Self.mutedOpacity))
-                )
+                context.fill(shape.path, with: .color(shape.isHighlighted ? Color.appAccent : muted))
             }
         }
         .frame(width: size, height: size)
