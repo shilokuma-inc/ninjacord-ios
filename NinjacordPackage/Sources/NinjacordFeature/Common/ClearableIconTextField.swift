@@ -110,7 +110,7 @@ extension VerticalAlignment {
             placeholder: "名前を入れてください",
             text: .constant("Ninja"),
             title: "名前",
-            note: "Discordの送信者名を上書き。空なら既定の名前"
+            note: "Discordの送信者名を上書き。空ならWebhookの名前"
         )
     }
     .padding()

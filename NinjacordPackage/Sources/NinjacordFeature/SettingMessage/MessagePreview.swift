@@ -14,7 +14,7 @@ struct MessagePreview: View {
     let content: String
     let embed: MessageEmbedEntity
     let attachment: ImageAttachment?
-    /// Discord 側で Webhook に設定されているアイコン。プロフィール画像の URL が空のときに代わりに出す。未取得なら nil
+    /// Discord 側で Webhook に設定されている名前とアイコン。名前・プロフィール画像の URL が空のときに代わりに出す。未取得なら nil
     var webhookProfile: WebhookProfile?
     var avatarLoader = AvatarImageLoader()
 
@@ -90,8 +90,9 @@ struct MessagePreview: View {
         return DiscordWebhookRequest(messageEntity: message, attachment: attachment).sendsContent
     }
 
-    private var displayName: String {
-        MessagePreviewProfile.displayName(username: username)
+    /// 出す名前。Webhook の名前が分からなければ nil
+    private var displayName: String? {
+        MessagePreviewProfile.displayName(username: username, webhookProfile: webhookProfile)
     }
 
     private var displayAvatarURL: String {
@@ -122,10 +123,11 @@ struct MessagePreview: View {
     /// 名前と、Webhook から送ったメッセージに付くバッジ
     private var header: some View {
         HStack(spacing: 6.0) {
-            // 名前が空のときに送る決まった名前も Discord 上では入力した名前と同じ見え方なので、色は分けない
-            Text(displayName)
+            // Webhook の名前も Discord 上では入力した名前と同じ見え方なので、色は分けない。
+            // Webhook の名前が分からないときだけ、仮の文言を未入力の色で出す
+            Text(displayName ?? String(localized: "Webhookの名前"))
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(DiscordPalette.title)
+                .foregroundStyle(displayName == nil ? DiscordPalette.placeholder : DiscordPalette.title)
                 .lineLimit(1)
             Text("アプリ")
                 .font(.system(size: 10, weight: .semibold))
@@ -207,7 +209,7 @@ private extension ImageAttachment {
     .padding()
 }
 
-#Preview("Webhook のアイコン") {
+#Preview("Webhook の名前とアイコン") {
     MessagePreview(
         username: "",
         avatarURL: "",

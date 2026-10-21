@@ -260,18 +260,18 @@
         }
       }
     },
-    "Discordの送信者名を上書き。空なら既定の名前" : {
+    "Discordの送信者名を上書き。空ならWebhookの名前" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Overrides the sender name. Blank uses the default name."
+            "value" : "Overrides the sender name. Blank uses the webhook's name."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Discordの送信者名を上書き。空なら既定の名前"
+            "value" : "Discordの送信者名を上書き。空ならWebhookの名前"
           }
         }
       }
@@ -678,6 +678,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Webhookが見つかりません。URLが正しいか、Webhookが削除されていないか確認してください"
+          }
+        }
+      }
+    },
+    "Webhookの名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook name"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhookの名前"
           }
         }
       }
@@ -1930,38 +1946,6 @@
         }
       }
     },
-    "名前: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name: %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "名前: %@"
-          }
-        }
-      }
-    },
-    "名前や本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When the name or message is empty and the app's default text would be sent, a confirmation dialog appears before sending."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "名前や本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します"
-          }
-        }
-      }
-    },
     "名前を入れてください" : {
       "localizations" : {
         "en" : {
@@ -2298,38 +2282,6 @@
         }
       }
     },
-    "未入力の項目があります" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Some Fields Are Empty"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未入力の項目があります"
-          }
-        }
-      }
-    },
-    "未入力の項目は、次の内容で送られます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empty fields will be sent as follows."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未入力の項目は、次の内容で送られます。"
-          }
-        }
-      }
-    },
     "本文: %@" : {
       "localizations" : {
         "en" : {
@@ -2342,6 +2294,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本文: %@"
+          }
+        }
+      }
+    },
+    "本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the message is empty and the app's default text would be sent, a confirmation dialog appears before sending."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します"
+          }
+        }
+      }
+    },
+    "本文が未入力です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message Is Empty"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文が未入力です"
+          }
+        }
+      }
+    },
+    "本文が未入力のため、次の内容で送られます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The message is empty, so it will be sent as follows."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文が未入力のため、次の内容で送られます。"
           }
         }
       }
