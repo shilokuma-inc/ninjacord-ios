@@ -3,6 +3,7 @@
 //  NinjacordApp
 //
 
+import SwiftUI
 import UIKit
 
 /// App Store 用スクリーンショットの撮影モード（Discussion #355）。
@@ -296,4 +297,21 @@ struct ScreenshotDemoContent {
         ],
         broadcastTargetIndices: [0, 1, 2]
     )
+}
+
+extension View {
+    /// 撮影する送信画面はスクロールした状態で撮るので、ステータスバーの裏に入力欄が透けて写らないよう、アプリの背景で覆う
+    @ViewBuilder
+    func screenshotDemoCoversStatusBar() -> some View {
+        if ScreenshotDemo.scene == .send {
+            overlay(alignment: .top) {
+                // 高さ 0 の View の背景を上の安全領域まで広げ、ステータスバーの高さぶんだけ覆う
+                Color.clear
+                    .frame(height: 0)
+                    .background(Color.appBackground.ignoresSafeArea(edges: .top))
+            }
+        } else {
+            self
+        }
+    }
 }

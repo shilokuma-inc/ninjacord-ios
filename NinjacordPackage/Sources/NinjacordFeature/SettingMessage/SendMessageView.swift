@@ -22,7 +22,6 @@ struct SendMessageView: View {
 
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
-
     /// 入力欄どうしの間隔（Discussion #525）
     private static let fieldSpacing: CGFloat = 8.0
 
@@ -94,6 +93,7 @@ struct SendMessageView: View {
                 }
             }
         }
+        .screenshotDemoCoversStatusBar()
         // iOS 26 のアラートはボタン文字に周囲の tint を使う。画面には AppAccent を付け直し、アラートだけシステム標準の青にする
         .tint(Color.appAccent)
         .alert(isPresented: $viewModel.isValidationAlertPresented, error: viewModel.validationError) { _ in
