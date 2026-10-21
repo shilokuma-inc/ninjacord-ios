@@ -1162,6 +1162,22 @@
         }
       }
     },
+    "タイトルなし" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No title"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトルなし"
+          }
+        }
+      }
+    },
     "タイトルのみ" : {
       "localizations" : {
         "en" : {
@@ -2134,38 +2150,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "埋め込みを編集"
-          }
-        }
-      }
-    },
-    "埋め込みタイトル" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Embed title"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "埋め込みタイトル"
-          }
-        }
-      }
-    },
-    "埋め込みタイトルを入れてください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter embedded title"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "埋め込みタイトルを入れてください"
           }
         }
       }

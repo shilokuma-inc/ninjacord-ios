@@ -317,22 +317,13 @@ extension SendMessageView {
         }
     }
 
-    /// 埋め込み: タイトルと、ほかの項目を編集するシート
+    /// 埋め込み: 入力済みの内容の要約と、すべての項目を編集するシートを開くボタン（Discussion #586 の Q5）
     private var embedSection: some View {
         SendMessageSection(title: "埋め込み") {
-            HStack(alignment: .textFieldCenter) {
-                ClearableIconTextField(
-                    icon: Image(systemName: "list.clipboard"),
-                    placeholder: "埋め込みタイトルを入れてください",
-                    text: $viewModel.inputEmbed.title,
-                    title: "埋め込みタイトル"
-                )
-                .onTapGesture {
-                    self.isEditing = true
-                }
+            EmbedSummaryRow(summary: EmbedSummary(embed: viewModel.inputEmbed))
 
-                EmbedEditorButton(embed: $viewModel.inputEmbed)
-            }
+            EmbedEditorButton(embed: $viewModel.inputEmbed)
+                .padding(.leading, 44.0)
         }
     }
 
