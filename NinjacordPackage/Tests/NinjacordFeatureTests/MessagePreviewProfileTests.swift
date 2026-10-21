@@ -48,6 +48,32 @@ struct MessagePreviewProfileTests {
         #expect(MessagePreviewProfile.displayName(username: "", webhookProfile: profile) == nil)
     }
 
+    // MARK: - 送信者の要約
+
+    @Test("送信者の要約の名前は、入力があれば入力、空なら Webhook の名前")
+    func senderSummaryName() {
+        let profile = Self.webhookProfile
+        let typed = MessagePreviewProfile.senderSummary(username: "忍者", avatarURL: "", webhookProfile: profile)
+        #expect(typed.contains("忍者"))
+        #expect(!typed.contains("Captain Hook"))
+        let empty = MessagePreviewProfile.senderSummary(username: "", avatarURL: "", webhookProfile: profile)
+        #expect(empty.contains("Captain Hook"))
+    }
+
+    @Test("送信者の要約は、名前が分からないときも、プロフィール画像の URL の有無で文言が変わる")
+    func senderSummaryVariants() {
+        let unknown = MessagePreviewProfile.senderSummary(username: "", avatarURL: "", webhookProfile: nil)
+        let withAvatar = MessagePreviewProfile.senderSummary(
+            username: "",
+            avatarURL: "https://example.com/avatar.png",
+            webhookProfile: nil
+        )
+        #expect(!unknown.isEmpty)
+        #expect(unknown != withAvatar)
+        // URL そのものは要約に出さない
+        #expect(!withAvatar.contains("example.com"))
+    }
+
     // MARK: - アイコン
 
     @Test("プロフィール画像の URL が入力済みなら、Webhook のアイコンがあっても入力した URL を読む")

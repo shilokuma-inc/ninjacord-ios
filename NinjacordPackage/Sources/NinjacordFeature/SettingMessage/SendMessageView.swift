@@ -316,16 +316,13 @@ extension SendMessageView {
         }
     }
 
-    /// 送信者セクションを閉じているときの要約。名前はプレビューと同じく、空なら Webhook の名前
+    /// 送信者セクションを閉じているときの要約
     private var senderSummary: String {
-        let name = MessagePreviewProfile.displayName(
+        MessagePreviewProfile.senderSummary(
             username: viewModel.inputUsername,
+            avatarURL: viewModel.inputAvatarURL,
             webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
-        ) ?? String(localized: "Webhookの名前")
-        let icon = viewModel.inputAvatarURL.isEmpty
-            ? String(localized: "アイコンはWebhookのもの")
-            : String(localized: "アイコンは指定済み")
-        return String(localized: "名前: \(name)・\(icon)")
+        )
     }
 
     /// 本文: Discord のメッセージの本文

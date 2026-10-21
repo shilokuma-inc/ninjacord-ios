@@ -20,6 +20,16 @@ enum MessagePreviewProfile {
         return name
     }
 
+    /// 送信者セクションを閉じているときの 1 行の要約（Discussion #586 の Q6）。
+    /// 名前はプレビューと同じく、空なら Webhook の名前、分からなければ「Webhookの名前」
+    static func senderSummary(username: String, avatarURL: String, webhookProfile: WebhookProfile?) -> String {
+        let name = displayName(username: username, webhookProfile: webhookProfile) ?? String(localized: "Webhookの名前")
+        let icon = avatarURL.isEmpty
+            ? String(localized: "アイコンはWebhookのもの")
+            : String(localized: "アイコンは指定済み")
+        return String(localized: "名前: \(name)・\(icon)")
+    }
+
     /// 読み込むプロフィール画像の URL。入力が空なら Webhook のアイコン。
     /// 入力された URL が読めないときは、Discord 上と同じく Webhook のアイコンには戻さず既定のアイコンを出す
     static func displayAvatarURL(avatarURL: String, webhookProfile: WebhookProfile?) -> String {
