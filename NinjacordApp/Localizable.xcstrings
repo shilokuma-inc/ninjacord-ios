@@ -2154,6 +2154,22 @@
         }
       }
     },
+    "宛先" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先"
+          }
+        }
+      }
+    },
     "宛先の選択を解除して1件ずつ送るか、Proにしてください" : {
       "localizations" : {
         "en" : {
@@ -2282,6 +2298,22 @@
         }
       }
     },
+    "本文" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文"
+          }
+        }
+      }
+    },
     "本文: %@" : {
       "localizations" : {
         "en" : {
@@ -2374,6 +2406,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "次へ"
+          }
+        }
+      }
+    },
+    "添付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attachment"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添付"
           }
         }
       }
@@ -3078,6 +3126,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信日時を表示する"
+          }
+        }
+      }
+    },
+    "送信者" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sender"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信者"
           }
         }
       }

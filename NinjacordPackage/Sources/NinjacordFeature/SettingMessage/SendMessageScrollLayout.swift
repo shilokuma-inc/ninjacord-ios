@@ -7,12 +7,14 @@ import SwiftUI
 
 /// 送信画面の縦の配置。`content`（入力欄〜送信ボタン）をスクロールできるようにし、その下に `bottom`（広告など）を置く。
 /// 縦が余るときは、スクロール化する前の Spacer での配置と同じく、`content` の上の余白と `bottom` で残りの高さを等分する。
-/// 縦が足りないときは `content` をスクロールさせる。
+/// 縦が足りないときは `content` をスクロールさせる。`bottom` には `minimumBottomHeight` の高さを必ず残す（広告が隠れないように）。
 /// `sendMessageLayoutExcludesHeight()` を付けた部分の高さは、等分の計算に入れない（開いたプレビューなど）
 struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
     let onTapBackground: () -> Void
     /// 表示したときに `content` の下端までスクロールしておくか。収まっているときは動かない
     var scrollsToBottomOnAppear = false
+    /// `bottom` に必ず残す高さ。引数は画面の幅（バナー広告の高さは幅で決まるため）
+    var minimumBottomHeight: (CGFloat) -> CGFloat = { _ in 0 }
     @ViewBuilder let content: Content
     @ViewBuilder let bottom: Bottom
 
@@ -23,7 +25,10 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let bottomHeight = max(0, (proxy.size.height - (heights.content - heights.excluded)) / 2)
+            let bottomHeight = max(
+                minimumBottomHeight(proxy.size.width),
+                (proxy.size.height - (heights.content - heights.excluded)) / 2
+            )
             VStack(spacing: .zero) {
                 ScrollViewReader { scrollProxy in
                     bouncesOnlyWhenScrollable(ScrollView {
