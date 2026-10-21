@@ -1082,6 +1082,22 @@
         }
       }
     },
+    "サムネイル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thumbnail"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サムネイル"
+          }
+        }
+      }
+    },
     "サムネイルのURL" : {
       "localizations" : {
         "en" : {
@@ -1142,6 +1158,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タイトル"
+          }
+        }
+      }
+    },
+    "タイトルのみ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title only"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトルのみ"
           }
         }
       }
@@ -1350,6 +1382,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フィールド"
+          }
+        }
+      }
+    },
+    "フィールド%lld件" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fields: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィールド%lld件"
           }
         }
       }
@@ -2298,6 +2346,22 @@
         }
       }
     },
+    "未設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未設定"
+          }
+        }
+      }
+    },
     "本文" : {
       "localizations" : {
         "en" : {
@@ -2618,6 +2682,22 @@
         }
       }
     },
+    "色と送信日時だけでは送られません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color and timestamp alone won't be sent"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色と送信日時だけでは送られません"
+          }
+        }
+      }
+    },
     "色を指定する" : {
       "localizations" : {
         "en" : {
@@ -2662,6 +2742,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表示あり"
+          }
+        }
+      }
+    },
+    "表示される内容がありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to display"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示される内容がありません"
           }
         }
       }
@@ -3110,6 +3206,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信成功"
+          }
+        }
+      }
+    },
+    "送信日時" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timestamp"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信日時"
           }
         }
       }
