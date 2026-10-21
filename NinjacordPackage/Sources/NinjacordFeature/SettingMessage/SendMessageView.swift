@@ -11,8 +11,9 @@ import StoreKit
 struct SendMessageView: View {
 
     @State private var isEditing: Bool = false
-    /// App Store 用スクリーンショットの送信画面では、Discord での見え方まで写すため開いておく
-    @State private var isPreviewExpanded = ScreenshotDemo.scene == .send
+    /// 送信者セクションと Discordでの見え方の開閉。前回の状態で始め、開閉したら覚える（撮影モードでは常に開いて始める）
+    @State private var isSenderExpanded = SendMessageDisclosure().isExpanded(.sender)
+    @State private var isPreviewExpanded = SendMessageDisclosure().isExpanded(.preview)
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
@@ -124,6 +125,12 @@ struct SendMessageView: View {
         .onAppear {
             InterstitialAdManager.shared.preload()
         }
+        .onChange(of: isSenderExpanded) { isExpanded in
+            SendMessageDisclosure().setExpanded(isExpanded, for: .sender)
+        }
+        .onChange(of: isPreviewExpanded) { isExpanded in
+            SendMessageDisclosure().setExpanded(isExpanded, for: .preview)
+        }
         .onChange(of: adConsent.canRequestAds) { _ in
             // 起動直後は同意の取得を待ってから読み込む
             InterstitialAdManager.shared.preload()
@@ -180,7 +187,7 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
-    /// Discord での見え方のプレビュー。入力欄と送信ボタンを画面に収めるため、既定では閉じておく
+    /// Discord での見え方のプレビュー。入力した内容がどこに出るか分かるよう、既定では開いておく（Discussion #586 の Q3）
     private var messagePreviewSection: some View {
         VStack(spacing: .zero) {
             Button {
@@ -226,7 +233,7 @@ extension SendMessageView {
                 // 開いても下端の広告の領域は縮めず、入力欄側をスクロールさせる
                 .sendMessageLayoutExcludesHeight()
                 .transition(.opacity)
-                // プレビューを開いている間だけ、URL の入力が止まったら Webhook の名前とアイコンを取得する
+                // プレビューを開いている間は、URL の入力が止まったら Webhook の名前とアイコンを取得する
                 .task(id: webhookProfileInput) {
                     await webhookProfileStore.load(for: webhookProfileInput)
                 }
@@ -275,9 +282,9 @@ extension SendMessageView {
         }
     }
 
-    /// 送信者: Discord のメッセージの名前とアイコン
+    /// 送信者: Discord のメッセージの名前とアイコン。閉じている間は要約だけを出す（Discussion #586 の Q6）
     private var senderSection: some View {
-        SendMessageSection(title: "送信者") {
+        SendMessageSection(title: "送信者", isExpanded: $isSenderExpanded, collapsedSummary: senderSummary) {
             ClearableIconTextField(
                 icon: Image(systemName: "rectangle.and.pencil.and.ellipsis"),
                 placeholder: "名前を入れてください",
@@ -300,6 +307,25 @@ extension SendMessageView {
                 self.isEditing = true
             }
         }
+        // 閉じている間は、要約に出す Webhook の名前を取得する（プレビューを開いていなくても出せるように）
+        .task(id: isSenderExpanded ? "" : webhookProfileInput) {
+            guard !isSenderExpanded else {
+                return
+            }
+            await webhookProfileStore.load(for: webhookProfileInput)
+        }
+    }
+
+    /// 送信者セクションを閉じているときの要約。名前はプレビューと同じく、空なら Webhook の名前
+    private var senderSummary: String {
+        let name = MessagePreviewProfile.displayName(
+            username: viewModel.inputUsername,
+            webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
+        ) ?? String(localized: "Webhookの名前")
+        let icon = viewModel.inputAvatarURL.isEmpty
+            ? String(localized: "アイコンはWebhookのもの")
+            : String(localized: "アイコンは指定済み")
+        return String(localized: "名前: \(name)・\(icon)")
     }
 
     /// 本文: Discord のメッセージの本文

@@ -25,9 +25,11 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let bottomHeight = max(
-                minimumBottomHeight(proxy.size.width),
-                (proxy.size.height - (heights.content - heights.excluded)) / 2
+            let bottomHeight = SendMessageLayoutMetrics.bottomHeight(
+                containerHeight: proxy.size.height,
+                contentHeight: heights.content,
+                excludedHeight: heights.excluded,
+                minimum: minimumBottomHeight(proxy.size.width)
             )
             VStack(spacing: .zero) {
                 ScrollViewReader { scrollProxy in
@@ -88,6 +90,20 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
         }
     }
 
+}
+
+/// `SendMessageScrollLayout` の高さの計算。View から切り離してテストする
+enum SendMessageLayoutMetrics {
+    /// `bottom` の高さ。`content`（等分の計算に入れない `excludedHeight` を除く）が収まって余った高さを、
+    /// `content` の上の余白と等分する。余りが少ない・収まらないときも `minimum` は残す
+    static func bottomHeight(
+        containerHeight: CGFloat,
+        contentHeight: CGFloat,
+        excludedHeight: CGFloat,
+        minimum: CGFloat
+    ) -> CGFloat {
+        max(minimum, (containerHeight - (contentHeight - excludedHeight)) / 2)
+    }
 }
 
 /// `SendMessageScrollLayout` が測る高さ。両方を同じ更新で受け取り、下端の領域が一瞬だけ縮むのを防ぐ
