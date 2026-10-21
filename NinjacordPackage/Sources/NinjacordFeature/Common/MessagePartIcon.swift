@@ -31,6 +31,8 @@ struct MessagePartIcon: View {
 
     /// 部品の座標の格子の一辺
     static let gridSize: CGFloat = 24.0
+    /// 強調しない部品の不透明度。ダークのテーマの面（`appSurface`）の上でも形が見える濃さにする
+    private static let mutedOpacity: Double = 0.6
 
     var body: some View {
         Canvas { context, canvasSize in
@@ -39,7 +41,7 @@ struct MessagePartIcon: View {
             for shape in MessagePartIconShape.shapes(for: part) {
                 context.fill(
                     shape.path,
-                    with: .color(shape.isHighlighted ? Color.appAccent : Color.appTextSecondary.opacity(0.4))
+                    with: .color(shape.isHighlighted ? Color.appAccent : Color.appTextSecondary.opacity(Self.mutedOpacity))
                 )
             }
         }
