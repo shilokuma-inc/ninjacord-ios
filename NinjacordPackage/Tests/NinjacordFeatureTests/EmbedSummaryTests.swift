@@ -83,12 +83,26 @@ struct EmbedSummaryTests {
         #expect(summary(embed).state == .filled(title: "お知らせ", items: [.fields(1)]))
     }
 
-    @Test("空のフィールド行だけなら、中身の無い埋め込みを送るので項目は無し")
-    func blankFieldRowsOnly() {
-        let embed = MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)])
-        #expect(summary(embed).state == .filled(title: nil, items: []))
+    /// `hasContent` は true で `hasDisplayedContent` は false のとき
+    @Test("空のフィールド行と色・送信日時だけなら、表示される中身の無い埋め込みを送ることを示す", arguments: [
+        MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)]),
+        MessageEmbedEntity(color: 0x5865F2, fields: [MessageEmbedField(name: "", value: "", isInline: false)]),
+        MessageEmbedEntity(
+            title: " ",
+            fields: [MessageEmbedField(name: "", value: "", isInline: false)],
+            includesTimestamp: true
+        )
+    ])
+    func nothingDisplayed(embed: MessageEmbedEntity) {
+        #expect(summary(embed).state == .nothingDisplayed)
+        #expect(summary(embed).title == nil)
         #expect(sendsEmbed(embed))
         #expect(!embed.hasDisplayedContent)
+    }
+
+    @Test("タイトルの前後の空白と改行は、要約では除く")
+    func trimmedTitle() {
+        #expect(summary(MessageEmbedEntity(title: "  お知らせ\n")).title == "お知らせ")
     }
 
     @Test("2 行目の文言は状態ごとに違う")
