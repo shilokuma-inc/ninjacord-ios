@@ -15,6 +15,10 @@
 - 依存を外したあとに `xcodebuild -resolvePackageDependencies` が解決し直すと、`Package.resolved` を v2（`originHash` なし）で書き直すことがある（Xcode 26.6）。`Package.swift` から直接の依存を外したときは、そのピンだけを手で消した v3 のファイルにしておけば、解決し直しても書き換えられない。消したあとのピンが Xcode の解決結果と同じかは、v2 で書かせたファイルとピンを比べて確かめる（Issue #471）。
 - LicenseList の一覧は `SourcePackages/workspace-state.json` に載っているパッケージから作るので、依存を外しても、前から使っている DerivedData では外した依存が一覧に残ることがある。一覧から消えたかは、新しい DerivedData で依存を取り直して確かめる（CI は `Package.resolved` が変わるとキャッシュのキーが変わり、取り直すので消える）（Issue #471）。
 
+## SwiftUI
+
+- `List` の行（`Button` など）に付けた `fullScreenCover` の中身は、テーマ（`@AppStorage` の変更で親の body が評価し直される）や端末の外観が変わると作り直され、中の `@State` が初期値に戻る（iOS 26.5 の Simulator で確認）。ルートの `TabView` に付けた `fullScreenCover`（`MainView`）では作り直されなかった。表示中に保ちたい状態は、出す側の `@State` で持って `Binding` で渡す（2026-10-29、Issue #608）。
+
 ## Simulator での確認
 
 - Debug ビルドの広告（AdMob のテスト広告）は、起動のたびに出る中身も高さも変わる。撮影モードで変更前と変更後のスクリーンショットを見比べるときは、広告の位置と、広告の高さが変わったぶんずれる部分（テンプレート一覧のネイティブ広告の下など）は差とみなさない。広告を写さずに比べたいなら `NinjacordApp-Screenshot` の scheme でビルドする（Issue #476）。
