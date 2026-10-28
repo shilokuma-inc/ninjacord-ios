@@ -8,10 +8,11 @@ import SwiftUI
 /// 初回起動時に表示する、Webhook URL の用意から送信までの流れの説明と、最後のテーマの選択。
 /// 説明のページでは右上の「スキップ」で閉じられる（テーマのページは出さず、テーマは今のまま）
 struct OnboardingView: View {
+    /// 今のページ。`fullScreenCover` の中身はテーマや端末の外観が変わると作り直されることがあり、
+    /// ここで `@State` に持つと 1 ページ目に戻ってしまうため、表示する側で持って渡す
+    @Binding var selection: Int
     /// スキップ・完了のどちらで閉じたときも呼ばれる
     let onFinish: () -> Void
-
-    @State private var selection = 0
 
     private let pages = OnboardingPage.all
 
@@ -217,5 +218,14 @@ private struct PageIndicator: View {
 }
 
 #Preview {
-    OnboardingView(onFinish: {})
+    OnboardingPreview()
+}
+
+/// Preview でページを送れるよう、今のページを持つ
+private struct OnboardingPreview: View {
+    @State private var selection = 0
+
+    var body: some View {
+        OnboardingView(selection: $selection, onFinish: {})
+    }
 }
