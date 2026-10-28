@@ -23,6 +23,8 @@ struct SettingView: View {
     @State private var isPrivacyPolicyPresented = false
     @State private var isContactPresented = false
     @State private var isOnboardingPresented = false
+    /// オンボーディングの今のページ。行に付けた `fullScreenCover` の中身はテーマや端末の外観が変わると作り直されるため、ここで持つ
+    @State private var onboardingSelection = 0
     @State private var isPaywallPresented = false
     @State private var isManageSubscriptionsPresented = false
     @State private var isRestoring = false
@@ -136,6 +138,8 @@ struct SettingView: View {
 
                     Section(content: {
                         Button {
+                            // 開き直したときは 1 ページ目から始める
+                            onboardingSelection = 0
                             isOnboardingPresented = true
                         } label: {
                             HStack {
@@ -150,7 +154,7 @@ struct SettingView: View {
                         }
                         .listRowBackground(Color.appSurface)
                         .fullScreenCover(isPresented: $isOnboardingPresented) {
-                            OnboardingView {
+                            OnboardingView(selection: $onboardingSelection) {
                                 isOnboardingPresented = false
                             }
                             .limitedDynamicTypeSize()
