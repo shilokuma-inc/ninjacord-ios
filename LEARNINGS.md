@@ -18,6 +18,8 @@
 ## SwiftUI
 
 - `List` の行（`Button` など）に付けた `fullScreenCover` の中身は、テーマ（`@AppStorage` の変更で親の body が評価し直される）や端末の外観が変わると作り直され、中の `@State` が初期値に戻る（iOS 26.5 の Simulator で確認）。ルートの `TabView` に付けた `fullScreenCover`（`MainView`）では作り直されなかった。表示中に保ちたい状態は、出す側の `@State` で持って `Binding` で渡す（2026-10-29、Issue #608）。
+- 表示中の `fullScreenCover` の中は、後からウィンドウの `overrideUserInterfaceStyle` やルートの `preferredColorScheme` を変えても配色が切り替わらない（iOS 26.5 の Simulator で確認）。中の View に `preferredColorScheme` を付けるだけでは「自動」（`nil`）で端末の外観に戻らないので、表示中の画面（presented な hosting controller）の `overrideUserInterfaceStyle` も書き換える（`PresentedThemeApplier`、Issue #615）。
+- `.xcodeproj` の `INFOPLIST_KEY_UIUserInterfaceStyle = Light` があると、`overrideUserInterfaceStyle = .unspecified` でも端末の外観に関係なくライトになる。テーマの「自動」を確かめるときは、ビルドした `.app` の `Info.plist` にこのキーが無いことも見る（Issue #615）。
 
 ## Simulator での確認
 
