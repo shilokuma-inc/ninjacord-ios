@@ -13,6 +13,8 @@ struct OnboardingView: View {
     @Binding var selection: Int
     /// スキップ・完了のどちらで閉じたときも呼ばれる
     let onFinish: () -> Void
+    /// 表示中にテーマのページや設定で変えたテーマを、この画面にもすぐ当てるために読む
+    @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
 
     private let pages = OnboardingPage.all
 
@@ -62,6 +64,14 @@ struct OnboardingView: View {
                     .padding(.bottom, 16.0)
             }
         }
+        // `fullScreenCover` の中は、表示した時点の外観のまま変わらないため、表示中の画面にもテーマを当てる。
+        // 「自動」は `preferredColorScheme(nil)` だけでは端末の外観に戻らないため、画面の外観の上書きも合わせて切り替える
+        .preferredColorScheme(theme.colorScheme)
+        .background(PresentedThemeApplier(theme: theme))
+    }
+
+    private var theme: AppTheme {
+        AppTheme(storedValue: appTheme)
     }
 
     private var isLastPage: Bool {
