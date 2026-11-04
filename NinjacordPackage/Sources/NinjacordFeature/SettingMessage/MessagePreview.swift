@@ -17,6 +17,8 @@ struct MessagePreview: View {
     /// Discord 側で Webhook に設定されている名前とアイコン。名前・プロフィール画像の URL が空のときに代わりに出す。未取得なら nil
     var webhookProfile: WebhookProfile?
     var avatarLoader = AvatarImageLoader()
+    /// 添付画像を表示する最大の幅・高さ
+    var attachmentMaxSize: CGFloat = 280.0
 
     /// `displayAvatarURL` から読み込んだプロフィール画像。無ければ既定のアイコンを出す
     @State private var avatarImage: Image?
@@ -24,8 +26,6 @@ struct MessagePreview: View {
     @Environment(\.displayScale) private var displayScale
 
     private static let avatarSize: CGFloat = 40.0
-    /// 添付画像を表示する最大の幅・高さ
-    private static let attachmentMaxSize: CGFloat = 280.0
 
     /// 縮小した添付画像と、その表示サイズ（元より大きくは表示しない）
     private struct AttachmentThumbnail {
@@ -140,7 +140,7 @@ struct MessagePreview: View {
     }
 
     private func makeAttachmentThumbnail() -> AttachmentThumbnail? {
-        let maxPixelSize = Int(Self.attachmentMaxSize * displayScale)
+        let maxPixelSize = Int(attachmentMaxSize * displayScale)
         guard let cgImage = attachment?.thumbnail(maxPixelSize: maxPixelSize) else {
             return nil
         }
