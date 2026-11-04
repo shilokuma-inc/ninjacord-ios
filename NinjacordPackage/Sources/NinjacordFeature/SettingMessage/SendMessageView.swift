@@ -96,7 +96,6 @@ struct SendMessageView: View {
                 }
             }
         }
-        .screenshotDemoCoversStatusBar()
         // iOS 26 のアラートはボタン文字に周囲の tint を使う。画面には AppAccent を付け直し、アラートだけシステム標準の青にする
         .tint(Color.appAccent)
         .alert(isPresented: $viewModel.isValidationAlertPresented, error: viewModel.validationError) { _ in
