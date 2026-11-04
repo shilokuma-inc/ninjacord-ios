@@ -31,7 +31,7 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
             )
             VStack(spacing: .zero) {
                 ScrollViewReader { scrollProxy in
-                    bouncesOnlyWhenScrollable(ScrollView {
+                    ScrollView {
                         VStack(spacing: .zero) {
                             content
                         }
@@ -49,7 +49,8 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
                                 .contentShape(Rectangle())
                                 .onTapGesture(perform: onTapBackground)
                         }
-                    })
+                    }
+                    .bouncesOnlyWhenScrollable()
                     .scrollDismissesKeyboard(.interactively)
                     .task {
                         await scrollToTarget(scrollProxy)
@@ -76,17 +77,6 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
         }
         scrollProxy.scrollTo(scrollTargetOnAppear, anchor: .top)
     }
-
-    /// 内容が収まっているときは、引っ張っても動かないようにする（スクロール化する前と同じ操作感にする）
-    @ViewBuilder
-    private func bouncesOnlyWhenScrollable(_ scrollView: some View) -> some View {
-        if #available(iOS 16.4, *) {
-            scrollView.scrollBounceBehavior(.basedOnSize)
-        } else {
-            scrollView
-        }
-    }
-
 }
 
 /// `SendMessageScrollLayout` の高さの計算。View から切り離してテストする

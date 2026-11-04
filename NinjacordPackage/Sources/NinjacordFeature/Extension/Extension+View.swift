@@ -34,3 +34,16 @@ extension View {
         dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 }
+
+extension View {
+    /// ScrollView の中身が収まっているときは、引っ張っても動かないようにする（iOS 16.4 以降）。
+    /// スクロールしない配置と同じ操作感にしたい ScrollView に付ける
+    @ViewBuilder
+    func bouncesOnlyWhenScrollable() -> some View {
+        if #available(iOS 16.4, *) {
+            scrollBounceBehavior(.basedOnSize)
+        } else {
+            self
+        }
+    }
+}
