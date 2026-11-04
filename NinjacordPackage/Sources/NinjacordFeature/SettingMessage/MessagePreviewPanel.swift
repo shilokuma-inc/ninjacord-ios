@@ -20,14 +20,14 @@ struct MessagePreviewPanel<Content: View>: View {
     @State private var contentHeight: CGFloat = 0
 
     var body: some View {
-        VStack(spacing: 4.0) {
+        VStack(spacing: MessagePreviewPanelMetrics.contentSpacing) {
             header
             if isExpanded {
                 scrollableContent
                     .transition(.opacity)
             }
         }
-        .padding(12.0)
+        .padding(MessagePreviewPanelMetrics.padding)
         .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 16.0))
         .shadow(color: .black.opacity(0.25), radius: 8.0, y: 4.0)
     }
@@ -55,7 +55,7 @@ struct MessagePreviewPanel<Content: View>: View {
                     .accessibilityHidden(true)
             }
             // 見出しの行全体をタップ領域にし、HIG の最小サイズ（44pt）を確保する
-            .frame(minHeight: 44.0)
+            .frame(minHeight: MessagePreviewPanelMetrics.headerHeight)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -77,6 +77,20 @@ struct MessagePreviewPanel<Content: View>: View {
         .bouncesOnlyWhenScrollable()
         .frame(height: min(contentHeight, maxContentHeight))
         .onPreferenceChange(ContentHeightKey.self) { contentHeight = $0 }
+    }
+}
+
+/// パネルの寸法。中身を除いた高さを送信画面がプレビューの上限の計算に使うので、generic な View の外に置く
+enum MessagePreviewPanelMetrics {
+    /// 見出しの高さ（HIG の最小のタップ領域）
+    static let headerHeight: CGFloat = 44.0
+    /// 見出しと中身の間隔
+    static let contentSpacing: CGFloat = 4.0
+    /// パネルの内側の余白
+    static let padding: CGFloat = 12.0
+    /// 中身を除いたパネルの高さ（見出し・見出しと中身の間隔・上下の余白）
+    static var chromeHeight: CGFloat {
+        headerHeight + contentSpacing + padding * 2
     }
 }
 

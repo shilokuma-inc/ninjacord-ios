@@ -29,9 +29,11 @@ struct SendMessageView: View {
     /// 広告を出さないときに、送信ボタンの下に必ず残す余白
     private static let minimumBottomSpacing: CGFloat = 16.0
 
-    /// 上端に固定したプレビューに使う高さの上限（画面の高さに対する割合）。残りは入力欄に使う。
-    /// キーボードを出している間は画面の高さが減るので、上限も合わせて縮む
+    /// 上端に固定したプレビューに使う高さの上限（画面の高さに対する割合）。残りは入力欄に使う
     private static let previewMaxHeightRatio: CGFloat = 0.35
+    /// プレビューの上限を決めるときに入力欄のために必ず残す高さ。
+    /// 見出し付きの入力欄 1 つ分（見出し約 16pt + 間隔 2pt + カプセル約 38pt）
+    private static let minimumInputFieldHeight: CGFloat = 56.0
     /// 上端に固定したプレビューに出す添付画像の最大の幅・高さ。入力欄の場所を残すため、プレビュー単体の既定より小さくする
     private static let previewAttachmentMaxSize: CGFloat = 160.0
 
@@ -45,8 +47,21 @@ struct SendMessageView: View {
         showsBannerAd ? BannerView.adHeight(width: width) : Self.minimumBottomSpacing
     }
 
+    /// 上端に固定したプレビューの中身に使える高さの上限。画面の高さの `previewMaxHeightRatio` までにしつつ、
+    /// パネルの見出しと余白・下端の広告の領域・入力欄 1 つ分を除いた高さも超えないようにする。
+    /// キーボードを出している間は画面の高さが減るので、上限も合わせて縮む。それでも名前の行は見えるよう、プレビューの最低の高さは残す
+    private func previewMaxContentHeight(containerSize: CGSize) -> CGFloat {
+        SendMessageLayoutMetrics.previewMaxContentHeight(
+            containerHeight: containerSize.height,
+            ratio: Self.previewMaxHeightRatio,
+            reservedHeight: MessagePreviewPanelMetrics.chromeHeight + Self.sectionSpacing
+                + minimumBottomHeight(width: containerSize.width) + Self.minimumInputFieldHeight,
+            minimum: MessagePreview.minimumHeight
+        )
+    }
+
     var body: some View {
-        // プレビューの高さの上限を画面の高さから決めるために測る（キーボードを出している間は、その分だけ低くなる）
+        // プレビューの高さの上限を画面の大きさから決めるために測る（キーボードを出している間は、その分だけ低くなる）
         GeometryReader { proxy in
             ZStack {
                 Color.appBackground
@@ -92,7 +107,7 @@ struct SendMessageView: View {
                 }
                 // プレビューは入力欄の上に固定して浮かせ、入力欄から送信ボタンまではその下をスクロールする（Issue #620）
                 .safeAreaInset(edge: .top, spacing: .zero) {
-                    messagePreviewPanel(maxContentHeight: proxy.size.height * Self.previewMaxHeightRatio)
+                    messagePreviewPanel(maxContentHeight: previewMaxContentHeight(containerSize: proxy.size))
                 }
             }
         }

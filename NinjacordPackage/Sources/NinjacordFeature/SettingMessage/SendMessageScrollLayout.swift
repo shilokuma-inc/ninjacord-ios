@@ -85,6 +85,19 @@ enum SendMessageLayoutMetrics {
     static func bottomHeight(containerHeight: CGFloat, contentHeight: CGFloat, minimum: CGFloat) -> CGFloat {
         max(minimum, (containerHeight - contentHeight) / 2)
     }
+
+    /// 上端に固定したプレビューの中身に使える高さの上限。
+    /// `containerHeight` の `ratio` までにしつつ、`reservedHeight`（パネルの見出しと余白・下端の広告の領域・入力欄 1 つ分）を
+    /// 除いた高さも超えないようにして、小さい画面でキーボードを出していても入力欄が見えるようにする。
+    /// それでもプレビューの `minimum`（名前の行）は残す
+    static func previewMaxContentHeight(
+        containerHeight: CGFloat,
+        ratio: CGFloat,
+        reservedHeight: CGFloat,
+        minimum: CGFloat
+    ) -> CGFloat {
+        max(minimum, min(containerHeight * ratio, containerHeight - reservedHeight))
+    }
 }
 
 /// `SendMessageScrollLayout` が測る `content` の高さ

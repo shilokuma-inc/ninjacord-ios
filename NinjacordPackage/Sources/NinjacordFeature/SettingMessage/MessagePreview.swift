@@ -26,6 +26,9 @@ struct MessagePreview: View {
     @Environment(\.displayScale) private var displayScale
 
     private static let avatarSize: CGFloat = 40.0
+    private static let padding: CGFloat = 12.0
+    /// アイコンと名前の行だけが見える最低の高さ。表示する側が高さを制限するときの下限に使う
+    static let minimumHeight: CGFloat = avatarSize + padding * 2
 
     /// 縮小した添付画像と、その表示サイズ（元より大きくは表示しない）
     private struct AttachmentThumbnail {
@@ -61,7 +64,7 @@ struct MessagePreview: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(12.0)
+        .padding(Self.padding)
         .background(DiscordPalette.messageBackground)
         .clipShape(RoundedRectangle(cornerRadius: 8.0))
         .task(id: displayAvatarURL) {
