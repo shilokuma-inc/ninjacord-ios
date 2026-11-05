@@ -114,9 +114,11 @@ private extension View {
     }
 }
 
+/// `MessagePreviewPanel` が測るプレビューの本来の高さ
 private struct ContentHeightKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
 
+    /// 測る View は 1 つだが、複数から届いたときは一番高いものに合わせる
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
     }

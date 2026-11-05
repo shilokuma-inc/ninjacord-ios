@@ -103,6 +103,7 @@ enum SendMessageLayoutMetrics {
 private struct ContentHeightKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
 
+    /// 複数の View から届いたときは、縦に並んでいるものとして合計する
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value += nextValue()
     }
