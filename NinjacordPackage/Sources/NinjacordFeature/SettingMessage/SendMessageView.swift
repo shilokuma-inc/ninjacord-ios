@@ -226,9 +226,8 @@ extension SendMessageView {
         .padding(.horizontal)
         .frame(maxWidth: Self.contentMaxWidth)
         .padding(.bottom, Self.sectionSpacing)
+        // パネルの周りは背景を付けず、ナビゲーションバーのように裏を通る入力欄を透かす
         .frame(maxWidth: .infinity)
-        // 入力欄がパネルやステータスバーの裏を通っても透けないよう、アプリの背景で覆う
-        .background(Color.appBackground.ignoresSafeArea(edges: .top))
     }
 
     private var webhookProfileInput: String {

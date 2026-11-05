@@ -7,6 +7,7 @@ import SwiftUI
 
 /// 送信画面の上端に固定して浮かせる「Discordでの見え方」のパネル（Issue #620）。
 /// 入力欄をスクロールしても、キーボードを出していても隠れず、入力した内容がその場でプレビューに反映される。
+/// ナビゲーションバーのように、裏を通る入力欄が透ける（iOS 26 以降は Liquid Glass、それより前は Material）。
 /// 見出しで開閉でき、閉じている間は見出しだけを出す。
 /// 開いたプレビューは全体を出す。入力欄に届かなくなるほど長いとき（キーボードを出した小さい画面など）だけ、
 /// 高さを `maxContentHeight` までにして超えた分をパネルの中でスクロールする
@@ -29,8 +30,7 @@ struct MessagePreviewPanel<Content: View>: View {
                     .transition(.opacity)
             }
         }
-        .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 16.0))
-        .shadow(color: .black.opacity(0.25), radius: 8.0, y: 4.0)
+        .glassPanelBackground(cornerRadius: 16.0)
     }
 
     /// 開閉のボタンを兼ねた見出し。送信画面のセクション（`SendMessageSection`）と同じく、右端の矢印の向きで開閉を示す。
@@ -98,6 +98,19 @@ enum MessagePreviewPanelMetrics {
     /// 中身を除いたパネルの高さ（閉じたパネルの高さと、中身の下の余白）
     static var chromeHeight: CGFloat {
         collapsedHeight + padding
+    }
+}
+
+private extension View {
+    /// 裏のコンテンツが透ける角丸の背景。iOS 26 以降は Liquid Glass、それより前は Material（ぼかし）で代える
+    @ViewBuilder
+    func glassPanelBackground(cornerRadius: CGFloat) -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+        } else {
+            background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
+                .shadow(color: .black.opacity(0.25), radius: 8.0, y: 4.0)
+        }
     }
 }
 
