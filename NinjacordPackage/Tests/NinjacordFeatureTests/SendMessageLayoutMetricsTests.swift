@@ -7,15 +7,11 @@ import CoreGraphics
 @testable import NinjacordFeature
 import Testing
 
-/// 送信画面の下端の領域の高さ（`SendMessageLayoutMetrics.bottomHeight`）
+/// 送信画面の下端の領域の高さ（`SendMessageLayoutMetrics.bottomHeight`）と、
+/// 上端に固定したプレビューの中身の高さの上限（`previewMaxContentHeight`）
 struct SendMessageLayoutMetricsTests {
-    private func bottomHeight(content: CGFloat, excluded: CGFloat = 0, minimum: CGFloat = 50) -> CGFloat {
-        SendMessageLayoutMetrics.bottomHeight(
-            containerHeight: 800,
-            contentHeight: content,
-            excludedHeight: excluded,
-            minimum: minimum
-        )
+    private func bottomHeight(content: CGFloat, minimum: CGFloat = 50) -> CGFloat {
+        SendMessageLayoutMetrics.bottomHeight(containerHeight: 800, contentHeight: content, minimum: minimum)
     }
 
     @Test("入力欄が収まって余りが多いときは、上の余白と等分する")
@@ -34,8 +30,21 @@ struct SendMessageLayoutMetricsTests {
         #expect(bottomHeight(content: 1_200, minimum: 0) == 0)
     }
 
-    @Test("開いたプレビューなど、除外した高さは等分の計算に入れない")
-    func ignoresExcludedHeight() {
-        #expect(bottomHeight(content: 900, excluded: 400) == 150)
+    // MARK: - previewMaxContentHeight
+
+    /// 見出しと余白・下端の領域・入力欄 1 つ分の合計は 200、プレビューの最低の高さは 64 として計算する
+    private func previewMaxContentHeight(container: CGFloat) -> CGFloat {
+        SendMessageLayoutMetrics.previewMaxContentHeight(containerHeight: container, reservedHeight: 200, minimum: 64)
+    }
+
+    @Test("見出し・広告・入力欄 1 つ分を残した高さまで、プレビュー全体に使える")
+    func previewCapKeepsRoomForInput() {
+        #expect(previewMaxContentHeight(container: 800) == 600)
+        #expect(previewMaxContentHeight(container: 300) == 100)
+    }
+
+    @Test("それでもプレビューの最低の高さ（名前の行）は残す")
+    func previewCapKeepsMinimum() {
+        #expect(previewMaxContentHeight(container: 220) == 64)
     }
 }

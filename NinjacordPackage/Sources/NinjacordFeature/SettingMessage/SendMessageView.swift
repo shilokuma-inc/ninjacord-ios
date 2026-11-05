@@ -22,14 +22,18 @@ struct SendMessageView: View {
 
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
-    /// 入力欄どうしの間隔（Discussion #525）
-    private static let fieldSpacing: CGFloat = 8.0
 
     /// セクションどうしの間隔。セクションの中の入力欄どうしより広げて、まとまりを見分けやすくする
     private static let sectionSpacing: CGFloat = 12.0
 
     /// 広告を出さないときに、送信ボタンの下に必ず残す余白
     private static let minimumBottomSpacing: CGFloat = 16.0
+
+    /// プレビューの上限を決めるときに入力欄のために必ず残す高さ。
+    /// 見出し付きの入力欄 1 つ分（見出し約 16pt + 間隔 2pt + カプセル約 38pt）
+    private static let minimumInputFieldHeight: CGFloat = 56.0
+    /// 上端に固定したプレビューに出す添付画像の最大の幅・高さ。入力欄の場所を残すため、プレビュー単体の既定より小さくする
+    private static let previewAttachmentMaxSize: CGFloat = 160.0
 
     /// 下端にバナー広告を出すか。Pro 購読中は広告を出さない。購入した瞬間に消え、解約・失効したら戻る
     private var showsBannerAd: Bool {
@@ -41,59 +45,69 @@ struct SendMessageView: View {
         showsBannerAd ? BannerView.adHeight(width: width) : Self.minimumBottomSpacing
     }
 
+    /// 上端に固定したプレビューの中身に使える高さの上限。開いたプレビューは全体を出し、
+    /// パネルの見出しと余白・下端の広告の領域・入力欄 1 つ分が残らないほど長いときだけ、超えた分をパネルの中でスクロールさせる。
+    /// キーボードを出している間は画面の高さが減るので、上限も合わせて縮む。それでも名前の行は見えるよう、プレビューの最低の高さは残す
+    private func previewMaxContentHeight(containerSize: CGSize) -> CGFloat {
+        SendMessageLayoutMetrics.previewMaxContentHeight(
+            containerHeight: containerSize.height,
+            reservedHeight: MessagePreviewPanelMetrics.chromeHeight + Self.sectionSpacing
+                + minimumBottomHeight(width: containerSize.width) + Self.minimumInputFieldHeight,
+            minimum: MessagePreview.minimumHeight
+        )
+    }
+
     var body: some View {
-        ZStack {
-            Color.appBackground
-                .ignoresSafeArea()
-                .onTapGesture(perform: dismissKeyboard)
-            // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
-            SendMessageScrollLayout(
-                onTapBackground: dismissKeyboard,
-                // 撮影する送信画面では、セクションの並びとプレビューが 1 枚に収まるよう、送信者の上端までスクロールしておく
-                scrollTargetOnAppear: ScreenshotDemo.scene == .send ? "sender" : nil,
-                minimumBottomHeight: minimumBottomHeight(width:)
-            ) {
-                VStack(spacing: Self.sectionSpacing) {
-                    // 宛先にも中身にも属さないので、セクションの外の先頭にまとめる（Discussion #586 の Q4）
-                    MessageTemplateButtons(message: viewModel.currentMessage, onApply: viewModel.applyTemplate) {
-                        viewModel.toast = Toast(style: .success, message: "テンプレートを保存しました")
+        // プレビューの高さの上限を画面の大きさから決めるために測る（キーボードを出している間は、その分だけ低くなる）
+        GeometryReader { proxy in
+            ZStack {
+                Color.appBackground
+                    .ignoresSafeArea()
+                    .onTapGesture(perform: dismissKeyboard)
+                // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
+                SendMessageScrollLayout(
+                    onTapBackground: dismissKeyboard,
+                    // 撮影する送信画面では、送信者から送信ボタンまでが 1 枚に収まるよう、送信者の上端までスクロールしておく
+                    scrollTargetOnAppear: ScreenshotDemo.scene == .send ? "sender" : nil,
+                    minimumBottomHeight: minimumBottomHeight(width:)
+                ) {
+                    VStack(spacing: Self.sectionSpacing) {
+                        // 宛先にも中身にも属さないので、セクションの外の先頭にまとめる（Discussion #586 の Q4）
+                        MessageTemplateButtons(message: viewModel.currentMessage, onApply: viewModel.applyTemplate) {
+                            viewModel.toast = Toast(style: .success, message: "テンプレートを保存しました")
+                        }
+
+                        destinationSection
+                        senderSection
+                            .id("sender")
+                        contentSection
+                        embedSection
+                        attachmentSection
                     }
-
-                    destinationSection
-                    senderSection
-                        .id("sender")
-                    contentSection
-                    embedSection
-                    attachmentSection
-                }
-                .padding(.horizontal)
-                // iPad では入力欄が画面幅いっぱいに伸びて間延びするため、最大幅を設けて中央に寄せる
-                .frame(maxWidth: Self.contentMaxWidth)
-
-                Spacer()
-                    .frame(height: Self.sectionSpacing)
-
-                // 入力した内容を確かめてから送れるよう、入力欄と送信ボタンの間に置く
-                messagePreviewSection
                     .padding(.horizontal)
+                    // iPad では入力欄が画面幅いっぱいに伸びて間延びするため、最大幅を設けて中央に寄せる
                     .frame(maxWidth: Self.contentMaxWidth)
 
-                Spacer()
-                    .frame(height: 16.0)
+                    Spacer()
+                        .frame(height: 24.0)
 
-                sendButton
-            } bottom: {
-                if showsBannerAd {
-                    BannerView()
-                } else {
-                    // バナーが占めていた下端の領域を、空の View で同じように確保する。
-                    // 確保しないと入力欄の上の余白に高さを奪われ、画面全体が下に寄ってしまう
-                    Color.clear
-                        .frame(maxHeight: .infinity)
+                    sendButton
+                } bottom: {
+                    if showsBannerAd {
+                        BannerView()
+                    } else {
+                        // バナーが占めていた下端の領域を、空の View で同じように確保する。
+                        // 確保しないと入力欄の上の余白に高さを奪われ、画面全体が下に寄ってしまう
+                        Color.clear
+                            .frame(maxHeight: .infinity)
+                    }
+                }
+                // プレビューは入力欄の上に固定して浮かせ、入力欄から送信ボタンまではその下をスクロールする（Issue #620）
+                .safeAreaInset(edge: .top, spacing: .zero) {
+                    messagePreviewPanel(maxContentHeight: previewMaxContentHeight(containerSize: proxy.size))
                 }
             }
         }
-        .screenshotDemoCoversStatusBar()
         // iOS 26 のアラートはボタン文字に周囲の tint を使う。画面には AppAccent を付け直し、アラートだけシステム標準の青にする
         .tint(Color.appAccent)
         .alert(isPresented: $viewModel.isValidationAlertPresented, error: viewModel.validationError) { _ in
@@ -187,58 +201,33 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
-    /// Discord での見え方のプレビュー。入力した内容がどこに出るか分かるよう、既定では開いておく（Discussion #586 の Q3）
-    private var messagePreviewSection: some View {
-        VStack(spacing: .zero) {
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isPreviewExpanded.toggle()
-                }
-            } label: {
-                HStack {
-                    Image(systemName: "eye")
-                        .foregroundStyle(Color.appAccent)
-                        .frame(width: 24.0, height: 24.0)
-                        .accessibilityHidden(true)
-                    Text("Discordでの見え方")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.appTextSecondary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color.appTextSecondary)
-                        .rotationEffect(.degrees(isPreviewExpanded ? 90.0 : 0.0))
-                        .accessibilityHidden(true)
-                }
-                .frame(minHeight: 44.0)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityValue(isPreviewExpanded ? Text("展開済み") : Text("折りたたみ済み"))
-
-            if isPreviewExpanded {
-                MessagePreview(
-                    username: viewModel.inputUsername,
-                    avatarURL: viewModel.inputAvatarURL,
-                    content: viewModel.inputContext,
-                    embed: viewModel.inputEmbed,
-                    attachment: viewModel.attachment,
-                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
-                    // 撮影モードではデモのプロフィール画像の URL を読みに行かず、その場で描いたアイコンを出す
-                    avatarLoader: ScreenshotDemo.isEnabled
-                        ? AvatarImageLoader(fixedImage: ScreenshotDemo.avatarImage)
-                        : AvatarImageLoader()
-                )
-                .padding(.top, Self.fieldSpacing)
-                // 開いても下端の広告の領域は縮めず、入力欄側をスクロールさせる
-                .sendMessageLayoutExcludesHeight()
-                .transition(.opacity)
-                // プレビューを開いている間は、URL の入力が止まったら Webhook の名前とアイコンを取得する
-                .task(id: webhookProfileInput) {
-                    await webhookProfileStore.load(for: webhookProfileInput)
-                }
+    /// Discord での見え方のプレビュー。入力しながら確かめられるよう、入力欄の上に固定して浮かせる（Issue #620）。
+    /// 入力した内容がどこに出るか分かるよう、既定では開いておく（Discussion #586 の Q3）
+    private func messagePreviewPanel(maxContentHeight: CGFloat) -> some View {
+        MessagePreviewPanel(isExpanded: $isPreviewExpanded, maxContentHeight: maxContentHeight) {
+            MessagePreview(
+                username: viewModel.inputUsername,
+                avatarURL: viewModel.inputAvatarURL,
+                content: viewModel.inputContext,
+                embed: viewModel.inputEmbed,
+                attachment: viewModel.attachment,
+                webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
+                // 撮影モードではデモのプロフィール画像の URL を読みに行かず、その場で描いたアイコンを出す
+                avatarLoader: ScreenshotDemo.isEnabled
+                    ? AvatarImageLoader(fixedImage: ScreenshotDemo.avatarImage)
+                    : AvatarImageLoader(),
+                attachmentMaxSize: Self.previewAttachmentMaxSize
+            )
+            // プレビューを開いている間は、URL の入力が止まったら Webhook の名前とアイコンを取得する
+            .task(id: webhookProfileInput) {
+                await webhookProfileStore.load(for: webhookProfileInput)
             }
         }
+        .padding(.horizontal)
+        .frame(maxWidth: Self.contentMaxWidth)
+        .padding(.bottom, Self.sectionSpacing)
+        // パネルの周りは背景を付けず、ナビゲーションバーのように裏を通る入力欄を透かす
+        .frame(maxWidth: .infinity)
     }
 
     private var webhookProfileInput: String {
