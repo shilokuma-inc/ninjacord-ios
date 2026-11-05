@@ -32,23 +32,14 @@ struct SendMessageLayoutMetricsTests {
 
     // MARK: - previewMaxContentHeight
 
-    /// 割合は 0.5、見出しと余白・下端の領域・入力欄 1 つ分の合計は 200、プレビューの最低の高さは 64 として計算する
+    /// 見出しと余白・下端の領域・入力欄 1 つ分の合計は 200、プレビューの最低の高さは 64 として計算する
     private func previewMaxContentHeight(container: CGFloat) -> CGFloat {
-        SendMessageLayoutMetrics.previewMaxContentHeight(
-            containerHeight: container,
-            ratio: 0.5,
-            reservedHeight: 200,
-            minimum: 64
-        )
+        SendMessageLayoutMetrics.previewMaxContentHeight(containerHeight: container, reservedHeight: 200, minimum: 64)
     }
 
-    @Test("縦に余裕があるときは、画面の高さの割合で上限を決める")
-    func previewCapFollowsRatio() {
-        #expect(previewMaxContentHeight(container: 800) == 400)
-    }
-
-    @Test("キーボードを出した小さい画面では、見出し・広告・入力欄 1 つ分を残した高さまでにする")
+    @Test("見出し・広告・入力欄 1 つ分を残した高さまで、プレビュー全体に使える")
     func previewCapKeepsRoomForInput() {
+        #expect(previewMaxContentHeight(container: 800) == 600)
         #expect(previewMaxContentHeight(container: 300) == 100)
     }
 
