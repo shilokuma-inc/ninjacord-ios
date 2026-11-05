@@ -20,19 +20,21 @@ struct MessagePreviewPanel<Content: View>: View {
     @State private var contentHeight: CGFloat = 0
 
     var body: some View {
-        VStack(spacing: MessagePreviewPanelMetrics.contentSpacing) {
+        VStack(spacing: .zero) {
             header
             if isExpanded {
                 scrollableContent
+                    .padding(.horizontal, MessagePreviewPanelMetrics.padding)
+                    .padding(.bottom, MessagePreviewPanelMetrics.padding)
                     .transition(.opacity)
             }
         }
-        .padding(MessagePreviewPanelMetrics.padding)
         .background(Color.appSurface, in: RoundedRectangle(cornerRadius: 16.0))
         .shadow(color: .black.opacity(0.25), radius: 8.0, y: 4.0)
     }
 
-    /// 開閉のボタンを兼ねた見出し。送信画面のセクション（`SendMessageSection`）と同じく、右端の矢印の向きで開閉を示す
+    /// 開閉のボタンを兼ねた見出し。送信画面のセクション（`SendMessageSection`）と同じく、右端の矢印の向きで開閉を示す。
+    /// 閉じている間は場所を取らないよう低くし、余白まで含めてタップ領域にして HIG の最小サイズ（44pt）を確保する
     private var header: some View {
         Button {
             withAnimation(.easeInOut(duration: 0.2)) {
@@ -54,8 +56,9 @@ struct MessagePreviewPanel<Content: View>: View {
                     .rotationEffect(.degrees(isExpanded ? 90.0 : 0.0))
                     .accessibilityHidden(true)
             }
-            // 見出しの行全体をタップ領域にし、HIG の最小サイズ（44pt）を確保する
             .frame(minHeight: MessagePreviewPanelMetrics.headerHeight)
+            .padding(.horizontal, MessagePreviewPanelMetrics.padding)
+            .padding(.vertical, MessagePreviewPanelMetrics.headerPadding)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -82,15 +85,19 @@ struct MessagePreviewPanel<Content: View>: View {
 
 /// パネルの寸法。中身を除いた高さを送信画面がプレビューの上限の計算に使うので、generic な View の外に置く
 enum MessagePreviewPanelMetrics {
-    /// 見出しの高さ（HIG の最小のタップ領域）
-    static let headerHeight: CGFloat = 44.0
-    /// 見出しと中身の間隔
-    static let contentSpacing: CGFloat = 4.0
-    /// パネルの内側の余白
+    /// 見出しの行の高さ。アイコン（24pt）と 1 行の文字が収まる高さ
+    static let headerHeight: CGFloat = 32.0
+    /// 見出しの行の上下の余白。行と合わせて、閉じたパネルの高さが HIG の最小のタップ領域（44pt）になる
+    static let headerPadding: CGFloat = 6.0
+    /// パネルの左右と、中身の下の余白
     static let padding: CGFloat = 12.0
-    /// 中身を除いたパネルの高さ（見出し・見出しと中身の間隔・上下の余白）
+    /// 閉じたパネルの高さ（見出しの行と上下の余白）
+    static var collapsedHeight: CGFloat {
+        headerHeight + headerPadding * 2
+    }
+    /// 中身を除いたパネルの高さ（閉じたパネルの高さと、中身の下の余白）
     static var chromeHeight: CGFloat {
-        headerHeight + contentSpacing + padding * 2
+        collapsedHeight + padding
     }
 }
 
