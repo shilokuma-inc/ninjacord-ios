@@ -68,8 +68,7 @@ struct SendMessageView: View {
                 SendMessageScrollLayout(
                     onTapBackground: dismissKeyboard,
                     // 撮影する送信画面では、上端に固定したプレビューの下に埋め込み・添付（6.9 inch では送信ボタンまで）が写るよう、
-                    // 埋め込みの上端までスクロールしておく。送信者と本文はプレビューに内容が出るのでパネルの裏に送る。
-                    // 下端まで送ると、6.3 inch では先頭のテンプレートのボタンがパネルの上（ステータスバーの位置）に出てしまう
+                    // 埋め込みの上端までスクロールしておく。送信者と本文はプレビューに内容が出るのでパネルの裏に送る
                     scrollTargetOnAppear: ScreenshotDemo.scene == .send ? "embed" : nil,
                     minimumBottomHeight: minimumBottomHeight(width:)
                 ) {
@@ -230,6 +229,13 @@ extension SendMessageView {
         .padding(.bottom, Self.sectionSpacing)
         // パネルの周りは背景を付けず、ナビゲーションバーのように裏を通る入力欄を透かす
         .frame(maxWidth: .infinity)
+        // ただしステータスバーの裏は背景色で覆う。入力欄のスクロールはパネルの裏からステータスバーの裏まで伸びるので、
+        // 覆わないとパネルより上（ステータスバーの位置）に入力欄が出る（Issue #623）
+        .background(alignment: .top) {
+            Color.clear
+                .frame(height: 0)
+                .background(Color.appBackground, ignoresSafeAreaEdges: .top)
+        }
     }
 
     private var webhookProfileInput: String {
