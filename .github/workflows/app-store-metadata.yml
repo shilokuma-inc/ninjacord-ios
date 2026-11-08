@@ -14,7 +14,6 @@ name: Metadata/App Store
 # 最新情報（whatsNew）は、JSON の whatsNew.version が反映先のバージョンと一致するときだけ書き込む。
 #
 # 反映先は「編集できる状態のバージョン」だけ。審査中・配信済みのバージョンには触らない。
-# create_version にすると、編集できるバージョンが無いときに MARKETING_VERSION（app_version を書いたらその値）で作ってから反映する。
 # dry_run にすると、App Store Connect の現在値との差分だけを出して何も書き込まない。
 # 編集できるバージョンが無いときの dry-run は、審査中・配信中のバージョンと App 情報の値と比べる。
 # スクリーンショットと違って撮影が要らないので数十秒で終わる。
@@ -30,10 +29,6 @@ on:
         description: '反映先のバージョン。空なら編集できるバージョンを自動で選ぶ'
         required: false
         default: ''
-      create_version:
-        description: '編集できるバージョンが無ければ作る（app_version が空なら MARKETING_VERSION で）'
-        type: boolean
-        default: false
       missing_locales:
         description: 'App Store Connect にその言語が無いときの扱い'
         type: choice
@@ -109,7 +104,6 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY_PATH: ${{ runner.temp }}/private_keys/AuthKey.p8
           LANGUAGES: ${{ inputs.languages }}
           APP_VERSION: ${{ inputs.app_version }}
-          CREATE_VERSION: ${{ inputs.create_version }}
           MISSING_LOCALES: ${{ inputs.missing_locales }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
@@ -125,14 +119,11 @@ jobs:
           if [ -n "$APP_VERSION" ]; then
             options+=(--app-version "$APP_VERSION")
           fi
-          if [ "$CREATE_VERSION" = "true" ]; then
-            options+=(--create-version)
-          fi
           if [ "$DRY_RUN" = "true" ]; then
             options+=(--dry-run)
           fi
 
-          # bundle id と MARKETING_VERSION は project.pbxproj から読む（ワークフローに書き写すと二重管理になるため）
+          # bundle id は project.pbxproj から読む（ワークフローに書き写すと二重管理になるため）
           .venv/bin/python -u Tools/upload_metadata.py "${options[@]}" | tee "$RUNNER_TEMP/upload.log"
 
       - name: Upload app info to App Store Connect
@@ -146,17 +137,12 @@ jobs:
           APP_REVIEW_CONTACT_PHONE: ${{ secrets.APP_REVIEW_CONTACT_PHONE }}
           APP_REVIEW_CONTACT_EMAIL: ${{ secrets.APP_REVIEW_CONTACT_EMAIL }}
           APP_VERSION: ${{ inputs.app_version }}
-          CREATE_VERSION: ${{ inputs.create_version }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
           options=()
           if [ -n "$APP_VERSION" ]; then
             options+=(--app-version "$APP_VERSION")
-          fi
-          if [ "$CREATE_VERSION" = "true" ]; then
-            # 書き込む実行なら前のステップで作ってあるので、ここでは作らない（dry-run で作る予定のときの比べる相手を揃える）
-            options+=(--create-version)
           fi
           if [ "$DRY_RUN" = "true" ]; then
             options+=(--dry-run)

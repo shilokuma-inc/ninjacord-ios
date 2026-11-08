@@ -33,6 +33,5 @@ jobs:
         run: |
           set -euo pipefail
           python3 Tools/app_store_config.py bundle-id
-          python3 Tools/app_store_config.py marketing-version
           python3 Tools/app_store_config.py scenes
           python3 Tools/app_store_config.py display-types

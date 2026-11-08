@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 import time
 import urllib.error
 import urllib.parse
@@ -194,7 +193,7 @@ class AppStoreConnect:
             raise SystemExit(
                 "編集できる状態のバージョンがありません"
                 f"（いまある状態: {states or 'なし'}）。"
-                "App Store Connect で次のバージョンを作るか、Metadata/App Store を create_version を付けて流してから実行してください。"
+                "App Store Connect で次のバージョンを作ってから実行してください。"
             )
         if len(editable) > 1:
             names = ", ".join(v["attributes"]["versionString"] for v in editable)
@@ -202,53 +201,6 @@ class AppStoreConnect:
                 f"編集できるバージョンが複数あります（{names}）。--app-version で選んでください。"
             )
         return editable[0]
-
-    def create_version(self, app_id: str, version_string: str) -> dict | None:
-        """次のバージョンを作る（App Store Connect の画面の「iOS アプリ」の＋と同じ）。
-
-        作ると、そのバージョン用の App 情報も「提出準備中」でできる。dry-run では作らず None を返す。
-        """
-        if self.dry_run:
-            return None
-        response = self.post(
-            "/v1/appStoreVersions",
-            {
-                "data": {
-                    "type": "appStoreVersions",
-                    "attributes": {"platform": "IOS", "versionString": version_string},
-                    "relationships": {"app": {"data": {"type": "apps", "id": app_id}}},
-                }
-            },
-        )
-        return response["data"]
-
-    def ensure_version(self, app_id: str, version_string: str) -> str | None:
-        """編集できるバージョンが無ければ `version_string` で作る。
-
-        dry-run では作らず、作る予定のバージョンを返す（それ以外は None）。
-        `version_string` のバージョンが審査中・配信中などでもうあるときは、書き込む実行なら止める。
-        """
-        if not re.fullmatch(r"\d+(\.\d+){0,2}", version_string):
-            raise SystemExit(f"作るバージョンは 1.2.3 の形で書いてください: {version_string}")
-        versions = self.versions(app_id)
-        editable = [version["attributes"]["versionString"] for version in versions if self.is_editable(version)]
-        if editable:
-            print(f"バージョン: 編集できる {', '.join(editable)} があるので作りません")
-            return None
-        existing = next((v for v in versions if v["attributes"]["versionString"] == version_string), None)
-        if existing is not None:
-            message = (f"バージョン {version_string} は {existing['attributes']['appStoreState']} で、もうあります。"
-                       "次のバージョンを作るなら MARKETING_VERSION を上げてください")
-            if not self.dry_run:
-                raise SystemExit(message)
-            print(f"注意: {message}")
-            return None
-        if self.dry_run:
-            print(f"バージョン: {version_string} を作る予定（dry-run なので作らず、今あるいちばん新しいバージョンと比べる）")
-            return version_string
-        self.create_version(app_id, version_string)
-        print(f"バージョン: {version_string} を作りました")
-        return None
 
     def find_app_info(self, app_id: str, reference: bool = False) -> dict:
         """書き換えられる App 情報（appInfos）を返す。
@@ -282,7 +234,7 @@ class AppStoreConnect:
             raise SystemExit(
                 "編集できる状態の App 情報がありません"
                 f"（いまある状態: {states or 'なし'}）。"
-                "App Store Connect で次のバージョンを作るか、Metadata/App Store を create_version を付けて流してから実行してください。"
+                "App Store Connect で次のバージョンを作ってから実行してください。"
             )
         if len(candidates) > 1:
             raise SystemExit(
