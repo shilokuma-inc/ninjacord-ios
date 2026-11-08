@@ -73,7 +73,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 | ワークフロー | 反映するもの | 元ネタ |
 | --- | --- | --- |
 | `Screenshots/App Store` | スクリーンショット（iPhone 6.9 inch / iPhone 6.3 inch / iPad 13 inch / iPhone Duo × ja / en-US） | `AppStore/screenshots.json` / `AppStore/languages.json` |
-| `Metadata/App Store` | 名前・サブタイトル・説明文・キーワード・プロモーションテキスト・最新情報・URL・プライバシーポリシーの URL・著作権、カテゴリ・コンテンツの権利・年齢制限・App Review に関する情報・リリースの方法と段階的リリース・価格と配信状況（既定は dry-run。`create_version` で編集できるバージョンが無ければ作る） | `AppStore/metadata/*.json` / `AppStore/app_info.json` |
+| `Metadata/App Store` | 名前・サブタイトル・説明文・キーワード・プロモーションテキスト・最新情報・URL・プライバシーポリシーの URL・著作権、カテゴリ・コンテンツの権利・年齢制限・App Review に関する情報・リリースの方法と段階的リリース・価格と配信状況（既定は dry-run） | `AppStore/metadata/*.json` / `AppStore/app_info.json` |
 | `Creative assets/App Store` | プロダクトページのヘッダーと検索結果のクリエイティブアセット（iOS 27 以降の App Store に出る。既定は dry-run） | `AppStore/creative_assets.json` / `AppStore/creative/<言語>/` |
 
 - 撮る画面・枚数・並び順は Discussion #355 で決めた。変えるときは `AppStore/screenshots.json` と `ScreenshotDemo.Scene` を合わせて直す。
@@ -91,9 +91,9 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 ### リリースのときに流す順
 
 1. `release/vX.Y.Z` を切って push する（Upload/release でビルドが App Store Connect に上がる）。`whatsNew` の `version` と `text` も書き換えておく。
-2. `Metadata/App Store` を `release/vX.Y.Z` で、`create_version` を付けて dry-run で流し、Job Summary の差分を確かめる。編集できるバージョンが無ければ `MARKETING_VERSION` で作る予定が出る。
-3. `dry_run` を外して流す。バージョンを作り、掲載文・App 情報・審査の情報・リリースの方法を書き込む。
-4. 画面や構図を変えたリリースでは `Screenshots/App Store` と `Creative assets/App Store` を流す（バージョンを作ったあとに流す）。
+2. App Store Connect の画面で次のバージョン（`MARKETING_VERSION` と同じ番号）を作る。
+3. `Metadata/App Store` を `release/vX.Y.Z` で dry-run で流し、Job Summary の差分を確かめてから、`dry_run` を外して流す。掲載文・App 情報・審査の情報・リリースの方法を書き込む。
+4. 画面や構図を変えたリリースでは `Screenshots/App Store` と `Creative assets/App Store` を流す。
 5. 下の「App Store Connect で手入力するもの」を確かめ、ビルドを選んで審査に出す。
 
 ### App Store Connect で手入力するもの
@@ -102,6 +102,7 @@ API が無いか、リリースの判断なのでワークフローでは反映�
 
 | 項目 | 理由・手順 |
 | --- | --- |
+| 次のバージョンの作成 | 今は手動で作る運用にしている（2026-11-09 に決めた）。作らずに流すと「編集できる状態のバージョンがありません」で止まる |
 | ビルドの選択と審査への提出 | リリースの判断なので人が行う。輸出コンプライアンスは `Info.plist` の `ITSAppUsesNonExemptEncryption`（`false`）で申告済み |
 | App のプライバシー（収集するデータの申告） | API が無い。集めるデータが変わったとき（広告・解析・課金の SDK を足したときなど）だけ直す（例: #396） |
 | App Review に関する情報の添付ファイル（画面収録） | API で反映していない。審査で求められたときに付ける |
