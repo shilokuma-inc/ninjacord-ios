@@ -1,0 +1,51 @@
+{
+  "_comment": [
+    "App 情報（カテゴリ・コンテンツの権利・年齢制限）・App Review に関する情報・価格と配信状況。Tools/upload_app_info.py が反映する（Metadata/App Store から流れる）。",
+    "名前・サブタイトル・プライバシーポリシーの URL・著作権は AppStore/metadata/ に書く（言語ごとの掲載文と一緒に反映する）。",
+    "値は 2.2.0 の時点の App Store Connect の値に揃えてある。変えるときは、反映の前に Metadata/App Store の dry-run で差分を確かめる。",
+    "primaryCategory / secondaryCategory はカテゴリの ID。ID が違えば反映の前に使える一覧を出して止まる。サブカテゴリがあるカテゴリ（GAMES など）は primarySubcategories / secondarySubcategories に 2 つまで書ける。",
+    "contentRightsDeclaration は、第三者のコンテンツ（ほかの人の文章・画像・音楽など）を表示・利用するかどうか。",
+    "ageRating は年齢制限の質問への回答。広告（AdMob）を出すので advertising は true。頻度で答える質問は NONE / INFREQUENT_OR_MILD / FREQUENT_OR_INTENSE（質問によっては INFREQUENT / FREQUENT）。Apple が質問を足すと PR の検査で落ちるので、App Store Connect で答えてから Tools/upload_app_info.py の一覧とここに足す。",
+    "review は App Review に関する情報。連絡先（氏名・電話番号・メールアドレス）は個人情報なので、ここには書かず Organization の Secrets（APP_REVIEW_CONTACT_*）で渡す。",
+    "pricing / availability は、App Store Connect で未設定のときだけ書き込む。Ninja Cord は設定済みなので触らない（価格や配信先を変えるときは App Store Connect の画面で行う）。"
+  ],
+  "primaryCategory": "SOCIAL_NETWORKING",
+  "secondaryCategory": "UTILITIES",
+  "contentRightsDeclaration": "DOES_NOT_USE_THIRD_PARTY_CONTENT",
+  "ageRating": {
+    "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+    "contests": "NONE",
+    "gamblingSimulated": "NONE",
+    "gunsOrOtherWeapons": "NONE",
+    "horrorOrFearThemes": "NONE",
+    "matureOrSuggestiveThemes": "NONE",
+    "medicalOrTreatmentInformation": "NONE",
+    "profanityOrCrudeHumor": "NONE",
+    "sexualContentGraphicAndNudity": "NONE",
+    "sexualContentOrNudity": "NONE",
+    "violenceCartoonOrFantasy": "INFREQUENT",
+    "violenceRealistic": "NONE",
+    "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+    "advertising": true,
+    "ageAssurance": false,
+    "gambling": false,
+    "healthOrWellnessTopics": false,
+    "lootBox": false,
+    "messagingAndChat": false,
+    "parentalControls": false,
+    "socialMedia": false,
+    "unrestrictedWebAccess": false,
+    "userGeneratedContent": false
+  },
+  "review": {
+    "demoAccountRequired": false
+  },
+  "pricing": {
+    "price": "FREE",
+    "baseTerritory": "JPN"
+  },
+  "availability": {
+    "territories": "ALL",
+    "availableInNewTerritories": true
+  }
+}
