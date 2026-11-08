@@ -5,7 +5,7 @@
     "値は 2.2.0 の時点の App Store Connect の値に揃えてある。変えるときは、反映の前に Metadata/App Store の dry-run で差分を確かめる。",
     "primaryCategory / secondaryCategory はカテゴリの ID。ID が違えば反映の前に使える一覧を出して止まる。サブカテゴリがあるカテゴリ（GAMES など）は primarySubcategories / secondarySubcategories に 2 つまで書ける。",
     "contentRightsDeclaration は、第三者のコンテンツ（ほかの人の文章・画像・音楽など）を表示・利用するかどうか。",
-    "ageRating は年齢制限の質問への回答。広告（AdMob）を出すので advertising は true。頻度で答える質問は NONE / INFREQUENT_OR_MILD / FREQUENT_OR_INTENSE（質問によっては INFREQUENT / FREQUENT）。Apple が質問を足すと PR の検査で落ちるので、App Store Connect で答えてから Tools/upload_app_info.py の一覧とここに足す。",
+    "ageRating は年齢制限の質問への回答。広告（AdMob）を出すので advertising は true。頻度で答える質問は NONE / INFREQUENT_OR_MILD / FREQUENT_OR_INTENSE（質問によっては INFREQUENT / FREQUENT）。PR の検査が確かめるのは Tools/upload_app_info.py の一覧にある質問だけで、Apple が質問を足しても検出できない。審査に出す前に App Store Connect の年齢制限の画面で未回答の質問が無いかを見て、あれば答えてから、一覧とここに足す。",
     "review は App Review に関する情報。連絡先（氏名・電話番号・メールアドレス）は個人情報なので、ここには書かず Organization の Secrets（APP_REVIEW_CONTACT_*）で渡す。",
     "release はリリースの方法（バージョンごと）。releaseType は MANUAL（承認後に手動でリリース）か AFTER_APPROVAL（承認されたら自動でリリース）。phasedRelease は段階的リリース（7 日かけて自動アップデートの対象を広げる）を使うかどうか。日時を指定するリリースは App Store Connect の画面で設定し、release を消す。",
     "pricing / availability は、App Store Connect で未設定のときだけ書き込む。Ninja Cord は設定済みなので触らない（価格や配信先を変えるときは App Store Connect の画面で行う）。"

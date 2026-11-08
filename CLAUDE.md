@@ -84,7 +84,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 - 対応言語を増やしたら `AppStore/languages.json` と `AppStore/metadata/<言語>.json`、`ScreenshotDemoContent` に足す。
 - 名前・サブタイトルは `AppStore/metadata/<言語>.json`、プライバシーポリシーの URL・著作権は `shared.json` に書く（`Tools/upload_metadata.py`）。カテゴリ・コンテンツの権利・年齢制限・審査の情報・リリースの方法・価格と配信状況は `AppStore/app_info.json` に書く（`Tools/upload_app_info.py`。template-app-ios から移植した）。
 - JSON の値は 2.2.0 の時点の App Store Connect に揃えてある。App Store Connect の画面で変えたら JSON も直す（次に反映すると JSON の値に戻るため）。`Metadata/App Store` の dry-run は、編集できるバージョンが無くても審査中・配信中の値と比べるので、いつでもずれを確かめられる。
-- 価格と配信状況は App Store Connect で設定済みなので、ワークフローは触らない（変えるときは App Store Connect の画面で）。
+- 価格と配信状況は、App Store Connect で未設定のときだけ（dry-run でない実行で）JSON の値を書き込む。Ninja Cord は設定済みなので、ワークフローは触らない（変えるときは App Store Connect の画面で）。
 - 審査の連絡先は JSON に書かず、Organization の Secrets（`APP_REVIEW_CONTACT_FIRST_NAME` / `_LAST_NAME` / `_PHONE` / `_EMAIL`）から渡す。値はログに出さない。
 
 ### リリースのときに流す順
