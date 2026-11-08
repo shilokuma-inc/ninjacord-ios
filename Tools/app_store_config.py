@@ -13,6 +13,7 @@
     python3 Tools/app_store_config.py sizes APP_IPHONE_67
     python3 Tools/app_store_config.py display-types [APP_IPHONE_67,...]  # GitHub Actions の matrix 用 JSON
     python3 Tools/app_store_config.py bundle-id
+    python3 Tools/app_store_config.py marketing-version
 """
 
 from __future__ import annotations
@@ -132,6 +133,19 @@ def bundle_id() -> str:
     return found.pop()
 
 
+def marketing_version() -> str:
+    """アプリのバージョン（MARKETING_VERSION）を project.pbxproj から読む。App Store Connect にバージョンを作るときに使う。
+
+    構成ごとに違う値が入ったら、どれを使うか決められないので止める。
+    """
+    found = set(re.findall(r"MARKETING_VERSION = \"?([^\";]+)\"?;", PROJECT_FILE.read_text(encoding="utf-8")))
+    if len(found) != 1:
+        raise SystemExit(
+            f"{PROJECT_FILE.name} の MARKETING_VERSION が 1 つに決まりません: {', '.join(sorted(found)) or 'なし'}"
+        )
+    return found.pop()
+
+
 def parse_list(raw: str | None) -> list[str] | None:
     """カンマ区切り（または空白区切り）の指定を配列にする。空なら None（＝すべて）。"""
     if raw is None:
@@ -142,7 +156,7 @@ def parse_list(raw: str | None) -> list[str] | None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("command", choices=("languages", "scenes", "devices", "sizes", "display-types", "bundle-id"))
+    parser.add_argument("command", choices=("languages", "scenes", "devices", "sizes", "display-types", "bundle-id", "marketing-version"))
     parser.add_argument("argument", nargs="?", default=None)
     args = parser.parse_args()
 
@@ -159,6 +173,8 @@ def main() -> int:
             print(value)
     elif args.command == "bundle-id":
         print(bundle_id())
+    elif args.command == "marketing-version":
+        print(marketing_version())
     else:
         names = display_type_names(parse_list(args.argument))
         print(json.dumps([matrix_entry(name) for name in names], ensure_ascii=False))

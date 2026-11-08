@@ -7,6 +7,7 @@
     python3 Tools/upload_metadata.py            # 反映する
     python3 Tools/upload_metadata.py --dry-run  # 現在値との差分だけ出す
     python3 Tools/upload_metadata.py --check    # App Store Connect につながず、手元のファイルだけ検査する
+    python3 Tools/upload_metadata.py --create-version  # 編集できるバージョンが無ければ MARKETING_VERSION で作ってから反映する
 
 書き込み先は 3 つある。App Store Connect の画面では同じページに並んでいても、API では別のリソース。
 
@@ -38,7 +39,7 @@ import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from app_store_config import ROOT, Language, bundle_id, languages, parse_list
+from app_store_config import ROOT, Language, bundle_id, languages, marketing_version, parse_list
 
 METADATA_DIR = ROOT / "AppStore" / "metadata"
 
@@ -195,6 +196,11 @@ def main() -> int:
     parser.add_argument("--languages", help="対象の言語（カンマ区切り）。省略すると全言語")
     parser.add_argument("--bundle-id", help="省略すると project.pbxproj から読む")
     parser.add_argument("--app-version", help="反映先のバージョン。省略すると編集できるバージョンを自動で選ぶ")
+    parser.add_argument(
+        "--create-version",
+        action="store_true",
+        help="編集できるバージョンが無ければ作ってから反映する。作るバージョンは --app-version、省略すると MARKETING_VERSION",
+    )
     parser.add_argument("--key-id", default=os.environ.get("APP_STORE_CONNECT_KEY_ID"))
     parser.add_argument("--issuer-id", default=os.environ.get("APP_STORE_CONNECT_ISSUER_ID"))
     parser.add_argument(
@@ -269,16 +275,23 @@ def main() -> int:
     )
 
     app = client.find_app(args.bundle_id or bundle_id())
-    # dry-run は、編集できるバージョンが無くても審査中・配信中の値と比べる（JSON と App Store Connect のずれを見るため）
-    version = client.find_version(app["id"], args.app_version, reference=args.dry_run)
-    version_string = version["attributes"]["versionString"]
+    planned_version = None
+    if args.create_version:
+        planned_version = client.ensure_version(app["id"], args.app_version or marketing_version())
+
+    # dry-run は、編集できるバージョンが無くても審査中・配信中の値と比べる（JSON と App Store Connect のずれを見るため）。
+    # dry-run でバージョンを作る予定なら、まだ無いバージョンの代わりに今あるいちばん新しいバージョンと比べる
+    version = client.find_version(app["id"], None if planned_version else args.app_version, reference=args.dry_run)
+    current_version_string = version["attributes"]["versionString"]
+    # 最新情報は、作る予定のバージョンと突き合わせる
+    version_string = planned_version or current_version_string
     app_info = client.find_app_info(app["id"], reference=args.dry_run)
-    print(f"対象: {app['attributes']['name']} {version_string} "
+    print(f"対象: {app['attributes']['name']} {current_version_string} "
           f"({version['attributes']['appStoreState']})")
     if args.dry_run:
         print("--dry-run: App Store Connect には何も書き込みません")
         if not client.is_editable(version):
-            print(f"  注意: 編集できるバージョンが無いので、{version_string} と App 情報"
+            print(f"  注意: 編集できるバージョンが無いので、{current_version_string} と App 情報"
                   f"（{app_info['attributes'].get('state')}）の今の値と比べます")
 
     # 最新情報は、書いてあるバージョンが反映先と一致する言語だけに入れる
