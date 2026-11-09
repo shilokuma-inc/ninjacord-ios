@@ -85,6 +85,7 @@ fastlane/test_output
 # App Store Connect 連携（Tools/upload_*.py）の実行時にだけ作るもの
 private_keys/
 .venv/
+__pycache__/
 
 # Code Injection
 #

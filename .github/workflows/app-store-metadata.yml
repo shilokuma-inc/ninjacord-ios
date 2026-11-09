@@ -1,13 +1,21 @@
 name: Metadata/App Store
 
-# App Store の説明文・キーワード・プロモーションテキスト・最新情報・URL を App Store Connect に反映する。
-# 最新情報（whatsNew）は、JSON の whatsNew.version が反映先のバージョンと一致するときだけ書き込む。
+# App Store の掲載情報と、審査に出すのに要る App 情報などを App Store Connect に反映する。手動実行のみ。
 #
-# 元ネタは AppStore/metadata/<言語>.json と shared.json。欠損と文字数超過は
-# Verify/App Store metadata が PR の時点で落とすので、ここまで来たものは通る前提。
+#   Tools/upload_metadata.py … 名前・サブタイトル・説明文・キーワード・プロモーションテキスト・最新情報・URL・プライバシーポリシーの URL・著作権
+#                              （元ネタは AppStore/metadata/<言語>.json と shared.json）
+#   Tools/upload_app_info.py … カテゴリ・コンテンツの権利・年齢制限・App Review に関する情報・リリースの方法・価格と配信状況
+#                              （元ネタは AppStore/app_info.json。価格と配信状況は未設定のときだけ書き込む）
+#
+# App Review に関する情報の連絡先は JSON に置かず、Organization の Secrets（APP_REVIEW_CONTACT_*）から渡す。
+# App のプライバシー（収集するデータの申告）は API が無いので、App Store Connect の画面で入力する。
+#
+# 欠損と文字数超過は Verify/App Store metadata が PR の時点で落とすので、ここまで来たものは通る前提。
+# 最新情報（whatsNew）は、JSON の whatsNew.version が反映先のバージョンと一致するときだけ書き込む。
 #
 # 反映先は「編集できる状態のバージョン」だけ。審査中・配信済みのバージョンには触らない。
 # dry_run にすると、App Store Connect の現在値との差分だけを出して何も書き込まない。
+# 編集できるバージョンが無いときの dry-run は、審査中・配信中のバージョンと App 情報の値と比べる。
 # スクリーンショットと違って撮影が要らないので数十秒で終わる。
 
 on:
@@ -34,6 +42,15 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: read
+
+# 2 つの実行が同じバージョンに同時に書き込むと、掲載文と App 情報が別々のブランチの値になることがある。
+# ブランチによらず 1 本ずつ流す（実行中のものは取り消さない）
+concurrency:
+  group: app-store-metadata
+  cancel-in-progress: false
+
 jobs:
   metadata:
     name: upload
@@ -43,23 +60,50 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Verify metadata
         env:
           LANGUAGES: ${{ inputs.languages }}
-        run: python3 Tools/upload_metadata.py --check --languages "$LANGUAGES"
-
-      - name: Create Private Key
+          APP_REVIEW_CONTACT_FIRST_NAME: ${{ secrets.APP_REVIEW_CONTACT_FIRST_NAME }}
+          APP_REVIEW_CONTACT_LAST_NAME: ${{ secrets.APP_REVIEW_CONTACT_LAST_NAME }}
+          APP_REVIEW_CONTACT_PHONE: ${{ secrets.APP_REVIEW_CONTACT_PHONE }}
+          APP_REVIEW_CONTACT_EMAIL: ${{ secrets.APP_REVIEW_CONTACT_EMAIL }}
         run: |
           set -euo pipefail
-          mkdir -p private_keys
-          echo -n '${{ secrets.APPLE_API_KEY_BASE64 }}' | base64 --decode > private_keys/AuthKey.p8
+          python3 Tools/upload_metadata.py --check --languages "$LANGUAGES"
+          python3 Tools/upload_app_info.py --check
+
+          # 連絡先の Secrets が一部だけだと、掲載文を書き込んだあとで App 情報の反映が止まり、半端に反映される。
+          # 書き込む前に、4 つそろっているか、すべて無いかを確かめる。
+          # upload_app_info.py と同じく、空白だけの値は「無い」とみなす
+          contacts=0
+          for name in APP_REVIEW_CONTACT_FIRST_NAME APP_REVIEW_CONTACT_LAST_NAME APP_REVIEW_CONTACT_PHONE APP_REVIEW_CONTACT_EMAIL; do
+            value="${!name}"
+            if [ -n "${value//[[:space:]]/}" ]; then
+              contacts=$((contacts + 1))
+            fi
+          done
+          if [ "${contacts}" -ne 0 ] && [ "${contacts}" -ne 4 ]; then
+            echo "::error::審査の連絡先の Secrets（APP_REVIEW_CONTACT_*）が 4 つのうち ${contacts} つしかありません。4 つそろえるか、すべて外してください"
+            exit 1
+          fi
+
+      - name: Create Private Key
+        # Secrets はシェル展開ではなく env 経由で渡す
+        env:
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/private_keys"
+          printf '%s' "$APPLE_API_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/private_keys/AuthKey.p8"
 
       - name: Upload to App Store Connect
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
-          APP_STORE_CONNECT_PRIVATE_KEY_PATH: private_keys/AuthKey.p8
+          APP_STORE_CONNECT_PRIVATE_KEY_PATH: ${{ runner.temp }}/private_keys/AuthKey.p8
           LANGUAGES: ${{ inputs.languages }}
           APP_VERSION: ${{ inputs.app_version }}
           MISSING_LOCALES: ${{ inputs.missing_locales }}
@@ -84,6 +128,31 @@ jobs:
           # bundle id は project.pbxproj から読む（ワークフローに書き写すと二重管理になるため）
           .venv/bin/python -u Tools/upload_metadata.py "${options[@]}" | tee "$RUNNER_TEMP/upload.log"
 
+      - name: Upload app info to App Store Connect
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY_PATH: ${{ runner.temp }}/private_keys/AuthKey.p8
+          # 連絡先は個人情報なので Secrets から渡す（スクリプトは値をログに出さない）
+          APP_REVIEW_CONTACT_FIRST_NAME: ${{ secrets.APP_REVIEW_CONTACT_FIRST_NAME }}
+          APP_REVIEW_CONTACT_LAST_NAME: ${{ secrets.APP_REVIEW_CONTACT_LAST_NAME }}
+          APP_REVIEW_CONTACT_PHONE: ${{ secrets.APP_REVIEW_CONTACT_PHONE }}
+          APP_REVIEW_CONTACT_EMAIL: ${{ secrets.APP_REVIEW_CONTACT_EMAIL }}
+          APP_VERSION: ${{ inputs.app_version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          options=()
+          if [ -n "$APP_VERSION" ]; then
+            options+=(--app-version "$APP_VERSION")
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
+            options+=(--dry-run)
+          fi
+
+          # venv は前のステップで作ったものを使う
+          .venv/bin/python -u Tools/upload_app_info.py "${options[@]}" | tee "$RUNNER_TEMP/upload-app-info.log"
+
       - name: Summary
         if: always()
         env:
@@ -95,9 +164,11 @@ jobs:
             echo
             echo "- 反映: $([ "$DRY_RUN" = "true" ] && echo "しない（dry-run）" || echo "する")"
             echo
-            if [ -f "$RUNNER_TEMP/upload.log" ]; then
-              echo '```diff'
-              cat "$RUNNER_TEMP/upload.log"
-              echo '```'
-            fi
+            for log in upload upload-app-info; do
+              if [ -f "$RUNNER_TEMP/$log.log" ]; then
+                echo '```diff'
+                cat "$RUNNER_TEMP/$log.log"
+                echo '```'
+              fi
+            done
           } >> "$GITHUB_STEP_SUMMARY"

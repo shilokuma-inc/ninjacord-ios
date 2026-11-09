@@ -1,10 +1,13 @@
 {
   "_comment": [
-    "App Store の日本語（ja）の説明文など。上限: description 4000 字 / keywords 合計 100 字（カンマ込み）/ promotionalText 170 字。",
+    "App Store の日本語（ja）の説明文など。上限: name 30 字 / subtitle 30 字 / description 4000 字 / keywords 合計 100 字（カンマ込み）/ promotionalText 170 字。",
+    "name（名前）と subtitle（サブタイトル）は App 情報の項目で、ほかの項目とは別に App 情報の言語に書き込む。省略すると App Store Connect 側の値をそのまま残す。",
     "アプリ名とカテゴリ名はもともと検索対象なので keywords に入れなくてよい。「Discord」は現行のキーワードでも審査を通っているので入れている。",
     "promotionalText は省略できる（省略すると App Store Connect 側の値をそのまま残す）。",
     "whatsNew は「このバージョンの最新情報」（上限 4000 字）。version が反映先のバージョンと一致するときだけ書き込む。リリースごとに version と text を書き換える。"
   ],
+  "name": "Ninja Cord",
+  "subtitle": "匿名SNS投稿アプリ",
   "promotionalText": "名前とアイコンを自由に変えて、DiscordのチャンネルにWebhookで投稿。埋め込みのプレビュー、テンプレート、一斉送信で、告知や通知がもっと手軽になります。",
   "whatsNew": {
     "version": "2.2.0",
