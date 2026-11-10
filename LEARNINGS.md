@@ -31,6 +31,7 @@
 ## Simulator での確認
 
 - Debug ビルドの広告（AdMob のテスト広告）は、起動のたびに出る中身も高さも変わる。撮影モードで変更前と変更後のスクリーンショットを見比べるときは、広告の位置と、広告の高さが変わったぶんずれる部分（テンプレート一覧のネイティブ広告の下など）は差とみなさない。広告を写さずに比べたいなら `NinjacordApp-Screenshot` の scheme でビルドする（Issue #476）。
+- 埋め込みのフィールドなど Pro 限定の項目は、Xcode から実行しないと StoreKit の設定ファイル（`NinjacordPro.storekit`）が効かず Pro にできないので、`xcodebuild` でビルドして `simctl` で起動したアプリでは画面から入力できない。その状態の画面を確かめるときは、テンプレートを UserDefaults に書いてから送信画面の「テンプレート」で呼び出す。インストールのあと、起動する前に `xcrun simctl spawn <端末> defaults write ml.mrs1669.discord-bot-helper messageTemplates -data <JSON の 16 進>`（JSON は `MessageTemplate` の配列）で書けば読み込まれた。`hasCompletedOnboarding -bool YES` も書けばチュートリアルを飛ばせる（Issue #637）。
 
 ## リリース
 

@@ -48,7 +48,7 @@ struct MessagePreview: View {
                         .font(.system(size: 16))
                         .foregroundStyle(content.isEmpty ? DiscordPalette.placeholder : DiscordPalette.text)
                 }
-                if embed.hasContent {
+                if showsEmbed {
                     EmbedPreview(embed: embed)
                         .padding(.top, 4.0)
                 }
@@ -91,6 +91,12 @@ struct MessagePreview: View {
             messageEmbedEntity: embed
         )
         return DiscordWebhookRequest(messageEntity: message, attachment: attachment).sendsContent
+    }
+
+    /// 埋め込みのプレビューを出すか。空のフィールド行だけのときなど、Discord 上で表示される中身が無ければ枠も出さない。
+    /// 要約（`EmbedSummary`）・送る中身（`DiscordWebhookRequest`）と同じ `hasDisplayedContent` で判定する
+    var showsEmbed: Bool {
+        embed.hasDisplayedContent
     }
 
     /// 出す名前。Webhook の名前が分からなければ nil
