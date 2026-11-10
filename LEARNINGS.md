@@ -35,3 +35,4 @@
 ## リリース
 
 - 審査対応などで `release/vX.Y.Z` に直接マージした修正は、`develop` に自動では戻らない（v2.0.0 の ATT の修正 #437・#453 が抜けていた）。リリース後に `master` へ反映するときは、`git fetch origin` で remote-tracking の参照を最新にしてから `git log origin/develop..origin/release/vX.Y.Z` で release にだけあるコミットを確かめ、あれば release を `develop` にもマージする（#505）。
+- そのバージョンが承認されたあとに同じ `MARKETING_VERSION` のビルドを上げると、アップロード自体は成功するが、App Store Connect の取り込みで ITMS-90186（Invalid Pre-Release Train）/ ITMS-90062（承認済みより高い CFBundleShortVersionString が必要）のメールが来て弾かれる。v2.2.0 では、release を切ったあとも develop が 2.2.0 のままで、承認後の develop へのマージで起きた。承認の前に develop の `MARKETING_VERSION` を次のバージョンに上げておき、release を develop に戻すのはそのあとにする（#634）。
