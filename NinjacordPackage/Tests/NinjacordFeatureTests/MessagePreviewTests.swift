@@ -35,7 +35,7 @@ struct MessagePreviewTests {
         #expect(embed.hasContent)
         #expect(!showsEmbed(embed))
         #expect(EmbedSummary(embed: embed).state == .nothingDisplayed)
-        // 埋め込みの代わりに、既定の文言の本文が Discord に出る
+        // 本文は既定の文言に置き換えて送るので、プレビューには埋め込みの枠の代わりに本文の場所が出る
         #expect(defaultsContent(embed))
     }
 
