@@ -196,6 +196,22 @@
         }
       }
     },
+    "Discordでの見え方" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How it looks on Discord"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordでの見え方"
+          }
+        }
+      }
+    },
     "Discordで障害が発生しています。しばらく待ってから送信してください" : {
       "localizations" : {
         "en" : {
@@ -212,6 +228,22 @@
         }
       }
     },
+    "Discordのアイコンを上書き。空ならWebhookのアイコン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overrides the sender icon. Blank uses the webhook's icon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordのアイコンを上書き。空ならWebhookのアイコン"
+          }
+        }
+      }
+    },
     "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします" : {
       "localizations" : {
         "en" : {
@@ -224,6 +256,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします"
+          }
+        }
+      }
+    },
+    "Discordの送信者名を上書き。空ならWebhookの名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overrides the sender name. Blank uses the webhook's name."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordの送信者名を上書き。空ならWebhookの名前"
           }
         }
       }
@@ -554,6 +602,22 @@
         }
       }
     },
+    "Webhook URL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URL"
+          }
+        }
+      }
+    },
     "Webhook URLが正しくありません。Discordでコピーし直してください" : {
       "localizations" : {
         "en" : {
@@ -614,6 +678,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Webhookが見つかりません。URLが正しいか、Webhookが削除されていないか確認してください"
+          }
+        }
+      }
+    },
+    "Webhookの名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook name"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhookの名前"
           }
         }
       }
@@ -714,6 +794,22 @@
         }
       }
     },
+    "このまま送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Anyway"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このまま送信"
+          }
+        }
+      }
+    },
     "このアプリのURL欄に貼り付けます" : {
       "localizations" : {
         "en" : {
@@ -794,6 +890,54 @@
         }
       }
     },
+    "アイコンはWebhookのもの" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook's icon"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンはWebhookのもの"
+          }
+        }
+      }
+    },
+    "アイコンは指定済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom icon"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンは指定済み"
+          }
+        }
+      }
+    },
+    "アプリ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "APP"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ"
+          }
+        }
+      }
+    },
     "アプリのテーマ" : {
       "localizations" : {
         "en" : {
@@ -822,6 +966,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アプリの使い方"
+          }
+        }
+      }
+    },
+    "アプリの配色を選べます。「自動」は端末の外観設定に合わせて切り替わります。あとから設定でも変えられます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the app's color scheme. Automatic follows your device's appearance setting. You can change it later in Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリの配色を選べます。「自動」は端末の外観設定に合わせて切り替わります。あとから設定でも変えられます"
           }
         }
       }
@@ -954,6 +1114,22 @@
         }
       }
     },
+    "サムネイル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thumbnail"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サムネイル"
+          }
+        }
+      }
+    },
     "サムネイルのURL" : {
       "localizations" : {
         "en" : {
@@ -1014,6 +1190,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タイトル"
+          }
+        }
+      }
+    },
+    "タイトルなし" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No title"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトルなし"
+          }
+        }
+      }
+    },
+    "タイトルのみ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title only"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトルのみ"
           }
         }
       }
@@ -1146,6 +1354,22 @@
         }
       }
     },
+    "テーマを選ぶ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a Theme"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テーマを選ぶ"
+          }
+        }
+      }
+    },
     "ピン留め" : {
       "localizations" : {
         "en" : {
@@ -1206,6 +1430,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フィールド"
+          }
+        }
+      }
+    },
+    "フィールド%lld件" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fields: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィールド%lld件"
           }
         }
       }
@@ -1354,6 +1594,22 @@
         }
       }
     },
+    "プロフィール画像のURL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile image URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロフィール画像のURL"
+          }
+        }
+      }
+    },
     "プロフィール画像のURLを入れてください" : {
       "localizations" : {
         "en" : {
@@ -1370,6 +1626,22 @@
         }
       }
     },
+    "メッセージ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージ"
+          }
+        }
+      }
+    },
     "メッセージが入力されていません" : {
       "localizations" : {
         "en" : {
@@ -1382,6 +1654,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メッセージが入力されていません"
+          }
+        }
+      }
+    },
+    "メッセージの本文" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message text"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージの本文"
           }
         }
       }
@@ -1690,6 +1978,22 @@
         }
       }
     },
+    "初期値で送る前に確認する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm Before Sending Defaults"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初期値で送る前に確認する"
+          }
+        }
+      }
+    },
     "利用規約" : {
       "localizations" : {
         "en" : {
@@ -1734,6 +2038,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "名前"
+          }
+        }
+      }
+    },
+    "名前: %@・%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name: %1$@ · %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前: %1$@・%2$@"
           }
         }
       }
@@ -1882,22 +2202,6 @@
         }
       }
     },
-    "埋め込みタイトルを入れてください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter embedded title"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "埋め込みタイトルを入れてください"
-          }
-        }
-      }
-    },
     "基本" : {
       "localizations" : {
         "en" : {
@@ -1930,6 +2234,22 @@
         }
       }
     },
+    "宛先" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先"
+          }
+        }
+      }
+    },
     "宛先の選択を解除して1件ずつ送るか、Proにしてください" : {
       "localizations" : {
         "en" : {
@@ -1942,6 +2262,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "宛先の選択を解除して1件ずつ送るか、Proにしてください"
+          }
+        }
+      }
+    },
+    "展開済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expanded"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展開済み"
           }
         }
       }
@@ -2026,6 +2362,118 @@
         }
       }
     },
+    "折りたたみ済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapsed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "折りたたみ済み"
+          }
+        }
+      }
+    },
+    "未設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未設定"
+          }
+        }
+      }
+    },
+    "本文" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文"
+          }
+        }
+      }
+    },
+    "本文: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文: %@"
+          }
+        }
+      }
+    },
+    "本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the message is empty and the app's default text would be sent, a confirmation dialog appears before sending."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します"
+          }
+        }
+      }
+    },
+    "本文が未入力です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message Is Empty"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文が未入力です"
+          }
+        }
+      }
+    },
+    "本文が未入力のため、次の内容で送られます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The message is empty, so it will be sent as follows."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文が未入力のため、次の内容で送られます。"
+          }
+        }
+      }
+    },
     "横に並べる" : {
       "localizations" : {
         "en" : {
@@ -2054,6 +2502,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "次へ"
+          }
+        }
+      }
+    },
+    "添付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attachment"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添付"
           }
         }
       }
@@ -2218,6 +2682,22 @@
         }
       }
     },
+    "自動" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        }
+      }
+    },
     "色" : {
       "localizations" : {
         "en" : {
@@ -2230,6 +2710,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "色"
+          }
+        }
+      }
+    },
+    "色と送信日時だけでは送られません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color and timestamp alone won't be sent"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色と送信日時だけでは送られません"
           }
         }
       }
@@ -2278,6 +2774,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表示あり"
+          }
+        }
+      }
+    },
+    "表示される内容がありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to display"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示される内容がありません"
           }
         }
       }
@@ -2470,6 +2982,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信"
+          }
+        }
+      }
+    },
+    "送信して今後は表示しない" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send and Don't Ask Again"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信して今後は表示しない"
           }
         }
       }
@@ -2714,6 +3242,22 @@
         }
       }
     },
+    "送信日時" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timestamp"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信日時"
+          }
+        }
+      }
+    },
     "送信日時を表示する" : {
       "localizations" : {
         "en" : {
@@ -2726,6 +3270,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信日時を表示する"
+          }
+        }
+      }
+    },
+    "送信者" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sender"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信者"
           }
         }
       }

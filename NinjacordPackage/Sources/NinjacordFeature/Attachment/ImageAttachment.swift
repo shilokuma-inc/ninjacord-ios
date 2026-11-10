@@ -38,6 +38,19 @@ struct ImageAttachment: Equatable {
         return ImageAttachment(data: jpeg, fileName: "image.jpg", mimeType: "image/jpeg")
     }
 
+    /// プレビューに出す縮小画像。長辺を maxPixelSize に収める（元より大きくはしない）。画像として読めなければ nil
+    func thumbnail(maxPixelSize: Int) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            return nil
+        }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize
+        ]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+    }
+
     /// 画質を下げても上限を超えるときは、長辺を 3/4 ずつ縮めてやり直す
     private static func jpegData(from source: CGImageSource, maxFileSize: Int) -> Data? {
         guard let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],

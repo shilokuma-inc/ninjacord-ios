@@ -38,6 +38,17 @@ final class StubURLProtocol: URLProtocol {
         return url
     }
 
+    /// `makeURL(returning:)` と同じく、まだ使っていない Webhook URL を作って応答を決める。
+    /// ID を Discord と同じ数字にするので、Webhook URL の形を確かめる処理（`DiscordWebhookURL`）も通る
+    static func makeSnowflakeURL(returning stub: Stub) -> URL {
+        let id = UInt64.random(in: 1 ... .max)
+        let url = URL(string: "https://discord.com/api/webhooks/\(id)/token")!
+        lock.withLock {
+            stubs[url] = stub
+        }
+        return url
+    }
+
     /// その URL に送られたリクエスト（送った順）
     static func requests(to url: URL) -> [ReceivedRequest] {
         lock.withLock { receivedRequests[url] ?? [] }

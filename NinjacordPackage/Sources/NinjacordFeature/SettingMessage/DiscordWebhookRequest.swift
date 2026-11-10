@@ -17,6 +17,23 @@ struct DiscordWebhookRequest {
         let mimeType: String
     }
 
+    /// 本文が空で、埋め込みも画像も無いときに送る本文。ローカライズしない（Discussion #459 の Q4 の 1）。
+    /// 名前は空なら送らず、Discord に Webhook の名前で出す（Discussion #586 の Q7）
+    static let defaultContent = "なんか書いてね"
+
+    /// 未入力のため、アプリの初期文言に置き換えて送る項目
+    enum DefaultedField: Equatable {
+        case content
+
+        /// 置き換えて送る値
+        var value: String {
+            switch self {
+            case .content:
+                return DiscordWebhookRequest.defaultContent
+            }
+        }
+    }
+
     let messageEntity: MessageEntity
     /// 添付する画像。あれば multipart/form-data で送る
     let attachment: ImageAttachment?
@@ -29,13 +46,38 @@ struct DiscordWebhookRequest {
         self.sentAt = sentAt
     }
 
+    /// アプリの初期文言に置き換えて送る項目。送る中身（`parameters`）はこれに従って組み立てる。
+    /// 本文は、空でも埋め込みに表示する中身があるか画像を添付するなら、置き換えずに送らない
+    var defaultedFields: [DefaultedField] {
+        var fields: [DefaultedField] = []
+        if messageEntity.content.isEmpty
+            && !messageEntity.messageEmbedEntity.hasDisplayedContent
+            && attachment == nil {
+            fields.append(.content)
+        }
+        return fields
+    }
+
+    /// 本文の場所を送るか。本文が空で、初期文言にも置き換えないときは content のキーを送らない
+    var sendsContent: Bool {
+        !messageEntity.content.isEmpty || defaultedFields.contains(.content)
+    }
+
     /// Execute Webhook の JSON パラメータ
     var parameters: [String: Any] {
+        let defaulted = defaultedFields
         var param: [String: Any] = [
-            "username": messageEntity.username.isEmpty ? "以下、名無しにかわりましてVIPがお送りします" : messageEntity.username,
-            "avatar_url": messageEntity.avatarURL,
-            "content": messageEntity.content.isEmpty ? "なんか書いてね" : messageEntity.content
+            "avatar_url": messageEntity.avatarURL
         ]
+        // 名前が空なら username のキーを送らず、Discord 側で Webhook に設定した名前で出す
+        if !messageEntity.username.isEmpty {
+            param["username"] = messageEntity.username
+        }
+        if defaulted.contains(.content) {
+            param["content"] = Self.defaultContent
+        } else if !messageEntity.content.isEmpty {
+            param["content"] = messageEntity.content
+        }
         if messageEntity.messageEmbedEntity.hasContent {
             param["embeds"] = [embedParameters(messageEntity.messageEmbedEntity)]
         }

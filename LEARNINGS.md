@@ -15,6 +15,18 @@
 - 依存を外したあとに `xcodebuild -resolvePackageDependencies` が解決し直すと、`Package.resolved` を v2（`originHash` なし）で書き直すことがある（Xcode 26.6）。`Package.swift` から直接の依存を外したときは、そのピンだけを手で消した v3 のファイルにしておけば、解決し直しても書き換えられない。消したあとのピンが Xcode の解決結果と同じかは、v2 で書かせたファイルとピンを比べて確かめる（Issue #471）。
 - LicenseList の一覧は `SourcePackages/workspace-state.json` に載っているパッケージから作るので、依存を外しても、前から使っている DerivedData では外した依存が一覧に残ることがある。一覧から消えたかは、新しい DerivedData で依存を取り直して確かめる（CI は `Package.resolved` が変わるとキャッシュのキーが変わり、取り直すので消える）（Issue #471）。
 
+## SwiftUI
+
+- `List` の行（`Button` など）に付けた `fullScreenCover` の中身は、テーマ（`@AppStorage` の変更で親の body が評価し直される）や端末の外観が変わると作り直され、中の `@State` が初期値に戻る（iOS 26.5 の Simulator で確認）。ルートの `TabView` に付けた `fullScreenCover`（`MainView`）では作り直されなかった。表示中に保ちたい状態は、出す側の `@State` で持って `Binding` で渡す（2026-10-29、Issue #608）。
+- 表示中の `fullScreenCover` の中は、後からウィンドウの `overrideUserInterfaceStyle` やルートの `preferredColorScheme` を変えても配色が切り替わらない（iOS 26.5 の Simulator で確認）。中の View に `preferredColorScheme` を付けるだけでは「自動」（`nil`）で端末の外観に戻らないので、表示中の画面（presented な hosting controller）の `overrideUserInterfaceStyle` も書き換える（`PresentedThemeApplier`、Issue #615）。
+- `safeAreaInset(edge: .top)` を付けた View の中の `GeometryReader` は、inset の分を除いた高さを受け取る。その中の `ScrollView` は inset の裏まで伸び、中身は inset の View の下を通ってスクロールする（iOS 26.5 の Simulator で確認）。inset の View の背景に `Color.appBackground.ignoresSafeArea(edges: .top)` を付ければステータスバーの裏まで覆えるが、Issue #620 の送信画面のプレビューのパネルは透かす設計（Liquid Glass / Material）にした。
+- その `ScrollView` はステータスバーの裏まで伸びるので、中身が inset の View より上まで来ると、ステータスバーの位置に出る。中身が画面より低いと、下端までスクロールしたときに中身の先頭がそこに残る（先頭の位置 ≒ 画面の高さ − 下端の inset − 中身の高さ。送信画面で送信者を閉じると 6.3 inch で起きた）。inset の View を透かしたままステータスバーの裏だけを覆うには、inset の View の `.background(alignment: .top)` に、高さ 0 の View に `.background(Color.appBackground, ignoresSafeAreaEdges: .top)` を付けたものを置く。高さ 0 の `Color.appBackground` に `.ignoresSafeArea(edges: .top)` を付けるだけでは、ステータスバーの裏まで伸びなかった（iOS 26.5 の Simulator、Issue #623）。
+- `.xcodeproj` の `INFOPLIST_KEY_UIUserInterfaceStyle = Light` があると、`overrideUserInterfaceStyle = .unspecified` でも端末の外観に関係なくライトになる。テーマの「自動」を確かめるときは、ビルドした `.app` の `Info.plist` にこのキーが無いことも見る（Issue #615）。
+
+## ローカライズチェック（Tools/check_localizations.py）
+
+- Xcode 既定の DerivedData（`~/Library/Developer/Xcode/DerivedData/NinjacordApp-*`）を `--derived-data` に渡すと、別の Configuration の古いビルドや、コードがまだ `NinjacordApp` ターゲットにあった頃の `.stringsdata` まで拾い、今は無い文言（`埋め込みタイトルを入れてください` など）を未登録と報告する。手元で確かめるときは、そのビルドで書き出された `Debug-iphonesimulator` の `.stringsdata`（`NinjacordFeature.build` のものと、アプリターゲットは `NinjacordApp.stringsdata` だけ）を別のディレクトリに同じ階層で集めて渡す。CI は毎回新しい DerivedData なので起きない（Issue #620）。
+
 ## Simulator での確認
 
 - Debug ビルドの広告（AdMob のテスト広告）は、起動のたびに出る中身も高さも変わる。撮影モードで変更前と変更後のスクリーンショットを見比べるときは、広告の位置と、広告の高さが変わったぶんずれる部分（テンプレート一覧のネイティブ広告の下など）は差とみなさない。広告を写さずに比べたいなら `NinjacordApp-Screenshot` の scheme でビルドする（Issue #476）。

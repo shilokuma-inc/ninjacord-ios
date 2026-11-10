@@ -16,6 +16,8 @@ public struct MainView: View {
     @ObservedObject private var purchaseManager = PurchaseManager.shared
     @AppStorage(Self.hasCompletedOnboardingKey) private var hasCompletedOnboarding = false
     @State private var isOnboardingPresented = false
+    /// オンボーディングの今のページ。テーマや端末の外観が変わっても戻らないよう、`fullScreenCover` を出す側で持つ
+    @State private var onboardingSelection = 0
 
     static let hasCompletedOnboardingKey = "hasCompletedOnboarding"
 
@@ -56,7 +58,7 @@ public struct MainView: View {
                 await gatherAdConsent()
             }
         }, content: {
-            OnboardingView {
+            OnboardingView(selection: $onboardingSelection) {
                 hasCompletedOnboarding = true
                 isOnboardingPresented = false
             }

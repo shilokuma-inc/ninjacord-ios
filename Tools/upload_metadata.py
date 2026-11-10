@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""App Store の説明文・キーワード・プロモーションテキスト・URL を App Store Connect に反映する。
+"""App Store の説明文・キーワード・プロモーションテキスト・最新情報・URL を App Store Connect に反映する。
 
 `AppStore/metadata/<言語>.json` と `AppStore/metadata/shared.json` を読み、
 対象バージョンの言語ごとに書き込む。
@@ -14,6 +14,8 @@
 
 触るのは **編集できる状態のバージョンだけ**。審査中や配信済みのバージョンは対象にしない。
 JSON に書いていない項目（例: 省略した promotionalText）は App Store Connect 側の値をそのまま残す。
+最新情報（whatsNew）はバージョンごとの文言なので、JSON の `whatsNew.version` が反映先のバージョンと
+一致するときだけ書き込む（前のバージョンの文言を次のバージョンに載せてしまわないため）。
 
 PyJWT が要る（--check では不要）: `python3 -m pip install pyjwt cryptography`
 """
@@ -40,6 +42,7 @@ LIMITS = {
     "description": 4000,
     "keywords": 100,
     "promotionalText": 170,
+    "whatsNew": 4000,
 }
 
 
@@ -62,15 +65,15 @@ def load_shared(directory: Path) -> tuple[dict[str, str], list[str]]:
     return attributes, problems
 
 
-def load(directory: Path, target: Language, shared: dict[str, str]) -> tuple[dict[str, str] | None, list[str]]:
-    """1 言語ぶんの書き込む値を読む。問題があれば値の代わりに理由を返す。"""
+def load(directory: Path, target: Language, shared: dict[str, str]) -> tuple[dict[str, str] | None, str | None, list[str]]:
+    """1 言語ぶんの書き込む値と、最新情報の対象バージョンを読む。問題があれば値の代わりに理由を返す。"""
     path = directory / f"{target.language}.json"
     if not path.is_file():
-        return None, [f"{path} がありません"]
+        return None, None, [f"{path} がありません"]
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as error:
-        return None, [f"{path} が JSON として読めません: {error}"]
+        return None, None, [f"{path} が JSON として読めません: {error}"]
 
     problems: list[str] = []
     attributes: dict[str, str] = {}
@@ -96,14 +99,25 @@ def load(directory: Path, target: Language, shared: dict[str, str]) -> tuple[dic
         else:
             problems.append(f"{path}: promotionalText が空です（使わないなら項目ごと消す）")
 
+    whats_new_version = None
+    whats_new = raw.get("whatsNew")
+    if whats_new is not None:
+        version = whats_new.get("version") if isinstance(whats_new, dict) else None
+        text = whats_new.get("text") if isinstance(whats_new, dict) else None
+        if not (isinstance(version, str) and version.strip() and isinstance(text, str) and text.strip()):
+            problems.append(f"{path}: whatsNew は {{\"version\": \"2.1.0\", \"text\": \"…\"}} の形で書く（使わないなら項目ごと消す）")
+        else:
+            attributes["whatsNew"] = text
+            whats_new_version = version
+
     for field, limit in LIMITS.items():
         value = attributes.get(field, "")
         if len(value) > limit:
             problems.append(f"{path}: {field} が {len(value)} 字あります（上限 {limit} 字）")
 
     if problems:
-        return None, problems
-    return {**attributes, **shared}, []
+        return None, None, problems
+    return {**attributes, **shared}, whats_new_version, []
 
 
 def describe_changes(current: dict, new: dict[str, str]) -> list[str]:
@@ -152,11 +166,14 @@ def main() -> int:
 
     shared, problems = load_shared(args.metadata_dir)
     entries: list[tuple[Language, dict[str, str]]] = []
+    whats_new_versions: dict[str, str] = {}
     for target in targets:
-        attributes, issues = load(args.metadata_dir, target, shared)
+        attributes, whats_new_version, issues = load(args.metadata_dir, target, shared)
         problems.extend(issues)
         if attributes:
             entries.append((target, attributes))
+        if whats_new_version:
+            whats_new_versions[target.language] = whats_new_version
     if problems:
         raise SystemExit("\n".join(problems))
 
@@ -165,7 +182,9 @@ def main() -> int:
             counts = " / ".join(
                 f"{field} {len(attributes[field])} 字" for field in LIMITS if field in attributes
             )
-            print(f"  {target.language}: {counts}")
+            version_note = (f"（whatsNew は {whats_new_versions[target.language]} 向け）"
+                            if target.language in whats_new_versions else "")
+            print(f"  {target.language}: {counts}{version_note}")
         print(f"問題なし: {len(entries)} 言語")
         return 0
 
@@ -190,6 +209,13 @@ def main() -> int:
           f"({version['attributes']['appStoreState']})")
     if args.dry_run:
         print("--dry-run: App Store Connect には何も書き込みません")
+
+    # 最新情報は、書いてあるバージョンが反映先と一致する言語だけに入れる
+    for target, attributes in entries:
+        whats_new_version = whats_new_versions.get(target.language)
+        if "whatsNew" in attributes and whats_new_version != version_string:
+            del attributes["whatsNew"]
+            print(f"  {target.language}: whatsNew は {whats_new_version} 向けなので {version_string} には書き込みません")
 
     available = client.localization_entries(version["id"])
 

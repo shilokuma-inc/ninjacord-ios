@@ -230,6 +230,19 @@ final class SendMessageViewModelTests {
         #expect(header.hasPrefix("multipart/form-data; boundary="))
     }
 
+    @Test("ほかの項目がすべて空でも、画像を添付していれば送る")
+    func sendAttachmentOnly() async throws {
+        let url = StubURLProtocol.makeURL(returning: Self.noContent)
+        viewModel.inputURL = url.absoluteString
+        viewModel.attachment = Self.attachment
+
+        #expect(await send())
+
+        #expect(viewModel.validationError == nil)
+        let header = try #require(contentType(of: url))
+        #expect(header.hasPrefix("multipart/form-data; boundary="))
+    }
+
     // MARK: - 一斉送信
 
     @Test("一斉送信がすべて届いたら「N件の宛先に送信しました」を出し、宛先ごとに履歴に残す")
@@ -268,6 +281,18 @@ final class SendMessageViewModelTests {
             let header = try #require(contentType(of: url))
             #expect(header.hasPrefix("multipart/form-data; boundary="))
         }
+    }
+
+    @Test("一斉送信でも、ほかの項目がすべて空で画像だけを添付していれば送る")
+    func broadcastAttachmentOnly() async {
+        let target = savedURL("作戦室", returning: Self.noContent)
+        viewModel.broadcastTargets = [target]
+        viewModel.attachment = Self.attachment
+
+        #expect(await send(isPro: true))
+
+        #expect(viewModel.validationError == nil)
+        #expect(historyStore.items.map(\.isSuccess) == [true])
     }
 
     @Test("一斉送信の一部が失敗したら「N件中M件の送信に失敗しました」を出し、1 件でも届けば送信後の流れを呼ぶ")

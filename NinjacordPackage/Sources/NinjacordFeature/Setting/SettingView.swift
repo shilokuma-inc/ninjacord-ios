@@ -16,11 +16,15 @@ struct SettingView: View {
     @StateObject private var topAdModel = NativeAdModel()
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @AppStorage(AppTheme.userDefaultsKey) private var appTheme = AppTheme.dark.rawValue
+    /// 送信画面の確認ダイアログと同じキー。未設定ならオン
+    @AppStorage(DefaultValueConfirmationSetting.isEnabledKey) private var isDefaultValueConfirmationEnabled = true
     @State private var isURLSettingPresented = false
     @State private var isLicensePresented = false
     @State private var isPrivacyPolicyPresented = false
     @State private var isContactPresented = false
     @State private var isOnboardingPresented = false
+    /// オンボーディングの今のページ。行に付けた `fullScreenCover` の中身はテーマや端末の外観が変わると作り直されるため、ここで持つ
+    @State private var onboardingSelection = 0
     @State private var isPaywallPresented = false
     @State private var isManageSubscriptionsPresented = false
     @State private var isRestoring = false
@@ -117,10 +121,25 @@ struct SettingView: View {
                             .foregroundStyle(Color.appTextSecondary)
                     })
 
+                    Section {
+                        Toggle("初期値で送る前に確認する", isOn: $isDefaultValueConfirmationEnabled)
+                            .foregroundStyle(Color.appTextPrimary)
+                            .tint(Color.appAccent)
+                            .listRowBackground(Color.appSurface)
+                    } header: {
+                        Text("送信")
+                            .foregroundStyle(Color.appTextSecondary)
+                    } footer: {
+                        Text("本文が未入力で、アプリの初期値が入るときに、送る前に確認のダイアログを出します")
+                            .foregroundStyle(Color.appTextSecondary)
+                    }
+
                     SendHistorySettingsSection()
 
                     Section(content: {
                         Button {
+                            // 開き直したときは 1 ページ目から始める
+                            onboardingSelection = 0
                             isOnboardingPresented = true
                         } label: {
                             HStack {
@@ -135,7 +154,7 @@ struct SettingView: View {
                         }
                         .listRowBackground(Color.appSurface)
                         .fullScreenCover(isPresented: $isOnboardingPresented) {
-                            OnboardingView {
+                            OnboardingView(selection: $onboardingSelection) {
                                 isOnboardingPresented = false
                             }
                             .limitedDynamicTypeSize()

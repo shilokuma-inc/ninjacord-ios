@@ -14,9 +14,6 @@ struct WebhookURLHelpView: View {
     private static let discordAppStoreURL = URL(string: "https://apps.apple.com/app/id985746746")!
     /// Discord の Web 版。ログインするとそのままクライアントに入れる
     private static let discordWebURL = URL(string: "https://discord.com/app")!
-    /// Discord の Webhook URL の形。`discordapp.com` や `ptb.` / `canary.`、API のバージョン付き、`?thread_id=` などのクエリ付きも受け付ける
-    private static let webhookURLPattern = #"^https://((ptb|canary)\.)?discord(app)?\.com"#
-        + #"/api(/v[0-9]+)?/webhooks/[0-9]+/[A-Za-z0-9_-]+/?(\?.*)?$"#
 
     /// 貼り付けた Webhook URL を受け取る。送信画面の URL 欄に入れてシートを閉じる
     var onPasteWebhookURL: (String) -> Void = { _ in }
@@ -180,7 +177,7 @@ extension WebhookURLHelpView {
     /// Discord の Webhook URL だけを URL 欄に入れる。それ以外は入れずに知らせる
     private func pasteWebhookURL(_ string: String) {
         let url = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard url.range(of: Self.webhookURLPattern, options: .regularExpression) != nil else {
+        guard url.range(of: DiscordWebhookURL.pattern, options: .regularExpression) != nil else {
             isInvalidPaste = true
             return
         }

@@ -17,7 +17,11 @@ struct NinjacordApp: App {
     var body: some Scene {
         WindowGroup {
             MainView()
-                .preferredColorScheme(AppTheme(rawValue: appTheme)?.colorScheme ?? .dark)
+                .preferredColorScheme(AppTheme(storedValue: appTheme).colorScheme)
+                // 「自動」に戻したときに端末の外観へ戻すため、ウィンドウにも同じテーマを当てる
+                .task(id: appTheme) {
+                    AppTheme(storedValue: appTheme).applyToWindows()
+                }
         }
     }
 }

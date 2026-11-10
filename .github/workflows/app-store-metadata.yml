@@ -1,6 +1,7 @@
 name: Metadata/App Store
 
-# App Store の説明文・キーワード・プロモーションテキスト・URL を App Store Connect に反映する。
+# App Store の説明文・キーワード・プロモーションテキスト・最新情報・URL を App Store Connect に反映する。
+# 最新情報（whatsNew）は、JSON の whatsNew.version が反映先のバージョンと一致するときだけ書き込む。
 #
 # 元ネタは AppStore/metadata/<言語>.json と shared.json。欠損と文字数超過は
 # Verify/App Store metadata が PR の時点で落とすので、ここまで来たものは通る前提。
