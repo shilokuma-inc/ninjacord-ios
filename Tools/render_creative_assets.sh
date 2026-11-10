@@ -22,6 +22,17 @@ if [ ! -x "$CHROME" ]; then
     exit 1
 fi
 
+# 言語の一覧は先に取る。プロセス置換（< <(…)）でループに渡すと、取れなくてもループが 0 回で終わり、
+# 1 言語も書き出さずに成功で終わるため
+if ! LANGUAGES="$(python3 Tools/app_store_config.py languages)"; then
+    echo "Tools/app_store_config.py languages で言語の一覧を取れませんでした。" >&2
+    exit 1
+fi
+if [ -z "$LANGUAGES" ]; then
+    echo "AppStore/languages.json に言語がありません。" >&2
+    exit 1
+fi
+
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 cp AppStore/creative/src/creative.html "$WORK/"
@@ -61,4 +72,4 @@ while IFS=$'\t' read -r -u 3 language _ _ _; do
         fi
         echo "${output}（${actual}）"
     done <<< "$TARGETS"
-done 3< <(python3 Tools/app_store_config.py languages)
+done 3<<< "$LANGUAGES"
