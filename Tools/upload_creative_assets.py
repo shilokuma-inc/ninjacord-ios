@@ -279,16 +279,27 @@ def main() -> int:
         return 0
 
     version = client.find_version(app["id"], args.app_version)
-    print(f"対象: {app['attributes']['name']} {version['attributes']['versionString']} "
+    version_string = version["attributes"]["versionString"]
+    print(f"対象: {app['attributes']['name']} {version_string} "
           f"({version['attributes']['appStoreState']})")
     if args.dry_run:
         print("--dry-run: App Store Connect には何も書き込みません")
 
+    # 書き込みを始める前に、全言語のロケールがあるかを確かめる。
+    # 途中の言語で止まると、前の言語だけ配置が差し替わって言語間で食い違う
     localizations = client.localizations(version["id"])
+    missing_locales = [
+        f"{language.language} → {language.store_locale}"
+        for language in targets if language.store_locale not in localizations
+    ]
+    if missing_locales:
+        raise SystemExit(
+            f"App Store Connect の {version_string} に無い言語: {', '.join(missing_locales)}\n"
+            "App Store Connect でこれらの言語を追加してから実行してください。"
+        )
+
     for language in targets:
-        localization_id = localizations.get(language.store_locale)
-        if localization_id is None:
-            raise SystemExit(f"App Store Connect に {language.store_locale} の言語がありません")
+        localization_id = localizations[language.store_locale]
         print(f"  {language.language} → {language.store_locale}")
 
         for asset in assets:
@@ -300,7 +311,7 @@ def main() -> int:
                 continue
 
             reference_name = (f"{asset.get('referenceName', placement_type)} "
-                              f"{language.language} {version['attributes']['versionString']}")
+                              f"{language.language} {version_string}")
             image = library.upload_image(path, reference_name)
             spec = ref_data.image_spec(image.get("specId") or "") or {}
             groups = ref_data.groups_for_spec(placement_type, image.get("specId") or "")
