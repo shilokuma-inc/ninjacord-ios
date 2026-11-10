@@ -33,6 +33,34 @@ if [ -z "$LANGUAGES" ]; then
     exit 1
 fi
 
+# creative.html が phone("…") で載せる画面。撮影が途中で止まって一部だけ残っていると、
+# cp も寸法の確認も通り、画面の抜けた画像になる
+SCREENS="$(grep -oE 'phone\("[^"]+"' AppStore/creative/src/creative.html | sed -E 's/^phone\("//; s/"$//' | sort -u || true)"
+if [ -z "$SCREENS" ]; then
+    echo "AppStore/creative/src/creative.html から載せる画面を読み取れませんでした。" >&2
+    exit 1
+fi
+
+# 途中の言語で止まると、前の言語の画像だけが書き換わるので、描画を始める前に全言語を確かめる
+missing=()
+while IFS=$'\t' read -r language _ _ _; do
+    # creative.html の copy に、その言語の文言が無いと崩れた画像になる
+    if ! grep -Eq "^    ${language}: \{" AppStore/creative/src/creative.html; then
+        echo "AppStore/creative/src/creative.html の copy に ${language} の文言がありません。" >&2
+        exit 1
+    fi
+    for screen in $SCREENS; do
+        if [ ! -f "$SCREENSHOTS/$language/$screen.png" ]; then
+            missing+=("$SCREENSHOTS/$language/$screen.png")
+        fi
+    done
+done <<< "$LANGUAGES"
+if [ "${#missing[@]}" -gt 0 ]; then
+    echo "スクリーンショットがありません。先に Tools/capture_screenshots.sh APP_IPHONE_67 で撮ってください。" >&2
+    printf '  %s\n' "${missing[@]}" >&2
+    exit 1
+fi
+
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 cp AppStore/creative/src/creative.html "$WORK/"
@@ -46,15 +74,6 @@ TARGETS="header header.png 3840 1646
 search search_results.png 3840 2560"
 
 while IFS=$'\t' read -r -u 3 language _ _ _; do
-    # creative.html の copy に、その言語の文言が無いと崩れた画像になる
-    if ! grep -Eq "^    ${language}: \{" AppStore/creative/src/creative.html; then
-        echo "AppStore/creative/src/creative.html の copy に $language の文言がありません。" >&2
-        exit 1
-    fi
-    if [ ! -d "$SCREENSHOTS/$language" ]; then
-        echo "$SCREENSHOTS/$language がありません。先に Tools/capture_screenshots.sh APP_IPHONE_67 で撮ってください。" >&2
-        exit 1
-    fi
     mkdir -p "$WORK/screens/$language" "$OUTPUT_DIR/$language"
     cp "$SCREENSHOTS/$language"/*.png "$WORK/screens/$language/"
 
