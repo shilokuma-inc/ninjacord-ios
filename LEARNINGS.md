@@ -8,6 +8,7 @@
 - `Metadata/App Store` の dry-run は数十秒で終わり、App Store Connect の現在値と `AppStore/metadata/*.json` の差分を Job Summary に出す。反映先は `PREPARE_FOR_SUBMISSION` のバージョンだけなので、配信中の掲載文は変わらない。
 - GitHub Actions は Secrets の値を、どこに出てもログで `***` に伏せる。審査の連絡先の Secrets（`APP_REVIEW_CONTACT_FIRST_NAME` / `_LAST_NAME`）を渡す `Metadata/App Store` では、同じ名前を含む著作権（`2024 Takumi Muraishi`）の差分が `2024 *** ***` と出る。値の食い違いを確かめるときは、伏せ字の前後（年や `©` の有無）で見る（Issue #628）。
 - `Screenshots/App Store` は撮影に 30〜60 分かかる。ログは失敗したジョブ以外は完了まで取れない（`gh run view --log` は実行中のジョブでは空）。
+- クリエイティブアセットの書き出し（`Tools/render_creative_assets.sh`）に使う 6.9 inch の画面は、`Screenshots/App Store` の成果物 `screenshots-APP_IPHONE_67` を `gh run download` で取れば、手元で撮り直さずに済む。最新の成功した実行が一部の画面サイズだけの撮り直しで 6.9 inch を含まないことがある（2026-11-07 は 6.3 inch だけ）。その前の実行が失敗でも、6.9 inch のジョブが成功していれば成果物は使える（`gh run view <id> --json jobs` で確かめる）。CI で撮った画面には Dynamic Island が写っていて、2026-11-06 に手元の `Tools/capture_screenshots.sh` で撮った画面には写っていなかったので、どちらで書き出したかで端末の上部の見た目が変わる（Issue #641）。
 
 ## ビルド・依存（Swift Package Manager）
 
