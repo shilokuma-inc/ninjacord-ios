@@ -94,9 +94,9 @@ struct MessagePreview: View {
     }
 
     /// 埋め込みのプレビューを出すか。空のフィールド行だけのときなど、Discord 上で表示される中身が無ければ枠も出さない。
-    /// 要約（`EmbedSummary`）・送る中身（`DiscordWebhookRequest`）と同じ `hasDisplayedContent` で判定する
+    /// 要約（`EmbedSummary`）・送る中身（`DiscordWebhookRequest`）と同じ `hasContent` で判定する
     var showsEmbed: Bool {
-        embed.hasDisplayedContent
+        embed.hasContent
     }
 
     /// 出す名前。Webhook の名前が分からなければ nil

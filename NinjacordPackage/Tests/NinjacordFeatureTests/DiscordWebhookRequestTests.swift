@@ -203,11 +203,11 @@ struct DiscordWebhookRequestTests {
         #expect(embedParameters(of: embed) == ["fields": [["name": "集合", "value": "", "inline": true]]])
     }
 
-    /// 空のフィールド行だけでも embed を送る（今の挙動。#461）
-    @Test("空のフィールド行だけなら、中身の無い embed を送る")
+    /// 中身の無い embed（`{}`）は送らない（#461）
+    @Test("空のフィールド行だけなら、埋め込みを送らない")
     func blankFieldRowOnly() {
         let embed = MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)])
-        #expect(embedParameters(of: embed) == [:])
+        #expect(embedParameters(of: embed) == nil)
     }
 
     @Test("送信日時は ISO 8601（UTC、秒まで）で送り、送らない設定なら timestamp を付けない")

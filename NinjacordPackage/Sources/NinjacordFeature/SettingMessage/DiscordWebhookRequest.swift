@@ -53,7 +53,7 @@ struct DiscordWebhookRequest {
     var defaultedFields: [DefaultedField] {
         var fields: [DefaultedField] = []
         if messageEntity.content.isEmpty
-            && !messageEntity.messageEmbedEntity.hasDisplayedContent
+            && !messageEntity.messageEmbedEntity.hasContent
             && attachment == nil {
             fields.append(.content)
         }

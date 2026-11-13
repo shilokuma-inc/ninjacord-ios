@@ -83,9 +83,15 @@ struct EmbedSummaryTests {
         #expect(summary(embed).state == .filled(title: "お知らせ", items: [.fields(1)]))
     }
 
-    /// `hasContent` は true で `hasDisplayedContent` は false のとき
-    @Test("空のフィールド行と色・送信日時だけなら、表示される中身の無い埋め込みを送ることを示す", arguments: [
-        MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)]),
+    /// 空のフィールド行は送らないので、無いものとして扱う（#461）
+    @Test("空のフィールド行だけなら未設定")
+    func blankFieldRowOnly() {
+        let embed = MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)])
+        #expect(summary(embed).state == .empty)
+        #expect(!sendsEmbed(embed))
+    }
+
+    @Test("空のフィールド行と色・送信日時だけなら、送られないことを示す", arguments: [
         MessageEmbedEntity(color: 0x5865F2, fields: [MessageEmbedField(name: "", value: "", isInline: false)]),
         MessageEmbedEntity(
             title: " ",
@@ -93,11 +99,10 @@ struct EmbedSummaryTests {
             includesTimestamp: true
         )
     ])
-    func nothingDisplayed(embed: MessageEmbedEntity) {
-        #expect(summary(embed).state == .nothingDisplayed)
+    func blankFieldRowsWithColorOrTimestamp(embed: MessageEmbedEntity) {
+        #expect(summary(embed).state == .notSent)
         #expect(summary(embed).title == nil)
-        #expect(sendsEmbed(embed))
-        #expect(!embed.hasDisplayedContent)
+        #expect(!sendsEmbed(embed))
     }
 
     @Test("タイトルの前後の空白と改行は、要約では除く")
@@ -111,7 +116,6 @@ struct EmbedSummaryTests {
             summary(MessageEmbedEntity()).detail,
             summary(MessageEmbedEntity(color: 0x5865F2)).detail,
             summary(MessageEmbedEntity(title: "お知らせ")).detail,
-            summary(MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)])).detail,
             summary(MessageEmbedEntity(description: "説明")).detail
         ]
         #expect(Set(details).count == details.count)
