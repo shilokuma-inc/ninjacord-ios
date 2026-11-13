@@ -110,6 +110,13 @@ struct SendMessageValidationTests {
         #expect(validate(message: message, canUseProFeatures: false) == .emptyMessage)
     }
 
+    /// テンプレートの「保存」も `hasContent` で押せなくしているので、空のフィールド行だけでは保存できない
+    @Test("空のフィールド行だけのメッセージは内容が無いとみなし、中身のある行があれば内容があるとみなす")
+    func blankFieldRowOnlyHasNoContent() {
+        #expect(!MessageEntity.make(embed: MessageEmbedEntity(fields: [.blank, .blank])).hasContent)
+        #expect(MessageEntity.make(embed: MessageEmbedEntity(fields: [.blank, .filled])).hasContent)
+    }
+
     @Test("埋め込みの色・送信日時だけでは、メッセージは空とみなす")
     func colorAndTimestampOnly() {
         let message = MessageEntity.make(embed: MessageEmbedEntity(color: 0x5865F2, includesTimestamp: true))
