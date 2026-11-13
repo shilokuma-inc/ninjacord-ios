@@ -28,11 +28,13 @@
 ## ローカライズチェック（Tools/check_localizations.py）
 
 - Xcode 既定の DerivedData（`~/Library/Developer/Xcode/DerivedData/NinjacordApp-*`）を `--derived-data` に渡すと、別の Configuration の古いビルドや、コードがまだ `NinjacordApp` ターゲットにあった頃の `.stringsdata` まで拾い、今は無い文言（`埋め込みタイトルを入れてください` など）を未登録と報告する。手元で確かめるときは、そのビルドで書き出された `Debug-iphonesimulator` の `.stringsdata`（`NinjacordFeature.build` のものと、アプリターゲットは `NinjacordApp.stringsdata` だけ）を別のディレクトリに同じ階層で集めて渡す。CI は毎回新しい DerivedData なので起きない（Issue #620）。
+- `NinjacordFeatureTests` は scheme の TestAction でホストアプリなしに動く（`Bundle.main` は xctest のランナーで、`Localizable.xcstrings` を持たない）。そのため、テストの中の `String(localized:)` は Simulator の言語に関係なく、常にキー（日本語の文言）を返す。訳が正しいかはテストでは確かめられないので、`Check localizations` と、Simulator を起動引数 `-AppleLanguages "(en)"` で起動して確かめる。テストで文言を比べるときは、直書きせずに元の値（`DiscordWebhookRequest.defaultContent` など）と比べる（Issue #469）。
 
 ## Simulator での確認
 
 - Debug ビルドの広告（AdMob のテスト広告）は、起動のたびに出る中身も高さも変わる。撮影モードで変更前と変更後のスクリーンショットを見比べるときは、広告の位置と、広告の高さが変わったぶんずれる部分（テンプレート一覧のネイティブ広告の下など）は差とみなさない。広告を写さずに比べたいなら `NinjacordApp-Screenshot` の scheme でビルドする（Issue #476）。
 - 埋め込みのフィールドなど Pro 限定の項目は、Xcode から実行しないと StoreKit の設定ファイル（`NinjacordPro.storekit`）が効かず Pro にできないので、`xcodebuild` でビルドして `simctl` で起動したアプリでは画面から入力できない。その状態の画面を確かめるときは、テンプレートを UserDefaults に書いてから送信画面の「テンプレート」で呼び出す。インストールのあと、起動する前に `xcrun simctl spawn <端末> defaults write ml.mrs1669.discord-bot-helper messageTemplates -data <JSON の 16 進>`（JSON は `MessageTemplate` の配列）で書けば読み込まれた。`hasCompletedOnboarding -bool YES` も書けばチュートリアルを飛ばせる（Issue #637）。
+- Simulator の UI を操作するツール（idb など）が入っていない環境で、送信を押したあとのダイアログや設定の奥の画面を撮るなら、コミットしない一時的な変更で起動直後にその状態にする。たとえば `SendMessageView` の `.onAppear` で入力欄に値を入れて `viewModel.sendMessage(...)` を呼ぶ、`MainView` の `selection` と `SettingView` の `isPrivacyPolicyPresented` を初期値で開く、など。変更を `git diff > <patch>` で取っておけば、develop と作業ブランチの両方に `git apply` して同じ条件で Before / After を撮れる。送信画面の下のほう（埋め込み・添付）まで 1 枚に写すには、起動前に `xcrun simctl spawn <端末> defaults write ml.mrs1669.discord-bot-helper isSendMessageSenderExpanded -bool NO`（`isSendMessagePreviewExpanded` も）で、送信者と「Discordでの見え方」を閉じておく（Issue #461・#469・#643）。
 
 ## リリース
 
