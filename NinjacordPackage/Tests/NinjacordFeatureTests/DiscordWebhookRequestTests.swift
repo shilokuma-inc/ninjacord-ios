@@ -36,13 +36,13 @@ struct DiscordWebhookRequestTests {
         ])
     }
 
-    /// 本文の既定の文言はローカライズされていない（Discussion #459 の Q4 の 1）。
+    /// 本文の既定の文言は端末の言語に合わせる（#469）ので、文言そのものではなく `defaultContent` と比べる。
     /// 名前は空なら送らず、Discord 側で Webhook の名前で出す（Discussion #586 の Q7）
     @Test("名前が空なら username を送らず、本文が空なら「なんか書いてね」を送る")
     func omittedUsernameAndDefaultContent() {
         #expect(request(.make()).parameters.dictionary == [
             "avatar_url": "",
-            "content": "なんか書いてね"
+            "content": DiscordWebhookRequest.defaultContent
         ])
         #expect(request(.make(content: "こんにちは")).parameters["username"] == nil)
     }
@@ -84,7 +84,7 @@ struct DiscordWebhookRequestTests {
         ]
     )
     func defaultContentWithoutDisplayedEmbed(embed: MessageEmbedEntity) {
-        #expect(request(.make(embed: embed)).parameters["content"] as? String == "なんか書いてね")
+        #expect(request(.make(embed: embed)).parameters["content"] as? String == DiscordWebhookRequest.defaultContent)
     }
 
     @Test("本文が空でも、画像を添付すれば本文を送らない")
@@ -96,7 +96,7 @@ struct DiscordWebhookRequestTests {
     @Test("空のフィールド行だけの埋め込みなら、本文には「なんか書いてね」が入る")
     func defaultContentWithBlankFieldRowOnly() {
         let embed = MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)])
-        #expect(request(.make(embed: embed)).parameters["content"] as? String == "なんか書いてね")
+        #expect(request(.make(embed: embed)).parameters["content"] as? String == DiscordWebhookRequest.defaultContent)
     }
 
     // MARK: - 初期文言に置き換える項目
@@ -104,7 +104,9 @@ struct DiscordWebhookRequestTests {
     @Test("名前・本文が空なら、本文だけを初期文言に置き換える")
     func defaultedContentOnly() {
         #expect(request(.make()).defaultedFields == [.content])
-        #expect(DiscordWebhookRequest.DefaultedField.content.value == "なんか書いてね")
+        #expect(DiscordWebhookRequest.DefaultedField.content.value == DiscordWebhookRequest.defaultContent)
+        // 本文も埋め込みも無いと Discord は 400 を返すので、初期文言は空にしない
+        #expect(!DiscordWebhookRequest.defaultContent.isEmpty)
     }
 
     @Test("名前・本文が入っていれば、初期文言に置き換えない")
