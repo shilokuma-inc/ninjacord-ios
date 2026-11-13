@@ -17,9 +17,11 @@ struct DiscordWebhookRequest {
         let mimeType: String
     }
 
-    /// 本文が空で、埋め込みも画像も無いときに送る本文。ローカライズしない（Discussion #459 の Q4 の 1）。
+    /// 本文が空で、埋め込みも画像も無いときに送る本文。端末の言語に合わせて送る（#469）。
     /// 名前は空なら送らず、Discord に Webhook の名前で出す（Discussion #586 の Q7）
-    static let defaultContent = "なんか書いてね"
+    static var defaultContent: String {
+        String(localized: "なんか書いてね")
+    }
 
     /// 未入力のため、アプリの初期文言に置き換えて送る項目
     enum DefaultedField: Equatable {

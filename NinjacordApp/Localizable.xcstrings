@@ -858,6 +858,22 @@
         }
       }
     },
+    "なんか書いてね" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write something!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なんか書いてね"
+          }
+        }
+      }
+    },
     "はじめる" : {
       "localizations" : {
         "en" : {
