@@ -102,12 +102,12 @@ struct SendMessageValidationTests {
         #expect(validate(message: .make(embed: MessageEmbedEntity(description: "本文"))) == nil)
     }
 
-    /// 名前と値がどちらも空のフィールド行は送らないが、行があるだけでメッセージは空とみなさない（今の挙動）
-    @Test("空のフィールド行だけでも emptyMessage にならない")
+    /// 名前と値がどちらも空のフィールド行は送らないので、内容に数えない（#461）
+    @Test("空のフィールド行だけなら emptyMessage")
     func blankFieldRowOnly() {
         let message = MessageEntity.make(embed: MessageEmbedEntity(fields: [.blank]))
-        #expect(validate(message: message, canUseProFeatures: true) == nil)
-        #expect(validate(message: message, canUseProFeatures: false) == nil)
+        #expect(validate(message: message, canUseProFeatures: true) == .emptyMessage)
+        #expect(validate(message: message, canUseProFeatures: false) == .emptyMessage)
     }
 
     @Test("埋め込みの色・送信日時だけでは、メッセージは空とみなす")

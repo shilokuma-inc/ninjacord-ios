@@ -24,7 +24,7 @@ struct MessagePreviewTests {
         return DiscordWebhookRequest(messageEntity: message).defaultedFields.contains(.content)
     }
 
-    /// `hasContent` は true で、Discord 上で表示される中身は無いとき（Issue #637）
+    /// 空のフィールド行は送らないので、内容に数えない（Issue #637・#461）
     @Test("空のフィールド行と色・送信日時だけなら、埋め込みの枠を出さない", arguments: [
         MessageEmbedEntity(fields: [blankField]),
         MessageEmbedEntity(fields: [blankField, blankField]),
@@ -32,9 +32,8 @@ struct MessagePreviewTests {
         MessageEmbedEntity(title: " ", fields: [blankField])
     ])
     func hidesEmbedWithoutDisplayedContent(embed: MessageEmbedEntity) {
-        #expect(embed.hasContent)
+        #expect(!embed.hasContent)
         #expect(!showsEmbed(embed))
-        #expect(EmbedSummary(embed: embed).state == .nothingDisplayed)
         // 本文は既定の文言に置き換えて送るので、プレビューには埋め込みの枠の代わりに本文の場所が出る
         #expect(defaultsContent(embed))
     }
