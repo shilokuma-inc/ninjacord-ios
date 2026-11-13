@@ -236,6 +236,18 @@ struct DiscordWebhookRequestTests {
         #expect(text.hasPrefix("{\n  \""))
     }
 
+    @Test("JSON にできない値が入っていれば、落ちずに nil を返す（#473）")
+    func encodeJSONInvalidObject() {
+        #expect(DiscordWebhookRequest.encodeJSON(["value": Double.nan]) == nil)
+        #expect(DiscordWebhookRequest.encodeJSON(["date": Date()]) == nil)
+    }
+
+    @Test("JSON にできる値は、既定では prettyPrinted にせずに書き出す")
+    func encodeJSONValidObject() throws {
+        let data = try #require(DiscordWebhookRequest.encodeJSON(["content": "本文"]))
+        #expect(String(data: data, encoding: .utf8) == #"{"content":"本文"}"#)
+    }
+
     // MARK: - multipart/form-data
 
     @Test("添付する画像が無ければ multipart で送らない")
