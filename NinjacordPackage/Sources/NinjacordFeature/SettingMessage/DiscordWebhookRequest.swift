@@ -84,20 +84,18 @@ struct DiscordWebhookRequest {
         return param
     }
 
-    /// 画像を添付しないときに送る JSON の本文
-    var jsonBody: Data {
-        // swiftlint:disable:next force_try
-        try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+    /// 画像を添付しないときに送る JSON の本文。パラメータを JSON にできなければ nil（#473）
+    var jsonBody: Data? {
+        Self.encodeJSON(parameters, options: .prettyPrinted)
     }
 
     /// 画像を添付するときに送る multipart/form-data の各パート。メッセージは payload_json、画像は files[0] として送る。
-    /// 添付する画像が無ければ nil
+    /// 添付する画像が無いか、パラメータを JSON にできなければ nil
     /// https://discord.com/developers/docs/reference#uploading-files
     var multipartParts: [MultipartPart]? {
-        guard let attachment else {
+        guard let attachment, let payload = Self.encodeJSON(parameters) else {
             return nil
         }
-        let payload = (try? JSONSerialization.data(withJSONObject: parameters)) ?? Data()
         return [
             MultipartPart(name: "payload_json", data: payload, fileName: nil, mimeType: "application/json"),
             MultipartPart(
@@ -109,7 +107,17 @@ struct DiscordWebhookRequest {
         ]
     }
 
-    /// multipartParts を multipart/form-data の本文にする。添付する画像が無ければ nil。
+    /// JSON に書き出す。JSON にできない値が入っていれば nil。
+    /// `JSONSerialization.data(withJSONObject:)` は JSON にできない値を渡すと Swift の error ではなく
+    /// Objective-C の例外で落ち、`try?` では防げないので、先に `isValidJSONObject` で確かめる
+    static func encodeJSON(_ object: [String: Any], options: JSONSerialization.WritingOptions = []) -> Data? {
+        guard JSONSerialization.isValidJSONObject(object) else {
+            return nil
+        }
+        return try? JSONSerialization.data(withJSONObject: object, options: options)
+    }
+
+    /// multipartParts を multipart/form-data の本文にする。添付する画像が無いか、パラメータを JSON にできなければ nil。
     /// 書式は Alamofire の MultipartFormData と同じ（パートごとに境界・Content-Disposition・Content-Type・中身）
     func multipartBody(boundary: String) -> Data? {
         guard let parts = multipartParts else {

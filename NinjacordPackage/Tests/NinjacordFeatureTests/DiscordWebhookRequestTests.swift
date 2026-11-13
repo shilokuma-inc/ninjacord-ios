@@ -227,13 +227,25 @@ struct DiscordWebhookRequestTests {
             embed: MessageEmbedEntity(title: "お知らせ", includesTimestamp: true)
         )
         let webhookRequest = request(message)
-        let body = webhookRequest.jsonBody
+        let body = try #require(webhookRequest.jsonBody)
 
         let decoded = try #require(try JSONSerialization.jsonObject(with: body) as? NSDictionary)
         #expect(decoded == webhookRequest.parameters.dictionary)
         // prettyPrinted なので改行とインデントが入る
         let text = try #require(String(data: body, encoding: .utf8))
         #expect(text.hasPrefix("{\n  \""))
+    }
+
+    @Test("JSON にできない値が入っていれば、落ちずに nil を返す（#473）")
+    func encodeJSONInvalidObject() {
+        #expect(DiscordWebhookRequest.encodeJSON(["value": Double.nan]) == nil)
+        #expect(DiscordWebhookRequest.encodeJSON(["date": Date()]) == nil)
+    }
+
+    @Test("JSON にできる値は、既定では prettyPrinted にせずに書き出す")
+    func encodeJSONValidObject() throws {
+        let data = try #require(DiscordWebhookRequest.encodeJSON(["content": "本文"]))
+        #expect(String(data: data, encoding: .utf8) == #"{"content":"本文"}"#)
     }
 
     // MARK: - multipart/form-data
