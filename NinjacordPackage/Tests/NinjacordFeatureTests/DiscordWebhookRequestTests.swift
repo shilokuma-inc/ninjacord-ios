@@ -227,7 +227,7 @@ struct DiscordWebhookRequestTests {
             embed: MessageEmbedEntity(title: "お知らせ", includesTimestamp: true)
         )
         let webhookRequest = request(message)
-        let body = webhookRequest.jsonBody
+        let body = try #require(webhookRequest.jsonBody)
 
         let decoded = try #require(try JSONSerialization.jsonObject(with: body) as? NSDictionary)
         #expect(decoded == webhookRequest.parameters.dictionary)
