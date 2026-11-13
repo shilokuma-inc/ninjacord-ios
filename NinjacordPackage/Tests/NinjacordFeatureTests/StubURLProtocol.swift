@@ -71,7 +71,7 @@ final class StubURLProtocol: URLProtocol {
         let body = request.httpBody ?? request.httpBodyStream.map(Self.readAll)
         let stub = Self.lock.withLock {
             Self.receivedRequests[url, default: []].append(ReceivedRequest(request: request, body: body))
-            // 応答を決めていない URL（apple.com へのフォールバックなど）には、通信できなかったものとして返す
+            // 応答を決めていない URL には、通信できなかったものとして返す
             return Self.stubs[url] ?? .error(URLError(.cannotConnectToHost))
         }
         switch stub {
