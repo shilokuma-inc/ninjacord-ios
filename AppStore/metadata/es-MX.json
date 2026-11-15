@@ -1,0 +1,26 @@
+{
+  "_comment": [
+    "米国のストアの検索に使われるキーワード枠を増やすための言語（es-MX）。米国のストアは English (US) に加えて Spanish (Mexico) の掲載情報も検索に使う。",
+    "en.json を extends で流用し、keywords だけを上書きする。アプリはスペイン語に対応していないので、説明文などは英語のまま（メキシコの利用者にも英語の掲載文が出る）。",
+    "キーワードは言語をまたいで組み合わされない（en のサブタイトルの webhook と、ここの avatar で「webhook avatar」にはならない）。組み合わせたい語（discord など）はここにも入れる。",
+    "en の keywords と重複する語は入れない。メキシコでも使われるので、スペイン語の語（mensaje / anónimo）も少し入れている。"
+  ],
+  "extends": "en",
+  "keywords": [
+    "discord",
+    "avatar",
+    "custom",
+    "name",
+    "mod",
+    "community",
+    "gaming",
+    "clan",
+    "raid",
+    "reminder",
+    "event",
+    "status",
+    "news",
+    "mensaje",
+    "anónimo"
+  ]
+}
