@@ -3,6 +3,8 @@
 
 `AppStore/metadata/<言語>.json` と `AppStore/metadata/shared.json` を読み、
 対象バージョンと App 情報の言語ごとに書き込む。
+`<言語>.json` に `"extends": "en"` と書くと en.json の値を流用し、書いた項目だけを上書きする
+（例: インド向けの en-GB はキーワードだけを持つ）。流用元がさらに流用することはできない。
 
     python3 Tools/upload_metadata.py            # 反映する
     python3 Tools/upload_metadata.py --dry-run  # 現在値との差分だけ出す
@@ -96,17 +98,49 @@ def load_shared(directory: Path) -> tuple[dict[str, str], str | None, list[str]]
     return attributes, copyright_text, problems
 
 
-def load(directory: Path, target: Language, shared: dict[str, str]) -> tuple[dict[str, str] | None, str | None, list[str]]:
-    """1 言語ぶんの書き込む値と、最新情報の対象バージョンを読む。問題があれば値の代わりに理由を返す。"""
-    path = directory / f"{target.language}.json"
+def read_json(path: Path) -> tuple[dict | None, str | None]:
     if not path.is_file():
-        return None, None, [f"{path} がありません"]
+        return None, f"{path} がありません"
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as error:
-        return None, None, [f"{path} が JSON として読めません: {error}"]
+        return None, f"{path} が JSON として読めません: {error}"
+    if not isinstance(raw, dict):
+        return None, f"{path} はオブジェクト（{{…}}）で書く"
+    return raw, None
 
-    problems: list[str] = []
+
+def read_metadata(directory: Path, language: str) -> tuple[dict | None, list[str]]:
+    """1 言語ぶんの JSON を読む。`extends` があれば流用元の値に、書いた項目を上書きしたものを返す。"""
+    path = directory / f"{language}.json"
+    raw, problem = read_json(path)
+    if raw is None:
+        return None, [problem]
+    if "extends" not in raw:
+        return raw, []
+
+    source = raw["extends"]
+    if not (isinstance(source, str) and source.strip()):
+        return None, [f"{path}: extends には流用元の言語（例: \"en\"）を書く"]
+    source_path = directory / f"{source}.json"
+    base, problem = read_json(source_path)
+    if base is None:
+        return None, [f"{path}: extends の流用元を読めません — {problem}"]
+    if "extends" in base:
+        return None, [f"{path}: 流用元の {source_path.name} もほかの言語を流用しています。流用元は 1 段にする"]
+    merged = {key: value for key, value in base.items() if key != "_comment"}
+    merged.update({key: value for key, value in raw.items() if key != "extends"})
+    return merged, []
+
+
+def load(directory: Path, target: Language, shared: dict[str, str]) -> tuple[dict[str, str] | None, str | None, list[str]]:
+    """1 言語ぶんの書き込む値と、最新情報の対象バージョンを読む。問題があれば値の代わりに理由を返す。"""
+    path = directory / f"{target.language}.json"
+    raw, problems = read_metadata(directory, target.language)
+    if raw is None:
+        return None, None, problems
+
+    problems = []
     attributes: dict[str, str] = {}
 
     # 名前とサブタイトルは省略できる（省略すると App Store Connect 側の値をそのまま残す）
@@ -249,7 +283,9 @@ def main() -> int:
             )
             version_note = (f"（whatsNew は {whats_new_versions[target.language]} 向け）"
                             if target.language in whats_new_versions else "")
-            print(f"  {target.language}: {counts}{version_note}")
+            raw, _ = read_json(args.metadata_dir / f"{target.language}.json")
+            source_note = f"（{raw['extends']} を流用）" if raw and "extends" in raw else ""
+            print(f"  {target.language}: {counts}{version_note}{source_note}")
         print(f"  著作権: {copyright_text}")
         print(f"問題なし: {len(entries)} 言語")
         return 0
