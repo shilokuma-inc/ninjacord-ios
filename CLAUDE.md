@@ -84,7 +84,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 - 対応言語を増やしたら `AppStore/languages.json` と `AppStore/metadata/<言語>.json`、`ScreenshotDemoContent` に足す。
 - アプリの言語は増やさず App Store の言語だけを足すときは、`languages.json` に `assetsFrom`（画像の流用元）、`metadata/<言語>.json` に `"extends"`（掲載文の流用元）を書く。撮影・書き出しは流用元だけで行い、反映のときに流用元の画像と掲載文を使う。
   - `en-GB` … インド向け。インドのストアの既定の言語は English (U.K.) で、`en-US` の掲載文とキーワードは使われない（Issue #651）。
-  - `es-MX` … 米国のキーワード枠を増やすため。米国のストアは Spanish (Mexico) の掲載情報も検索に使うので、`en` と重複しないキーワードだけを持つ。
+  - `es-MX` … 米国のキーワード枠を増やすため。米国のストアは Spanish (Mexico) の掲載情報も検索に使うので、`en` と重複しないキーワードを持つ。ただしキーワードは言語をまたいで組み合わされないので、組み合わせに使う `discord` だけは `en` と重複させる。
 - 英語の掲載文（`en.json`）は米国・インドの利用者向けに書く（日本語版の直訳にしない）。「Discord」は名前・サブタイトルに入れない。名前・サブタイトルにある語はキーワードに入れない。
 - 名前・サブタイトルは `AppStore/metadata/<言語>.json`、プライバシーポリシーの URL・著作権は `shared.json` に書く（`Tools/upload_metadata.py`）。カテゴリ・コンテンツの権利・年齢制限・審査の情報・リリースの方法・価格と配信状況は `AppStore/app_info.json` に書く（`Tools/upload_app_info.py`。template-app-ios から移植した）。
 - JSON の値は 2.2.0 の時点の App Store Connect に揃えてある。App Store Connect の画面で変えたら JSON も直す（次に反映すると JSON の値に戻るため）。`Metadata/App Store` の dry-run は、編集できるバージョンが無くても審査中・配信中の値と比べるので、いつでもずれを確かめられる。
