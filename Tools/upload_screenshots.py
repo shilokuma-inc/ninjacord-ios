@@ -8,6 +8,8 @@ App Store Connect API で言語ごとにアップロードする。
         --screenshots-dir build/screenshots/APP_IPHONE_67 \\
         --display-type APP_IPHONE_67
 
+ほかの言語の画像を流用する言語（languages.json の assetsFrom）は、流用元のフォルダの画像を上げる。
+
 `--languages` を省くと languages.json の全言語を反映する。一部の言語だけ撮り直したときは、
 残っている古い画像まで反映しないよう、撮った言語に絞る。
 
@@ -102,7 +104,7 @@ def main() -> int:
     missing_locales: list[str] = []
     problems: list[str] = []
     for target in targets:
-        directory = args.screenshots_dir / target.language
+        directory = args.screenshots_dir / target.assets_language
         images = screenshots_for(directory) if directory.is_dir() else []
         if not images:
             problems.append(f"{directory} にスクリーンショットがありません")
@@ -159,7 +161,8 @@ def main() -> int:
         client.reorder(set_id, screenshot_ids)
         client.wait_for_delivery(screenshot_ids)
         uploaded_total += len(images)
-        print(f"  {target.language} → {target.store_locale}: {len(images)} 枚")
+        borrowed = f"（{target.assets_language} の画像）" if target.assets_language != target.language else ""
+        print(f"  {target.language} → {target.store_locale}: {len(images)} 枚{borrowed}")
 
     print(f"完了: {len(plan)} 言語 / {uploaded_total} 枚")
     if skipped:

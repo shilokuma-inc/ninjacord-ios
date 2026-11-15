@@ -4,6 +4,7 @@
 iOS 27 から、スクリーンショットとは別に「クリエイティブアセット」を App Store に載せられる
 （https://developer.apple.com/app-store/asset-best-practices/）。置き場所と元ネタは
 `AppStore/creative_assets.json`、画像は `AppStore/creative/<言語>/<ファイル名>`。
+ほかの言語の画像を流用する言語（languages.json の assetsFrom）は、流用元の言語のフォルダの画像を上げる。
 
     python3 Tools/upload_creative_assets.py               # 全言語を反映する
     python3 Tools/upload_creative_assets.py --dry-run     # 何も書き換えず、やることだけ出す
@@ -253,9 +254,9 @@ def main() -> int:
 
     # 画像が揃っているかは API を叩く前に確かめる
     missing = [
-        str(ASSETS_DIR / language.language / asset["file"])
+        str(ASSETS_DIR / language.assets_language / asset["file"])
         for language in targets for asset in assets
-        if not (ASSETS_DIR / language.language / asset["file"]).is_file()
+        if not (ASSETS_DIR / language.assets_language / asset["file"]).is_file()
     ]
     if missing and not args.ref_data:
         raise SystemExit("画像がありません:\n  " + "\n  ".join(missing))
@@ -304,7 +305,7 @@ def main() -> int:
 
         for asset in assets:
             placement_type = asset["placementType"]
-            path = ASSETS_DIR / language.language / asset["file"]
+            path = ASSETS_DIR / language.assets_language / asset["file"]
             existing = library.placements(localization_id, placement_type)
             if args.dry_run:
                 print(f"    {placement_type}: {path.name} を配置する予定（既存の配置 {len(existing)} 件を外す）")
