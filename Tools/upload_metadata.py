@@ -4,7 +4,7 @@
 `AppStore/metadata/<言語>.json` と `AppStore/metadata/shared.json` を読み、
 対象バージョンと App 情報の言語ごとに書き込む。
 `<言語>.json` に `"extends": "en"` と書くと en.json の値を流用し、書いた項目だけを上書きする
-（例: インド向けの en-GB はキーワードだけを持つ）。流用元がさらに流用することはできない。
+（例: 米国のキーワード枠の es-MX はキーワードだけを持つ）。流用元がさらに流用することはできない。
 
     python3 Tools/upload_metadata.py            # 反映する
     python3 Tools/upload_metadata.py --dry-run  # 現在値との差分だけ出す
