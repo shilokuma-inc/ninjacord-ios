@@ -72,7 +72,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 
 | ワークフロー | 反映するもの | 元ネタ |
 | --- | --- | --- |
-| `Screenshots/App Store` | スクリーンショット（iPhone 6.9 inch / iPhone 6.3 inch / iPad 13 inch / iPhone Duo × ja / en-US） | `AppStore/screenshots.json` / `AppStore/languages.json` |
+| `Screenshots/App Store` | スクリーンショット（iPhone 6.9 inch / iPhone 6.3 inch / iPad 13 inch / iPhone Duo × ja / en-US。en-GB / es-MX は en-US の画像を流用） | `AppStore/screenshots.json` / `AppStore/languages.json` |
 | `Metadata/App Store` | 名前・サブタイトル・説明文・キーワード・プロモーションテキスト・最新情報・URL・プライバシーポリシーの URL・著作権、カテゴリ・コンテンツの権利・年齢制限・App Review に関する情報・リリースの方法と段階的リリース・価格と配信状況（既定は dry-run） | `AppStore/metadata/*.json` / `AppStore/app_info.json` |
 | `Creative assets/App Store` | プロダクトページのヘッダーと検索結果のクリエイティブアセット（iOS 27 以降の App Store に出る。既定は dry-run） | `AppStore/creative_assets.json` / `AppStore/creative/<言語>/` |
 
@@ -82,6 +82,10 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 - クリエイティブアセットの元は `AppStore/creative/src/creative.html`。6.9 inch のスクリーンショットを撮ってから `Tools/render_creative_assets.sh` で書き出し、画像もコミットする。置き場所のグループと仕様は App Asset Library の参照データから引く（`Tools/upload_creative_assets.py --ref-data` で見られる）。
 - 「このバージョンの最新情報」は `AppStore/metadata/<言語>.json` の `whatsNew`（`version` と `text`）。`version` が反映先と一致するときだけ書き込むので、リリースごとに両方を書き換える。
 - 対応言語を増やしたら `AppStore/languages.json` と `AppStore/metadata/<言語>.json`、`ScreenshotDemoContent` に足す。
+- アプリの言語は増やさず App Store の言語だけを足すときは、`languages.json` に `assetsFrom`（画像の流用元）、`metadata/<言語>.json` に `"extends"`（掲載文の流用元）を書く。撮影・書き出しは流用元だけで行い、反映のときに流用元の画像と掲載文を使う。
+  - `en-GB` … インド向け。インドのストアの既定の言語は English (U.K.) で、`en-US` の掲載文とキーワードは使われない（Issue #651）。
+  - `es-MX` … 米国のキーワード枠を増やすため。米国のストアは Spanish (Mexico) の掲載情報も検索に使うので、`en` と重複しないキーワードを持つ。ただしキーワードは言語をまたいで組み合わされないので、組み合わせに使う `discord` だけは `en` と重複させる。
+- 英語の掲載文（`en.json`）は米国・インドの利用者向けに書く（日本語版の直訳にしない）。「Discord」は名前・サブタイトルに入れない。名前・サブタイトルにある語はキーワードに入れない。
 - 名前・サブタイトルは `AppStore/metadata/<言語>.json`、プライバシーポリシーの URL・著作権は `shared.json` に書く（`Tools/upload_metadata.py`）。カテゴリ・コンテンツの権利・年齢制限・審査の情報・リリースの方法・価格と配信状況は `AppStore/app_info.json` に書く（`Tools/upload_app_info.py`。template-app-ios から移植した）。
 - JSON の値は 2.2.0 の時点の App Store Connect に揃えてある。App Store Connect の画面で変えたら JSON も直す（次に反映すると JSON の値に戻るため）。`Metadata/App Store` の dry-run は、編集できるバージョンが無くても審査中・配信中の値と比べるので、いつでもずれを確かめられる。
 - 価格と配信状況は、App Store Connect で未設定のときだけ（dry-run でない実行で）JSON の値を書き込む。Ninja Cord は設定済みなので、ワークフローは触らない（変えるときは App Store Connect の画面で）。
@@ -92,8 +96,8 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 
 1. `release/vX.Y.Z` を切って push する（Upload/release でビルドが App Store Connect に上がる）。`whatsNew` の `version` と `text` も書き換えておく。
 2. App Store Connect の画面で次のバージョン（`MARKETING_VERSION` と同じ番号）を作る。
-3. `Metadata/App Store` を `release/vX.Y.Z` で dry-run で流し、Job Summary の差分を確かめてから、`dry_run` を外して流す。掲載文・App 情報・審査の情報・リリースの方法を書き込む。
-4. 画面や構図を変えたリリースでは `Screenshots/App Store` と `Creative assets/App Store` を流す。
+3. `Metadata/App Store` を `release/vX.Y.Z` で dry-run で流し、Job Summary の差分を確かめてから、`dry_run` を外して流す。掲載文・App 情報・審査の情報・リリースの方法を書き込む。App Store Connect に無い言語（2.3.0 で足した `en-GB` / `es-MX` など）があるときは `missing_locales` を `create` にする。
+4. 画面や構図を変えたリリースでは `Screenshots/App Store` と `Creative assets/App Store` を流す。言語を足したリリースでも、足した言語（例: `en-GB,es-MX`）を指定して流す（流用元を撮って上げる）。上げないと、その言語には主要言語のスクリーンショットが出る。
 5. 下の「App Store Connect で手入力するもの」を確かめ、ビルドを選んで審査に出す。
 
 ### App Store Connect で手入力するもの

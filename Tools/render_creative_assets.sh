@@ -8,6 +8,7 @@ set -euo pipefail
 # 元は AppStore/creative/src/creative.html。画面の画像には 6.9 inch のスクリーンショット
 # （Tools/capture_screenshots.sh APP_IPHONE_67 の出力。既定は build/screenshots/APP_IPHONE_67）を使う。
 # Google Chrome をヘッドレスで開いて実寸で撮り、アルファを落として AppStore/creative/<言語>/ に保存する。
+# ほかの言語の画像を流用する言語（languages.json の assetsFrom）は書き出さない（反映のときに流用元の画像を使う）。
 # 書き出したら差分を見てコミットし、Creative assets/App Store ワークフローで反映する。
 
 ROOT_DIR="$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd)"
@@ -24,8 +25,8 @@ fi
 
 # 言語の一覧は先に取る。プロセス置換（< <(…)）でループに渡すと、取れなくてもループが 0 回で終わり、
 # 1 言語も書き出さずに成功で終わるため
-if ! LANGUAGES="$(python3 Tools/app_store_config.py languages)"; then
-    echo "Tools/app_store_config.py languages で言語の一覧を取れませんでした。" >&2
+if ! LANGUAGES="$(python3 Tools/app_store_config.py asset-languages)"; then
+    echo "Tools/app_store_config.py asset-languages で言語の一覧を取れませんでした。" >&2
     exit 1
 fi
 if [ -z "$LANGUAGES" ]; then

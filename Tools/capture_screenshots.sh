@@ -6,6 +6,7 @@ set -euo pipefail
 #   Tools/capture_screenshots.sh APP_IPHONE_67 [ja,en]
 #
 # 撮る画面と機種は AppStore/screenshots.json、言語は AppStore/languages.json で決める。
+# ほかの言語の画像を流用する言語（languages.json の assetsFrom）は撮らず、流用元を撮る（例: en-GB を指定すると en を撮る）。
 # 画面ごと・言語ごとにアプリを起動し直し、起動引数で「デモデータ」「最初に開く画面」「言語」を渡す
 # （アプリ側は ScreenshotDemo.swift）。1 回ビルドしたものを使い回すので、言語を増やしても時間は大きく伸びない。
 #
@@ -197,7 +198,7 @@ capture_when_settled() {
 }
 
 # プロセス置換の中で失敗しても set -e では止まらず、前回の撮影結果のまま検証を通ってしまうので、先に取り出しておく
-LANGUAGE_LIST="$($CONFIG languages "$LANGUAGES")"
+LANGUAGE_LIST="$($CONFIG asset-languages "$LANGUAGES")"
 
 # simctl が標準入力を読んでしまわないよう、一覧は別のファイル記述子から読む
 while IFS=$'\t' read -r -u 3 language apple_language apple_locale store_locale; do

@@ -17,7 +17,7 @@ on:
         required: false
         default: ''
       languages:
-        description: '撮影する言語（カンマ区切り）。空なら languages.json の全言語（ja / en）'
+        description: '撮影・反映する言語（カンマ区切り）。空なら languages.json の全言語（ja / en / en-GB / es-MX。en-GB と es-MX は en を撮って流用する）'
         required: false
         default: ''
       app_version:
