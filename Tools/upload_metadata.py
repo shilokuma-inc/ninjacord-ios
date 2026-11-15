@@ -311,6 +311,8 @@ def main() -> int:
     app_info = client.find_app_info(app["id"], reference=args.dry_run)
     print(f"対象: {app['attributes']['name']} {version_string} "
           f"({version['attributes']['appStoreState']})")
+    # 主要言語は、対応する言語を用意していない国で何語の掲載文を出すかに関わる（変えるのは App Store Connect の App 情報の画面）
+    print(f"主要言語: {app['attributes'].get('primaryLocale') or '（取得できません）'}")
     if args.dry_run:
         print("--dry-run: App Store Connect には何も書き込みません")
         if not client.is_editable(version):
