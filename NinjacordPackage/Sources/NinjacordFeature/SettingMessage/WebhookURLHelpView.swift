@@ -104,8 +104,10 @@ extension WebhookURLHelpView {
             hasOpenedDiscord = true
             openURL(Self.discordAppURL)
         }, label: {
-            actionLabel("Discordアプリを開く", systemImage: "arrow.up.forward.app", isProminent: true)
+            actionLabelContent("Discordアプリを開く", systemImage: "arrow.up.forward.app", color: .white)
         })
+        // シートの主な操作なので、送信ボタンと同じ押し込み型にする。角丸はシート内のほかのボタンにそろえる
+        .buttonStyle(.raised(cornerRadius: 12.0))
     }
 
     /// Discord アプリが入っていないときの代わりの導線。App Store で入れるか、Web 版をアプリ内ブラウザで開く。
@@ -187,13 +189,7 @@ extension WebhookURLHelpView {
 
     /// シート内のボタンの見た目。isProminent なら塗り、そうでなければ枠線にする
     private func actionLabel(_ title: LocalizedStringKey, systemImage: String, isProminent: Bool) -> some View {
-        Label(title, systemImage: systemImage)
-            .font(.system(size: 17, weight: .semibold))
-            .foregroundStyle(isProminent ? Color.white : Color.appAccent)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 8.0)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.vertical, 14.0)
+        actionLabelContent(title, systemImage: systemImage, color: isProminent ? .white : .appAccent)
             .background(
                 RoundedRectangle(cornerRadius: 12.0)
                     .fill(isProminent ? Color.appAccent : Color.clear)
@@ -202,6 +198,17 @@ extension WebhookURLHelpView {
                 RoundedRectangle(cornerRadius: 12.0)
                     .stroke(Color.appAccent, lineWidth: isProminent ? 0.0 : 1.5)
             )
+    }
+
+    /// シート内のボタンの文言とアイコン。背景はボタンの種類ごとに付ける
+    private func actionLabelContent(_ title: LocalizedStringKey, systemImage: String, color: Color) -> some View {
+        Label(title, systemImage: systemImage)
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundStyle(color)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 8.0)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.vertical, 14.0)
     }
 
     /// Discord アプリが入っているかを取り直す。撮影モードでは固定した表示のまま変えない
