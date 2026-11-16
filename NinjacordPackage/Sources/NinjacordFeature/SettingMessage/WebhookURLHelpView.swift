@@ -104,8 +104,10 @@ extension WebhookURLHelpView {
             hasOpenedDiscord = true
             openURL(Self.discordAppURL)
         }, label: {
-            actionLabel("Discordアプリを開く", systemImage: "arrow.up.forward.app", isProminent: true)
+            actionLabelContent("Discordアプリを開く", systemImage: "arrow.up.forward.app", color: .white)
         })
+        // シートの主な操作なので、送信ボタンと同じ押し込み型にする。角丸はシート内のほかのボタンにそろえる
+        .buttonStyle(.raised(cornerRadius: 12.0))
     }
 
     /// Discord アプリが入っていないときの代わりの導線。App Store で入れるか、Web 版をアプリ内ブラウザで開く。
