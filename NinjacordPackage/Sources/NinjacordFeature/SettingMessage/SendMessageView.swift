@@ -213,7 +213,7 @@ extension SendMessageView {
                 embed: viewModel.inputEmbed,
                 attachment: viewModel.attachment,
                 webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
-                // 撮影モードではデモのプロフィール画像の URL を読みに行かず、その場で描いたアイコンを出す
+                // 撮影モードではデモのプロフィール画像の URL を読みに行かず、同梱のアイコンを出す
                 avatarLoader: ScreenshotDemo.isEnabled
                     ? AvatarImageLoader(fixedImage: ScreenshotDemo.avatarImage)
                     : AvatarImageLoader(),
