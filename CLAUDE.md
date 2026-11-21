@@ -78,7 +78,8 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 
 - 撮る画面・枚数・並び順は Discussion #355 で決めた。変えるときは `AppStore/screenshots.json` と `ScreenshotDemo.Scene` を合わせて直す。
 - 撮影はアプリの撮影モード（起動引数 `-screenshot-demo -screenshot-scene <名前>`、`Screenshot/ScreenshotDemo.swift`）で行う。デモの文言は言語ごとに `ScreenshotDemoContent` に持つ。
-- 手元で撮るなら `Tools/capture_screenshots.sh APP_IPHONE_67`（出力は `build/screenshots/`）。
+- 手元で撮るなら `Tools/capture_screenshots.sh APP_IPHONE_67`（出力は `build/screenshots/`）。撮ったのはアプリの画面そのもので、App Store にはそのまま上げない。
+- App Store に上げるスクリーンショットは、撮った画面を `Tools/compose_screenshots.sh APP_IPHONE_67` で Discord のチャンネル画面とメンバーの会話の構図に書き出したもの（出力は `build/app-store-screenshots/`、Issue #662）。元は `AppStore/screenshots/src/frame.html` で、会話の文言は画面（`screenshots.json` の scene）と言語ごとにそこに持つ。画面や言語を足したら文言も足す。iPhone / iPhone Duo / iPad は縦横比で見分けて組み方を変える。
 - クリエイティブアセットの元は `AppStore/creative/src/creative.html`。6.9 inch のスクリーンショットを撮ってから `Tools/render_creative_assets.sh` で書き出し、画像もコミットする。置き場所のグループと仕様は App Asset Library の参照データから引く（`Tools/upload_creative_assets.py --ref-data` で見られる）。
 - 「このバージョンの最新情報」は `AppStore/metadata/<言語>.json` の `whatsNew`（`version` と `text`）。`version` が反映先と一致するときだけ書き込むので、リリースごとに両方を書き換える。
 - 対応言語を増やしたら `AppStore/languages.json` と `AppStore/metadata/<言語>.json`、`ScreenshotDemoContent` に足す。
