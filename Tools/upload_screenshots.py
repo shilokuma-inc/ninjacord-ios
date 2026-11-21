@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """撮ったスクリーンショットを App Store Connect の対象バージョンに反映する。
 
-`Tools/capture_screenshots.sh` が並べた `<出力先>/<言語>/01_*.png …` を読み、
+`Tools/compose_screenshots.sh` が書き出した `<出力先>/<言語>/01_*.png …` を読み、
 App Store Connect API で言語ごとにアップロードする。
 
     python3 Tools/upload_screenshots.py \\
-        --screenshots-dir build/screenshots/APP_IPHONE_67 \\
+        --screenshots-dir build/app-store-screenshots/APP_IPHONE_67 \\
         --display-type APP_IPHONE_67
 
 ほかの言語の画像を流用する言語（languages.json の assetsFrom）は、流用元のフォルダの画像を上げる。
 
 `--languages` を省くと languages.json の全言語を反映する。一部の言語だけ撮り直したときは、
-残っている古い画像まで反映しないよう、撮った言語に絞る。
+残っている古い画像まで反映しないよう、撮り直した言語に絞る。
 
     python3 Tools/upload_screenshots.py \\
-        --screenshots-dir build/screenshots/APP_IPHONE_67 \\
+        --screenshots-dir build/app-store-screenshots/APP_IPHONE_67 \\
         --display-type APP_IPHONE_67 \\
         --languages ja
 

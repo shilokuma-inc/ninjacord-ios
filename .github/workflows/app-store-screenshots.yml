@@ -5,9 +5,12 @@ name: Screenshots/App Store
 # 撮る画面・並び順・機種は AppStore/screenshots.json、言語は AppStore/languages.json で決める
 # （構成は Discussion #355）。撮影は Tools/capture_screenshots.sh が、アプリの撮影モード
 # （ScreenshotDemo.swift）を起動引数で切り替えながら行う。表示サイズごとに別のジョブで並行して撮る。
+# 撮った画面は Tools/compose_screenshots.sh で Discord のチャンネル画面とメンバーの会話の構図
+# （AppStore/screenshots/src/frame.html）に書き出し、書き出したほうを反映する（Issue #662）。
 #
 # 反映先は「編集できる状態のバージョン」だけ。審査中・配信済みのバージョンには触らない。
-# upload を外せば撮るだけで、結果は artifact から取れる。
+# upload を外せば撮って書き出すだけで、結果は artifact から取れる
+# （撮った画面は screenshots-<表示サイズ>、書き出した画像は app-store-screenshots-<表示サイズ>）。
 
 on:
   workflow_dispatch:
@@ -73,6 +76,7 @@ jobs:
 
     env:
       SCREENSHOTS_DIR: build/screenshots
+      APP_STORE_SCREENSHOTS_DIR: build/app-store-screenshots
 
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
@@ -118,6 +122,26 @@ jobs:
           # 途中で失敗したときも撮れたぶんは残したいので、無くても警告どまりにする
           if-no-files-found: warn
 
+      # 書き出しには Google Chrome を使う。ランナーのイメージに入っていなければ入れる
+      - name: Compose screenshots
+        env:
+          LANGUAGES: ${{ inputs.languages }}
+        run: |
+          set -euo pipefail
+          if [ ! -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]; then
+            echo "Google Chrome が無いので入れます"
+            brew install --cask google-chrome
+          fi
+          Tools/compose_screenshots.sh "${{ matrix.display_type }}" "$LANGUAGES"
+
+      - name: Upload composed screenshots as artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-store-screenshots-${{ matrix.display_type }}
+          path: ${{ env.APP_STORE_SCREENSHOTS_DIR }}/${{ matrix.display_type }}
+          if-no-files-found: warn
+
       - name: Create Private Key
         if: ${{ inputs.upload }}
         run: |
@@ -151,7 +175,7 @@ jobs:
 
           # tee に繋ぐと標準出力がまとめ書きになり、失敗したときのログが前後するので -u で止める
           .venv/bin/python -u Tools/upload_screenshots.py \
-            --screenshots-dir "$SCREENSHOTS_DIR/$DISPLAY_TYPE" \
+            --screenshots-dir "$APP_STORE_SCREENSHOTS_DIR/$DISPLAY_TYPE" \
             --display-type "$DISPLAY_TYPE" \
             "${options[@]}" \
             | tee "$RUNNER_TEMP/upload.log"
@@ -168,14 +192,16 @@ jobs:
             # 全角の括弧が続くと bash 3.2 は変数名の一部と見なすので、必ず波括弧で閉じる
             echo "## スクリーンショット: ${LABEL}（${DISPLAY_TYPE}）"
             echo
-            echo "- 反映: $([ "$UPLOAD" = "true" ] && echo "する" || echo "しない（撮るだけ）")"
+            echo "- 反映: $([ "$UPLOAD" = "true" ] && echo "する" || echo "しない（撮って書き出すだけ）")"
             echo
             if [ -d "$SCREENSHOTS_DIR/$DISPLAY_TYPE" ]; then
-              echo "| 言語 | 枚数 |"
-              echo "|---|---|"
+              echo "| 言語 | 撮った枚数 | 書き出した枚数 |"
+              echo "|---|---|---|"
               for directory in "$SCREENSHOTS_DIR/$DISPLAY_TYPE"/*/; do
                 [ -d "$directory" ] || continue
-                echo "| $(basename "$directory") | $(find "$directory" -name '*.png' | wc -l | tr -d ' ') |"
+                language="$(basename "$directory")"
+                composed="$APP_STORE_SCREENSHOTS_DIR/$DISPLAY_TYPE/$language"
+                echo "| ${language} | $(find "$directory" -name '*.png' | wc -l | tr -d ' ') | $(find "$composed" -name '*.png' 2>/dev/null | wc -l | tr -d ' ') |"
               done
             fi
             if [ -f "$RUNNER_TEMP/upload.log" ]; then
