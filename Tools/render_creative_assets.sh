@@ -66,6 +66,8 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 cp AppStore/creative/src/creative.html "$WORK/"
 cp NinjacordApp/Assets.xcassets/AppIcon.appiconset/AppIcon.png "$WORK/icon.png"
+# Bot のアイコンは、送信画面のプレビューに出るデモのアイコン（ScreenshotDemo.avatarImage）と同じ画像を使う
+cp NinjacordPackage/Sources/NinjacordFeature/Screenshot/Resources/screenshot-bot-avatar.jpg "$WORK/bot-avatar.jpg"
 
 REMOVE_ALPHA="$WORK/remove_alpha"
 xcrun swiftc -O Tools/remove_alpha.swift -o "$REMOVE_ALPHA"

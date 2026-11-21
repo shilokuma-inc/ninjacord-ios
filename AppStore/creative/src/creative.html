@@ -127,8 +127,8 @@
   const add = (html) => { stage.insertAdjacentHTML("beforeend", html); return stage.lastElementChild; };
 
   // Bot のアイコンは、送信画面のプレビューに出るデモのアイコン（ScreenshotDemo.avatarImage）にそろえる
-  const BOT_AVATAR = `<div class="avatar" style="background:linear-gradient(135deg,#fee75c,#ed4245)">` +
-    `<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"/></svg></div>`;
+  // （Tools/render_creative_assets.sh が bot-avatar.jpg として隣に置く。CC0 の写真で、出典は Screenshot/Resources/CREDITS.md）
+  const BOT_AVATAR = `<img class="avatar" src="bot-avatar.jpg" alt="" style="object-fit:cover">`;
   const AVATAR_COLORS = { talk: ["#a78bdb", "#e06c75"], name: ["#c9b6f2", "#f2a7ad"] };
 
   add(`<div class="channel"><span class="hash">#</span>${copy.channel}</div>`);
