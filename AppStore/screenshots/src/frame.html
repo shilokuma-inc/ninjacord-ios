@@ -1,0 +1,147 @@
+<!doctype html>
+<!--
+  App Store のスクリーンショットの元（Issue #662）。撮った画面を Discord のチャンネル画面に載せる。
+  Tools/compose_screenshots.sh が Chrome で開き、撮った画面と同じ寸法で書き出す。直接開くときは
+  frame.html?scene=send&file=01_send&lang=ja&width=1320&height=2868 のように指定する
+  （screens/<言語>/<file>.png に撮った画面が要る）。
+
+  方針（クリエイティブアセットの AppStore/creative/src/creative.html とそろえる）
+  - 背景は Discord のダークテーマのチャンネル画面。見出しの代わりに、メンバーの会話を BIZ UDPGothic で大きく置く。
+    グラデーション・光・星・極太の見出しのような、生成された画像でよく見る飾りは使わない。
+  - 上に会話、下に端末。端末は黒い縁だけにして、下端からはみ出させる。
+  - 答えるのは 6 枚とも同じ人（みさき / Mia）。1 枚で伝えることは 1 つにする。
+  - 用途はチャンネル名と会話で広げる（ゲーム部・開発チーム・サーバー管理・テニス部）。
+
+  レイアウトは小さな基準の幅（iPhone 440 / iPhone Duo 520 / iPad 600）で組み、CSS の zoom で書き出す寸法に合わせる。
+  transform: scale と違い、拡大後の寸法で描き直すので文字がにじまない。
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+  /* 色は Discord のダークテーマに合わせる */
+  :root {
+    --chat: #313338;
+    --divider: #26272b;
+    --text: #f2f3f5;
+    --text-3: #949ba4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--chat); }
+  body { color: var(--text); font-family: "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  .stage { position: relative; overflow: hidden; background: var(--chat); }
+  .channel { position: absolute; left: 0; right: 0; top: 0; height: 56px; padding: 0 22px; border-bottom: 1px solid var(--divider);
+    display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; }
+  .channel .hash { font-size: 24px; font-weight: 500; color: #80848e; }
+
+  /* 見出しの代わりにするメンバーの会話。UI の書体に近い BIZ UDPGothic で、飾らずに大きくする */
+  .talk { position: absolute; top: 80px; left: 0; right: 0; display: flex; flex-direction: column; gap: 22px; font-family: "BIZ UDPGothic", "Hiragino Sans", sans-serif; }
+  .message { display: flex; gap: 14px; padding: 0 22px; }
+  .avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 19px; }
+  .author { font-size: 17px; font-weight: 700; }
+  .author .time { font-family: "Noto Sans JP", "Hiragino Sans", sans-serif; font-size: 12px; font-weight: 400; color: var(--text-3); margin-left: 6px; }
+  .line { margin-top: 4px; font-weight: 700; line-height: 1.32; color: var(--text); }
+
+  /* 端末は飾らず、黒い縁だけにする */
+  .device { position: absolute; left: 50%; transform: translateX(-50%); background: #0b0b0c; box-shadow: 0 0 0 1px #45474d; }
+  .device div { width: 100%; height: 100%; overflow: hidden; }
+  .device img { display: block; width: 100%; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<script>
+  const params = new URLSearchParams(location.search);
+  const scene = params.get("scene") || "send";
+  const file = params.get("file") || "01_send";
+  const lang = params.get("lang") || "ja";
+  document.documentElement.lang = lang;
+
+  // 答える人。6 枚とも同じにして、アプリを使っている人の話として通す
+  const MIA = { color: "#e06c75", name: "#f2a7ad" };
+  const copy = {
+    ja: {
+      mia: { name: "みさき", initial: "み" },
+      time: ["今日 21:02", "今日 21:03"],
+      scenes: {
+        "send": { channel: "ゲーム部-お知らせ", asker: ["けんた", "け", "#a78bdb", "#c9b6f2"],
+          ask: "このBotって<br>誰が入れたの？", answer: "入れてないよ。<br>スマホから送ってる 📱" },
+        "embed": { channel: "ゲーム部-お知らせ", asker: ["そうた", "そ", "#3ba55c", "#9fe0b4"],
+          ask: "集合も場所も<br>ひと目でわかる", answer: "埋め込みで<br>並べてみた" },
+        "saved-urls": { channel: "開発チーム-デプロイ通知", asker: ["ゆうき", "ゆ", "#4f9ad8", "#a9cff0"],
+          ask: "ゲーム部の告知も<br>このアプリから？", answer: "送り先を保存して<br>切り替えてるだけ" },
+        "templates": { channel: "サーバー管理", asker: ["はると", "は", "#d4a23c", "#f0d08f"],
+          ask: "メンテの告知、<br>毎回同じ文だね", answer: "テンプレから<br>呼び出してる" },
+        "broadcast": { channel: "ゲーム部-レイド募集", asker: ["りく", "り", "#2d9c9c", "#94d9d9"],
+          ask: "3つのチャンネルに<br>同時に届いた", answer: "一斉送信で<br>1回で済ませた" },
+        "webhook-help": { channel: "テニス部-連絡", asker: ["あおい", "あ", "#c0779f", "#e9b9d3"],
+          ask: "Botって作るの<br>難しくない？", answer: "URL を貼るだけ。<br>コードは書いてない" },
+      },
+    },
+    en: {
+      mia: { name: "Mia", initial: "M" },
+      time: ["Today at 9:02 PM", "Today at 9:03 PM"],
+      scenes: {
+        "send": { channel: "announcements", asker: ["Alex", "A", "#a78bdb", "#c9b6f2"],
+          ask: "Wait, who added<br>this bot?", answer: "Nobody. I post it<br>from my phone 📱" },
+        "embed": { channel: "announcements", asker: ["Sam", "S", "#3ba55c", "#9fe0b4"],
+          ask: "Time and place<br>at a glance. Nice.", answer: "It's an embed.<br>Made it on my phone." },
+        "saved-urls": { channel: "deploys", asker: ["Yuki", "Y", "#4f9ad8", "#a9cff0"],
+          ask: "The Gaming Club posts<br>come from this too?", answer: "Yep. I just switch<br>saved webhooks." },
+        "templates": { channel: "server-admin", asker: ["Haru", "H", "#d4a23c", "#f0d08f"],
+          ask: "Same maintenance<br>notice every week?", answer: "It's a template.<br>One tap." },
+        "broadcast": { channel: "raids", asker: ["Jordan", "J", "#2d9c9c", "#94d9d9"],
+          ask: "It hit three<br>channels at once.", answer: "One broadcast.<br>Sent once." },
+        "webhook-help": { channel: "club-news", asker: ["Aoi", "A", "#c0779f", "#e9b9d3"],
+          ask: "Isn't making a bot<br>hard?", answer: "I just pasted a URL.<br>No code." },
+      },
+    },
+  }[lang];
+  const content = copy && copy.scenes[scene];
+  // 文言の無い言語・画面は、崩れた画像を書き出さないようここで止める（compose_screenshots.sh でも先に確かめる）
+  if (!content) {
+    document.body.innerHTML = `<h1 style="color:red;font-size:120px">No copy for "${lang}" / "${scene}"</h1>`;
+    throw new Error(`frame.html に ${lang} / ${scene} の文言がありません`);
+  }
+
+  // 書き出す寸法。ウィンドウの寸法に頼らず、compose_screenshots.sh から引数で受け取る（直接開いたときはウィンドウの寸法）
+  const width = Number(params.get("width")) || innerWidth;
+  const height = Number(params.get("height")) || innerHeight;
+  // 表示サイズは縦横比で見分ける。iPhone（0.46 前後）/ iPhone Duo（0.69）/ iPad（0.75）
+  const aspect = width / height;
+  const layout = aspect < 0.55
+    ? { base: 440, device: 336, bezel: 9, radius: 50, line: 31 }
+    : aspect < 0.72
+      ? { base: 520, device: 420, bezel: 10, radius: 40, line: 33 }
+      : { base: 600, device: 480, bezel: 14, radius: 34, line: 35 };
+  const baseHeight = layout.base / aspect;
+
+  const stage = document.getElementById("stage");
+  stage.style.width = `${layout.base}px`;
+  stage.style.height = `${baseHeight}px`;
+  stage.style.zoom = width / layout.base;
+  const add = (html) => { stage.insertAdjacentHTML("beforeend", html); return stage.lastElementChild; };
+
+  add(`<div class="channel"><span class="hash">#</span>${content.channel}</div>`);
+
+  const [askerName, askerInitial, askerColor, askerNameColor] = content.asker;
+  const message = (name, initial, color, nameColor, time, line) =>
+    `<div class="message"><div class="avatar" style="background:${color}">${initial}</div>` +
+    `<div><div class="author" style="color:${nameColor}">${name}<span class="time">${time}</span></div>` +
+    `<div class="line" style="font-size:${layout.line}px">${line}</div></div></div>`;
+  const talk = add(`<div class="talk">` +
+    message(askerName, askerInitial, askerColor, askerNameColor, copy.time[0], content.ask) +
+    message(copy.mia.name, copy.mia.initial, MIA.color, MIA.name, copy.time[1], content.answer) +
+    `</div>`);
+
+  // 端末は会話の下から置き、下端からはみ出させる。画面の縦横比は書き出す寸法と同じ（撮った画面と同じ寸法で書き出すため）
+  const deviceTop = 80 + talk.offsetHeight + 32;
+  const screenHeight = (layout.device - layout.bezel * 2) / aspect;
+  add(`<div class="device" style="top:${deviceTop}px;width:${layout.device}px;height:${screenHeight + layout.bezel * 2}px;` +
+    `padding:${layout.bezel}px;border-radius:${layout.radius}px">` +
+    `<div style="border-radius:${layout.radius - layout.bezel + 1}px"><img src="screens/${lang}/${file}.png" alt=""></div></div>`);
+</script>
+</body>
+</html>
