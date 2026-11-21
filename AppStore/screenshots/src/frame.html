@@ -137,11 +137,16 @@
     `</div>`);
 
   // 端末は会話の下から置き、下端からはみ出させる。画面の縦横比は書き出す寸法と同じ（撮った画面と同じ寸法で書き出すため）
-  const deviceTop = 80 + talk.offsetHeight + 32;
-  const screenHeight = (layout.device - layout.bezel * 2) / aspect;
-  add(`<div class="device" style="top:${deviceTop}px;width:${layout.device}px;height:${screenHeight + layout.bezel * 2}px;` +
-    `padding:${layout.bezel}px;border-radius:${layout.radius}px">` +
-    `<div style="border-radius:${layout.radius - layout.bezel + 1}px"><img src="screens/${lang}/${file}.png" alt=""></div></div>`);
+  // 会話の高さは BIZ UDPGothic の読み込み後に測る。代わりの書体で測ると、読み込み後に会話と端末の間隔がずれる。
+  // Google Fonts は文字の範囲ごとに分けて配るので、会話に出る文字を渡して、要る範囲をすべて読み込ませる
+  const placeDevice = () => {
+    const deviceTop = 80 + talk.offsetHeight + 32;
+    const screenHeight = (layout.device - layout.bezel * 2) / aspect;
+    add(`<div class="device" style="top:${deviceTop}px;width:${layout.device}px;height:${screenHeight + layout.bezel * 2}px;` +
+      `padding:${layout.bezel}px;border-radius:${layout.radius}px">` +
+      `<div style="border-radius:${layout.radius - layout.bezel + 1}px"><img src="screens/${lang}/${file}.png" alt=""></div></div>`);
+  };
+  document.fonts.load(`700 ${layout.line}px "BIZ UDPGothic"`, talk.textContent).finally(placeDevice);
 </script>
 </body>
 </html>
