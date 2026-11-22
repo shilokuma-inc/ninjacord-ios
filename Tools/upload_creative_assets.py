@@ -299,6 +299,7 @@ def main() -> int:
             "App Store Connect でこれらの言語を追加してから実行してください。"
         )
 
+    uploaded_at = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
     for language in targets:
         localization_id = localizations[language.store_locale]
         print(f"  {language.language} → {language.store_locale}")
@@ -311,8 +312,10 @@ def main() -> int:
                 print(f"    {placement_type}: {path.name} を配置する予定（既存の配置 {len(existing)} 件を外す）")
                 continue
 
+            # 参照名は App Asset Library の中で重ならないようにする。同じバージョンに 2 回目を反映すると
+            # 「名前 言語 バージョン」だけでは前の画像と同じ名前になり、409（DUPLICATE）で止まるので、上げた日時も付ける
             reference_name = (f"{asset.get('referenceName', placement_type)} "
-                              f"{language.language} {version_string}")
+                              f"{language.language} {version_string} {uploaded_at}")
             image = library.upload_image(path, reference_name)
             spec = ref_data.image_spec(image.get("specId") or "") or {}
             groups = ref_data.groups_for_spec(placement_type, image.get("specId") or "")
