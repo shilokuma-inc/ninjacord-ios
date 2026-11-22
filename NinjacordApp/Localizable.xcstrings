@@ -196,6 +196,22 @@
         }
       }
     },
+    "Discordで「ウェブフックURLをコピー」したURLを貼り付けます。使ったあとで保存することもできます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste the URL from \"Copy Webhook URL\" in Discord. You can save it after using it."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordで「ウェブフックURLをコピー」したURLを貼り付けます。使ったあとで保存することもできます"
+          }
+        }
+      }
+    },
     "Discordでの見え方" : {
       "localizations" : {
         "en" : {
@@ -602,22 +618,6 @@
         }
       }
     },
-    "URLを保存" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save URL"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URLを保存"
-          }
-        }
-      }
-    },
     "URLを入れてください" : {
       "localizations" : {
         "en" : {
@@ -970,6 +970,22 @@
         }
       }
     },
+    "このURLを使う" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use This URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このURLを使う"
+          }
+        }
+      }
+    },
     "このまま送信" : {
       "localizations" : {
         "en" : {
@@ -1110,6 +1126,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "よく使うURLは保存"
+          }
+        }
+      }
+    },
+    "よく送るWebhook URLを名前を付けて保存すると、次からは名前で選べます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save the webhook URLs you post to often with a name, and pick them by name next time."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "よく送るWebhook URLを名前を付けて保存すると、次からは名前で選べます"
           }
         }
       }
@@ -2218,22 +2250,6 @@
         }
       }
     },
-    "保存されたURLはありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No saved URLs"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存されたURLはありません"
-          }
-        }
-      }
-    },
     "保存されたURLはありません。設定の「URL設定」か、送信画面のブックマークから保存してください" : {
       "localizations" : {
         "en" : {
@@ -2262,6 +2278,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存されたテンプレートはありません"
+          }
+        }
+      }
+    },
+    "保存した宛先" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved Destinations"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存した宛先"
+          }
+        }
+      }
+    },
+    "保存した宛先はありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No saved destinations"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存した宛先はありません"
+          }
+        }
+      }
+    },
+    "保存していないURLを使う" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use an Unsaved URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存していないURLを使う"
           }
         }
       }
@@ -2554,6 +2618,22 @@
         }
       }
     },
+    "名前を変更" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前を変更"
+          }
+        }
+      }
+    },
     "名前・アイコン・添付した画像は、Discordの仕様で変更できません" : {
       "localizations" : {
         "en" : {
@@ -2794,6 +2874,22 @@
         }
       }
     },
+    "宛先を選ぶ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先を選ぶ"
+          }
+        }
+      }
+    },
     "展開済み" : {
       "localizations" : {
         "en" : {
@@ -2806,6 +2902,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "展開済み"
+          }
+        }
+      }
+    },
+    "左にスワイプすると、名前の変更と削除ができます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swipe left to rename or delete."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "左にスワイプすると、名前の変更と削除ができます"
           }
         }
       }

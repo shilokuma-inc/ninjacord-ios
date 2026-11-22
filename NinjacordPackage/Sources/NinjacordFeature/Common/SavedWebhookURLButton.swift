@@ -25,14 +25,11 @@ struct SavedWebhookURLButton: View {
         .accessibilityLabel("保存済みURL")
         .sheet(isPresented: $isPresented) {
             NavigationStack {
-                SavedWebhookURLListView(
-                    onSelect: { item in
-                        url = item.url
-                        isPresented = false
-                    },
-                    initialURL: url
-                )
-                .navigationTitle("保存済みURL")
+                SavedDestinationListView(mode: .select(currentURL: url) { selectedURL in
+                    url = selectedURL
+                    isPresented = false
+                })
+                .navigationTitle("宛先を選ぶ")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
