@@ -269,11 +269,9 @@ struct PostedMessageListView: View {
         .frame(maxWidth: 480.0)
     }
 
-    /// 宛先の表示名。保存した Webhook URL なら付けた名前、そうでなければ URL（送信履歴の一覧と同じ）
+    /// 宛先の表示名。保存した宛先なら付けた名前、そうでなければトークンを出さない短い表示（Issue #674）
     private func destinationName(of entry: SendHistoryEntry) -> String {
-        let url = entry.url.trimmingCharacters(in: .whitespacesAndNewlines)
-        let saved = urlStore.items.first { $0.url.trimmingCharacters(in: .whitespacesAndNewlines) == url }
-        return saved?.name ?? entry.url
+        urlStore.displayName(for: entry.url)
     }
 }
 
@@ -301,7 +299,6 @@ private struct PostedMessageRow: View {
                     .foregroundStyle(Color.appTextPrimary)
                     .lineLimit(2)
 
-                // URL の末尾はトークンなので、先頭（どの Webhook か）が見えるよう末尾を省略する。
                 // Label だと List の中でアイコンと文字の間が広く空くので、HStack で詰める
                 HStack(spacing: 4.0) {
                     Image(systemName: "number")

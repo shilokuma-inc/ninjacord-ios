@@ -2266,22 +2266,6 @@
         }
       }
     },
-    "保存されたURLはありません。設定の「URL設定」か、送信画面のブックマークから保存してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No saved URLs. Save one from \"URL Settings\" in Settings or the bookmark on the send screen."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存されたURLはありません。設定の「URL設定」か、送信画面のブックマークから保存してください"
-          }
-        }
-      }
-    },
     "保存されたテンプレートはありません" : {
       "localizations" : {
         "en" : {
@@ -2342,6 +2326,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存した宛先はありません"
+          }
+        }
+      }
+    },
+    "保存した宛先はありません。送信画面の「宛先」か、設定の「保存した宛先」から保存してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No saved destinations. Save one from Destination on the Sending tab, or from Saved Destinations in the Setting tab."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存した宛先はありません。送信画面の「宛先」か、設定の「保存した宛先」から保存してください"
           }
         }
       }
