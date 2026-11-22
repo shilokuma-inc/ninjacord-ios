@@ -250,25 +250,19 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
-    /// 宛先: Webhook URL と、URL を選ぶ・調べるボタン、一斉送信
+    /// 宛先: 今の宛先を名前とアイコンで示すカード（タップで選ぶ）と、URL の調べ方、一斉送信。
+    /// 長い URL は入り切らず見分けられないので、URL の入力欄は置かない（Issue #674）
     private var destinationSection: some View {
         SendMessageSection(title: "宛先") {
             if viewModel.broadcastTargets.isEmpty {
-                // 見出しの分だけ高くなるので、横のボタンは入力欄の中央にそろえる
-                HStack(alignment: .textFieldCenter) {
-                    ClearableIconTextField(
-                        icon: MessagePartIcon(part: .destination),
-                        placeholder: "URLを入れてください",
-                        text: $viewModel.inputURL,
-                        title: "Webhook URL"
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
-                    }
-
-                    WebhookURLHelpButton(url: $viewModel.inputURL)
-
-                    SavedWebhookURLButton(url: $viewModel.inputURL)
+                DestinationCard(
+                    url: $viewModel.inputURL,
+                    profile: webhookProfileStore.profile(for: viewModel.inputURL)
+                )
+                // カードに Webhook の名前とアイコンを出すため、宛先が変わったら取得する
+                .task(id: viewModel.inputURL) {
+                    guard !ScreenshotDemo.isEnabled else { return }
+                    await webhookProfileStore.load(for: viewModel.inputURL)
                 }
             } else {
                 broadcastTargetsRow

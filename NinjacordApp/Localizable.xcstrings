@@ -1034,6 +1034,22 @@
         }
       }
     },
+    "この宛先を保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save This Destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この宛先を保存"
+          }
+        }
+      }
+    },
     "すべて削除" : {
       "localizations" : {
         "en" : {
@@ -2298,6 +2314,22 @@
         }
       }
     },
+    "保存した宛先から選ぶか、Webhook URLを貼り付けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a saved destination or paste a webhook URL."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存した宛先から選ぶか、Webhook URLを貼り付けます"
+          }
+        }
+      }
+    },
     "保存した宛先はありません" : {
       "localizations" : {
         "en" : {
@@ -2330,18 +2362,18 @@
         }
       }
     },
-    "保存済みURL" : {
+    "保存していない宛先" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saved URLs"
+            "value" : "Unsaved destination"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存済みURL"
+            "value" : "保存していない宛先"
           }
         }
       }
@@ -2886,6 +2918,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "宛先を選ぶ"
+          }
+        }
+      }
+    },
+    "宛先を選ぶ画面を開きます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the destination picker."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先を選ぶ画面を開きます"
+          }
+        }
+      }
+    },
+    "宛先を選んでください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先を選んでください"
           }
         }
       }
