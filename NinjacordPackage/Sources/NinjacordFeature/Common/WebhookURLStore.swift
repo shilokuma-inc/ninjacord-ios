@@ -46,8 +46,12 @@ final class WebhookURLStore: ObservableObject {
         return item
     }
 
+    /// 表示中の一覧の位置で消す。位置は表示中の一覧のものなので、先に消す宛先を決めてから読み直して消す
+    /// （別の画面で覚えた Webhook の名前などを、表示中の古い一覧で上書きしないように）
     func remove(at offsets: IndexSet) {
-        items.remove(atOffsets: offsets)
+        let ids = Set(offsets.map { items[$0].id })
+        reload()
+        items.removeAll { ids.contains($0.id) }
         save()
     }
 
@@ -63,9 +67,16 @@ final class WebhookURLStore: ObservableObject {
         update(id: id) { $0.name = name }
     }
 
-    /// 一覧の並び順を変える（送信画面の宛先の一覧もこの順に並ぶ）
+    /// 一覧の並び順を変える（送信画面の宛先の一覧もこの順に並ぶ）。
+    /// 位置は表示中の一覧のものなので、表示中の一覧で並べ替えた順番（ID）を求めてから読み直し、最新の内容をその順に並べる。
+    /// 表示中の一覧に無い宛先（別の画面で足されたもの）は後ろに残す
     func move(fromOffsets source: IndexSet, toOffset destination: Int) {
-        items.move(fromOffsets: source, toOffset: destination)
+        var ordered = items
+        ordered.move(fromOffsets: source, toOffset: destination)
+        let order = ordered.map(\.id)
+        reload()
+        let latest = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
+        items = order.compactMap { latest[$0] } + items.filter { !order.contains($0.id) }
         save()
     }
 

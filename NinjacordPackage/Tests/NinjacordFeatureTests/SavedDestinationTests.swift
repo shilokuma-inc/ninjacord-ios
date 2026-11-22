@@ -100,6 +100,25 @@ final class SavedDestinationTests {
         #expect(WebhookURLStore(userDefaults: userDefaults).items.map(\.name) == ["C", "A", "B"])
     }
 
+    @Test("並び替え・削除では、別の画面のストアが覚えた Webhook の名前を、表示中の古い一覧で上書きしない")
+    func moveAndRemoveKeepOtherStoreChanges() throws {
+        let first = store.add(name: "A", url: "https://discord.com/api/webhooks/1/a")
+        store.add(name: "B", url: "https://discord.com/api/webhooks/2/b")
+        store.add(name: "C", url: "https://discord.com/api/webhooks/3/c")
+        // 一覧を開いている間に、送信画面のカードが A の Webhook の名前を覚えた
+        WebhookURLStore(userDefaults: userDefaults).updateProfile(
+            id: first.id,
+            profile: WebhookProfile(name: "作戦Bot", avatarURL: nil)
+        )
+
+        store.move(fromOffsets: IndexSet(integer: 2), toOffset: 0)
+        store.remove(at: IndexSet(integer: 2))
+
+        let items = WebhookURLStore(userDefaults: userDefaults).items
+        #expect(items.map(\.name) == ["C", "A"])
+        #expect(try #require(items.first { $0.id == first.id }).webhookName == "作戦Bot")
+    }
+
     @Test("取得し直した Webhook の名前・アイコンで、覚えている値を書き換える")
     func updateProfile() throws {
         let added = store.add(name: "作戦室", url: "https://discord.com/api/webhooks/1/a")
