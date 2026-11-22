@@ -33,7 +33,11 @@ struct WebhookMessageEditor {
     }
 
     /// 送ったメッセージを削除する。Discord で先に消されていたときも、消すという目的は果たせているので成功にする
-    func delete(webhookURL: String, messageID: String, source: DeleteSource) async -> Result<Void, DiscordWebhookError> {
+    func delete(
+        webhookURL: String,
+        messageID: String,
+        source: DeleteSource
+    ) async -> Result<Void, DiscordWebhookError> {
         guard let url = WebhookMessageEndpoint.messageURL(webhookURL: webhookURL, messageID: messageID) else {
             // 送れた URL と受け取った ID から作るので通常は通らない
             return .failure(.invalidToken)
