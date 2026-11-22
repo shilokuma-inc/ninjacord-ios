@@ -1,3 +1,5 @@
 No account or sign-in is required. To test sending, paste a Discord webhook URL into the "Webhook URL" field on the Sending tab and tap "Send a message!".
 
+New in this version: messages you send can be edited or deleted afterwards. Right after a successful send, tap "Undo" in the confirmation banner to delete the message. To see the list of sent messages, turn on "Save send history" (on the Posted tab or the Setting tab), send a message, and open the Posted tab: swipe a message to delete it, or tap it to edit its text and embed. Deleting is free; editing is part of Ninja Cord Pro, and can also be tried once by watching a rewarded ad.
+
 The App Tracking Transparency prompt appears on first launch, right after the getting-started guide is closed (after Google's consent form in regions where it is required).
