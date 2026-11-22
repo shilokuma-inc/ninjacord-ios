@@ -84,6 +84,13 @@ struct DiscordWebhookClientTests {
         #expect(response.result.failureValue == .unknownWebhook)
     }
 
+    @Test("メッセージが見つからない（10008）なら、404 でも Webhook ではなくメッセージが無いと判定する")
+    func failureUnknownMessage() async {
+        let body = Data(#"{"message": "Unknown Message", "code": 10008}"#.utf8)
+        let (response, _) = await send(returning: .response(statusCode: 404, data: body))
+        #expect(response.result.failureValue == .unknownMessage)
+    }
+
     @Test("通信できなければ、ステータスコードは nil で network")
     func networkError() async {
         let (response, _) = await send(returning: .error(URLError(.notConnectedToInternet)))
@@ -132,6 +139,57 @@ struct DiscordWebhookClientTests {
         let expected = DiscordWebhookRequest(messageEntity: Self.message).parameters
         #expect(payload == NSDictionary(dictionary: expected))
         #expect(parts.file == Self.attachment.data)
+    }
+
+    // MARK: - 送ったメッセージの編集・削除
+
+    @Test("編集は、本文と埋め込みの JSON をメッセージの URL に PATCH する")
+    func editRequest() async throws {
+        let messageURL = try #require(URL(string: "https://discord.com/api/webhooks/\(UUID().uuidString)/token/messages/1"))
+        StubURLProtocol.stub(messageURL, returning: .response(statusCode: 200, data: Data(#"{"id": "1"}"#.utf8)))
+        let client = DiscordWebhookClient(session: StubURLProtocol.session)
+        let webhookRequest = DiscordWebhookRequest(messageEntity: Self.message)
+
+        let response = await client.edit(webhookRequest, messageURL: messageURL)
+
+        #expect(response.statusCode == 200)
+        #expect(response.result.isSuccess)
+        let received = try #require(StubURLProtocol.requests(to: messageURL).first)
+        #expect(received.request.url == messageURL)
+        #expect(received.request.httpMethod == "PATCH")
+        #expect(received.request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+        let body = try #require(received.body)
+        let decoded = try #require(try JSONSerialization.jsonObject(with: body) as? NSDictionary)
+        #expect(decoded == NSDictionary(dictionary: webhookRequest.editParameters))
+    }
+
+    @Test("削除は、メッセージの URL に本文なしで DELETE する")
+    func deleteRequest() async throws {
+        let messageURL = try #require(URL(string: "https://discord.com/api/webhooks/\(UUID().uuidString)/token/messages/1"))
+        StubURLProtocol.stub(messageURL, returning: .response(statusCode: 204, data: Data()))
+        let client = DiscordWebhookClient(session: StubURLProtocol.session)
+
+        let response = await client.delete(messageURL: messageURL)
+
+        #expect(response.statusCode == 204)
+        #expect(response.result.isSuccess)
+        let received = try #require(StubURLProtocol.requests(to: messageURL).first)
+        #expect(received.request.url == messageURL)
+        #expect(received.request.httpMethod == "DELETE")
+        #expect(received.body == nil)
+    }
+
+    @Test("編集・削除でも、2xx 以外は原因を判定して失敗にする")
+    func editAndDeleteFailure() async throws {
+        let messageURL = try #require(URL(string: "https://discord.com/api/webhooks/\(UUID().uuidString)/token/messages/1"))
+        StubURLProtocol.stub(messageURL, returning: .response(statusCode: 429, data: Data()))
+        let client = DiscordWebhookClient(session: StubURLProtocol.session)
+
+        let edited = await client.edit(DiscordWebhookRequest(messageEntity: Self.message), messageURL: messageURL)
+        let deleted = await client.delete(messageURL: messageURL)
+
+        #expect(edited.result.failureValue == .rateLimited)
+        #expect(deleted.result.failureValue == .rateLimited)
     }
 
     @Test("multipart の境界は送るたびに作り直す")

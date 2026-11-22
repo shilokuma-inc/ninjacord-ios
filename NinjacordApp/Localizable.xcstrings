@@ -1674,6 +1674,22 @@
         }
       }
     },
+    "メッセージが見つかりません。Discordで削除された可能性があります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message not found. It may have been deleted in Discord."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージが見つかりません。Discordで削除された可能性があります"
+          }
+        }
+      }
+    },
     "メッセージの本文" : {
       "localizations" : {
         "en" : {

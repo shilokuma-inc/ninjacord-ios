@@ -34,6 +34,28 @@ struct DiscordWebhookClient {
         }
     }
 
+    /// 送ったメッセージの本文と埋め込みを書き換える（PATCH）。URL は `WebhookMessageEndpoint.messageURL` で作る。
+    /// 送れるのは同じ Webhook で送ったメッセージだけ
+    /// https://discord.com/developers/docs/resources/webhook#edit-webhook-message
+    func edit(_ webhookRequest: DiscordWebhookRequest, messageURL: URL) async -> Response<Void> {
+        guard let body = webhookRequest.editJSONBody else {
+            return Response(statusCode: nil, result: .failure(.unknown(statusCode: nil)))
+        }
+        var request = URLRequest(url: messageURL)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = body
+        return await perform(request) { _ in () }
+    }
+
+    /// 送ったメッセージを削除する（DELETE）。成功すると 204 が返る。URL は `WebhookMessageEndpoint.messageURL` で作る
+    /// https://discord.com/developers/docs/resources/webhook#delete-webhook-message
+    func delete(messageURL: URL) async -> Response<Void> {
+        var request = URLRequest(url: messageURL)
+        request.httpMethod = "DELETE"
+        return await perform(request) { _ in () }
+    }
+
     /// 送る URLRequest を組み立てる。画像を添付するなら multipart/form-data、しなければ JSON で送る。
     /// 送る中身（パラメータの JSON）を作れなければ nil
     func makeURLRequest(_ webhookRequest: DiscordWebhookRequest, url: URL, boundary: String) -> URLRequest? {

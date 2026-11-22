@@ -219,6 +219,37 @@ struct DiscordWebhookRequestTests {
         #expect(embedParameters(of: withoutTimestamp)?["timestamp"] == nil)
     }
 
+    // MARK: - 送ったメッセージの編集
+
+    @Test("編集では本文と埋め込みだけを送り、名前・アイコン・添付は送らない（Discord の仕様で変えられない・画像は残す）")
+    func editParameters() {
+        let message = MessageEntity.make(
+            username: "レイド告知Bot",
+            avatarURL: "https://example.com/avatar.png",
+            content: "今夜21:30 レイド開始（変更）",
+            embed: MessageEmbedEntity(title: "お知らせ", includesTimestamp: true)
+        )
+        let parameters = request(message, attachment: .sample).editParameters.dictionary
+        #expect(parameters == [
+            "content": "今夜21:30 レイド開始（変更）",
+            // 送信日時は最初に送った日時のままにする
+            "embeds": [["title": "お知らせ", "timestamp": "2024-04-28T12:34:56Z"]]
+        ])
+    }
+
+    @Test("消した本文は null、消した埋め込みは空の配列で送り、Discord でも消す。初期文言には置き換えない")
+    func editParametersClearsContentAndEmbeds() {
+        let parameters = request(.make()).editParameters.dictionary
+        #expect(parameters == ["content": NSNull(), "embeds": [Any]()])
+    }
+
+    @Test("編集の JSON の本文は、パラメータを書き出したもの")
+    func editJSONBody() throws {
+        let body = try #require(request(.make(content: "本文")).editJSONBody)
+        let decoded = try #require(try JSONSerialization.jsonObject(with: body) as? NSDictionary)
+        #expect(decoded == ["content": "本文", "embeds": [Any]()])
+    }
+
     // MARK: - JSON の本文
 
     @Test("JSON の本文は、パラメータを prettyPrinted で書き出したもの")
