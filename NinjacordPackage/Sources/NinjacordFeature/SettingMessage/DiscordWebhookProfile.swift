@@ -14,6 +14,10 @@ struct DiscordWebhookURL: Equatable {
 
     /// 入力された URL からクエリとフラグメントを除いたもの。Webhook の取得（GET）に使う
     let url: URL
+    /// Webhook の ID（URL の `/webhooks/{id}/{token}` の id）。トークンと違い、画面に出してよい
+    let webhookID: String
+    /// `?thread_id=` で送り先にしたスレッドの ID。スレッドに送らない URL なら nil
+    let threadID: String?
 
     /// 前後の空白を除いて判定する。Webhook URL の形でなければ nil
     init?(string: String) {
@@ -22,13 +26,50 @@ struct DiscordWebhookURL: Equatable {
               var components = URLComponents(string: trimmed) else {
             return nil
         }
+        let threadID = components.queryItems?.first { $0.name == "thread_id" }?.value
         // `?thread_id=` や `?wait=true` は送信のためのもので、取得には使わない
         components.query = nil
         components.fragment = nil
-        guard let url = components.url else {
+        let pathComponents = components.path.split(separator: "/")
+        guard let url = components.url,
+              let webhooksIndex = pathComponents.firstIndex(of: "webhooks"),
+              pathComponents.indices.contains(webhooksIndex + 1) else {
             return nil
         }
         self.url = url
+        self.webhookID = String(pathComponents[webhooksIndex + 1])
+        self.threadID = threadID.flatMap { $0.isEmpty ? nil : $0 }
+    }
+}
+
+extension DiscordWebhookURL {
+    /// 同じ宛先かを見分けるキー。同じ Webhook でも、スレッドが違えば別の宛先にする
+    var destinationKey: WebhookDestinationKey {
+        WebhookDestinationKey(webhookID: webhookID, threadID: threadID)
+    }
+
+    /// トークンを出さずに Webhook を示す短い表示（ID の末尾 4 桁）。保存していない宛先の見分けに使う
+    var maskedDescription: String {
+        "Webhook …\(webhookID.suffix(4))"
+    }
+}
+
+/// 宛先（Webhook とスレッド）を見分けるキー。URL の書き方（クエリの順番・前後の空白・`discordapp.com` など）が違っても同じになる
+struct WebhookDestinationKey: Hashable {
+    let webhookID: String
+    let threadID: String?
+
+    /// 入力された文字列が Webhook URL の形でなければ nil
+    init?(urlString: String) {
+        guard let webhookURL = DiscordWebhookURL(string: urlString) else {
+            return nil
+        }
+        self = webhookURL.destinationKey
+    }
+
+    init(webhookID: String, threadID: String?) {
+        self.webhookID = webhookID
+        self.threadID = threadID
     }
 }
 

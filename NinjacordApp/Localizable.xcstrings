@@ -2026,6 +2026,22 @@
         }
       }
     },
+    "不明な宛先" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明な宛先"
+          }
+        }
+      }
+    },
     "今の入力内容を保存します（送信先のURLは含みません）" : {
       "localizations" : {
         "en" : {
