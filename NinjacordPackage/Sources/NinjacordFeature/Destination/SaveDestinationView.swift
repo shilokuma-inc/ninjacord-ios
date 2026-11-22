@@ -8,7 +8,7 @@ import SwiftUI
 /// 宛先を保存する画面。貼り付けた Webhook URL をその場で確かめ、Webhook のアイコンと名前を見せる（Issue #674）
 struct SaveDestinationView: View {
     /// 保存したとき（呼び出し元で、保存した宛先を選んだ状態にするなど）
-    var onSaved: (SavedWebhookURL) -> Void = { _ in }
+    let onSaved: (SavedWebhookURL) -> Void
 
     @StateObject private var model: SaveDestinationModel
     @Environment(\.dismiss) private var dismiss

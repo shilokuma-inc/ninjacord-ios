@@ -89,11 +89,13 @@ struct DestinationCard: View {
     }
 
     var body: some View {
+        // 保存した宛先との照合は正規表現を使うので、body の中では 1 回だけ求める
+        let display = display
         VStack(alignment: .leading, spacing: 4.0) {
             Button {
                 isPickerPresented = true
             } label: {
-                cardContent
+                cardContent(display)
             }
             .buttonStyle(.plain)
             .accessibilityHint("宛先を選ぶ画面を開きます")
@@ -135,15 +137,24 @@ struct DestinationCard: View {
         }
         .onAppear {
             store.reload()
+            rememberProfile()
         }
-        .onChange(of: profile) { newProfile in
-            // 保存した宛先なら、取得し直した Webhook の名前・アイコンを覚えておく（変わっていなければ何もしない）
-            guard let newProfile, let item = store.item(matching: url) else { return }
-            store.updateProfile(id: item.id, profile: newProfile)
+        .onChange(of: profile) { _ in
+            rememberProfile()
+        }
+        .onChange(of: url) { _ in
+            // 同じ Webhook でスレッドだけ違う宛先に替えたときは、取得したもの（profile）が変わらないので、ここでも覚える
+            rememberProfile()
         }
     }
 
-    private var cardContent: some View {
+    /// 保存した宛先なら、取得した Webhook の名前・アイコンを覚えておく（変わっていなければ何もしない）
+    private func rememberProfile() {
+        guard let profile, let item = store.item(matching: url) else { return }
+        store.updateProfile(id: item.id, profile: profile)
+    }
+
+    private func cardContent(_ display: DestinationDisplay) -> some View {
         HStack(spacing: 12.0) {
             if display.state == .empty {
                 MessagePartIcon(part: .destination)
@@ -182,5 +193,7 @@ struct DestinationCard: View {
         .contentShape(RoundedRectangle(cornerRadius: 16.0, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("宛先") + Text(verbatim: ", ") + Text(display.title))
+        // ラベルで上書きすると 2 行目（Webhook の名前・形式の誤り）が読まれないので、値として読ませる
+        .accessibilityValue(Text(display.subtitle ?? ""))
     }
 }

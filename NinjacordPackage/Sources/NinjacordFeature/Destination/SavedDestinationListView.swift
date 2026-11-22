@@ -123,8 +123,10 @@ struct SavedDestinationListView: View {
                 .padding(.vertical, 4.0)
                 .listRowBackground(Color.appSurface)
             } else {
+                // 今の宛先との照合は正規表現を使うので、行ごとではなく 1 回だけ求める
+                let selectedID = selectedItemID
                 ForEach(store.items) { item in
-                    row(item)
+                    row(item, isSelected: item.id == selectedID)
                         .listRowBackground(Color.appSurface)
                 }
                 .onMove { source, destination in
@@ -150,14 +152,19 @@ struct SavedDestinationListView: View {
         }
     }
 
-    @ViewBuilder
-    private func row(_ item: SavedWebhookURL) -> some View {
+    /// 今の宛先として選んでいる宛先。送信画面から開いたときだけ
+    private var selectedItemID: SavedWebhookURL.ID? {
+        guard case .select(let currentURL, _) = mode else { return nil }
+        return store.item(matching: currentURL)?.id
+    }
+
+    private func row(_ item: SavedWebhookURL, isSelected: Bool) -> some View {
         Group {
-            if case .select(let currentURL, let onSelect) = mode {
+            if case .select(_, let onSelect) = mode {
                 Button {
                     onSelect(item.url)
                 } label: {
-                    DestinationRow(item: item, isSelected: store.item(matching: currentURL)?.id == item.id)
+                    DestinationRow(item: item, isSelected: isSelected)
                 }
             } else {
                 DestinationRow(item: item)

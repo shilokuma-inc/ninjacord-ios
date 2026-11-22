@@ -11,6 +11,8 @@ struct WebhookAvatarView: View {
     var size: CGFloat = 36.0
 
     @State private var image: UIImage?
+    /// 読み込んだ画像の URL。表示し直したときに同じ URL なら読み直さない（既定のアイコンに戻ってちらつかないように）
+    @State private var loadedURL: String?
 
     /// 一覧の行ごとに読むので、入力が止まるのを待つ遅延は入れない
     private static let loader = AvatarImageLoader(delay: .zero)
@@ -35,10 +37,13 @@ struct WebhookAvatarView: View {
         .clipShape(Circle())
         .accessibilityHidden(true)
         .task(id: url) {
+            guard url != loadedURL else { return }
             image = nil
+            loadedURL = nil
             // 撮影モードではデモの URL（読めない値）を読みに行かない
             guard let url, !url.isEmpty, !ScreenshotDemo.isEnabled else { return }
             image = await Self.loader.image(from: url)
+            loadedURL = url
         }
     }
 }

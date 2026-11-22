@@ -51,7 +51,9 @@ final class WebhookURLStore: ObservableObject {
         save()
     }
 
+    /// 別の画面のストアが書き換えた分（覚えた Webhook の名前など）を消さないよう、読み直してから消す
     func remove(id: SavedWebhookURL.ID) {
+        reload()
         items.removeAll { $0.id == id }
         save()
     }
