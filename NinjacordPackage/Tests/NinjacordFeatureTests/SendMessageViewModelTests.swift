@@ -36,6 +36,10 @@ final class SendMessageViewModelTests {
 
     private static let noContent = StubURLProtocol.Stub.response(statusCode: 204, data: Data())
     private static let notFound = StubURLProtocol.Stub.response(statusCode: 404, data: Data())
+    /// `wait=true` で送ったときのように、作ったメッセージを返す
+    private static func sentMessage(id: String) -> StubURLProtocol.Stub {
+        .response(statusCode: 200, data: Data(#"{"id": "\#(id)", "channel_id": "42"}"#.utf8))
+    }
     private static let attachment = ImageAttachment(
         data: Data([0x89, 0x50, 0x4E, 0x47]),
         fileName: "image.png",
@@ -171,6 +175,21 @@ final class SendMessageViewModelTests {
         #expect(StubURLProtocol.requests(to: url).count == 1)
     }
 
+    @Test("Discord が返したメッセージの ID と画像の添付の有無を送信履歴に残し、「投稿済み」に出す")
+    func sendRecordsMessageID() async throws {
+        let url = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "1234567890"))
+        viewModel.inputURL = url.absoluteString
+        viewModel.inputContext = "スクリーンショット"
+        viewModel.attachment = Self.attachment
+
+        await send()
+
+        let entry = try #require(historyStore.items.first)
+        #expect(entry.messageID == "1234567890")
+        #expect(entry.hasAttachment)
+        #expect(historyStore.postedItems.map(\.id) == [entry.id])
+    }
+
     @Test("Pro 限定の項目を使った送信なら、送信後の流れに Pro 機能を使ったと渡す")
     func sendSucceededWithProFeatures() async {
         viewModel.inputURL = StubURLProtocol.makeURL(returning: Self.noContent).absoluteString
@@ -264,6 +283,21 @@ final class SendMessageViewModelTests {
         #expect(historyResults == [true, true])
         // 一斉送信そのものが Pro 機能
         #expect(recorder.events == [.consumeRewardedUnlock])
+    }
+
+    @Test("一斉送信では、宛先ごとに Discord が返したメッセージの ID を送信履歴に残す")
+    func broadcastRecordsMessageIDs() async throws {
+        let first = savedURL("作戦室", returning: Self.sentMessage(id: "111"))
+        let second = savedURL("雑談", returning: Self.notFound)
+        let third = savedURL("告知", returning: Self.sentMessage(id: "333"))
+        viewModel.broadcastTargets = [first, second, third]
+        viewModel.inputContext = "こんにちは"
+
+        await send(isPro: true)
+
+        // 履歴は新しい順なので、後に送った宛先が先頭
+        #expect(historyStore.items.map(\.messageID) == ["333", nil, "111"])
+        #expect(historyStore.postedItems.map(\.url) == [third.url, first.url])
     }
 
     @Test("一斉送信でも、画像を添付していれば宛先ごとに multipart/form-data で送る")

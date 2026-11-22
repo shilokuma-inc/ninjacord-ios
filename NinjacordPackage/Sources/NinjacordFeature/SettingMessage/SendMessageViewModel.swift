@@ -305,8 +305,14 @@ extension SendMessageViewModel {
                 attachment: pendingSend.attachment
             )
             isSending = false
-            // 設定で「送信履歴を保存する」が ON のときだけ記録される
-            historyStore.record(url: url, message: messageEntity, isSuccess: (try? result.get()) != nil)
+            // 設定で「送信履歴を保存する」が ON のときだけ記録される。ID も残し、「投稿済み」から編集・削除できるようにする
+            historyStore.record(
+                url: url,
+                message: messageEntity,
+                isSuccess: (try? result.get()) != nil,
+                messageID: (try? result.get())?.id,
+                hasAttachment: pendingSend.attachment != nil
+            )
             switch result {
             case .success:
                 toast = Toast(style: .success, message: "送信しました")
@@ -335,8 +341,14 @@ extension SendMessageViewModel {
             isSending = false
             let failureCount = results.filter { (try? $0.result.get()) == nil }.count
             for result in results {
-                let isSuccess = (try? result.result.get()) != nil
-                historyStore.record(url: result.url, message: messageEntity, isSuccess: isSuccess)
+                let sentMessage = try? result.result.get()
+                historyStore.record(
+                    url: result.url,
+                    message: messageEntity,
+                    isSuccess: sentMessage != nil,
+                    messageID: sentMessage?.id,
+                    hasAttachment: pendingSend.attachment != nil
+                )
             }
             if failureCount == 0 {
                 toast = Toast(style: .success, message: "\(results.count)件の宛先に送信しました")
