@@ -407,18 +407,18 @@
         }
       }
     },
-    "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します" : {
+    "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します。送ったメッセージは「投稿済み」から編集・削除できます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "When on, the last %lld messages you send are saved only on this device."
+            "value" : "When on, the last %lld messages you send are saved only on this device. You can edit or delete sent messages in the Posted tab."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します"
+            "value" : "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します。送ったメッセージは「投稿済み」から編集・削除できます"
           }
         }
       }
@@ -774,6 +774,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "https:// から始まるWebhook URLを入力してください"
+          }
+        }
+      }
+    },
+    "「投稿済み」のメッセージも、アプリから編集・削除できなくなります。Discordのメッセージは消えません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You will no longer be able to edit or delete messages in the Posted tab from the app. Messages on Discord will not be deleted."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「投稿済み」のメッセージも、アプリから編集・削除できなくなります。Discordのメッセージは消えません"
           }
         }
       }
@@ -2230,6 +2246,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "削除は無料です。編集はNinjacord Pro限定で、広告を見ると1回編集できます"
+          }
+        }
+      }
+    },
+    "削除済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除済み"
           }
         }
       }
