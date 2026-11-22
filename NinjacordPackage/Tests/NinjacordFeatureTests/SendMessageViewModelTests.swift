@@ -331,6 +331,27 @@ final class SendMessageViewModelTests {
         #expect(fixture.haptics.notifications == [true, false])
     }
 
+    @Test("取り消しの削除を待つ間に次の送信が終わったら、そのトーストは上書きしない（送信履歴の削除済みの印は付ける）")
+    func undoSendDoesNotOverwriteNewerToast() async throws {
+        let first = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "789"))
+        let messageURL = try #require(URL(string: first.absoluteString + "/messages/789"))
+        // 削除の応答を遅らせ、次の送信が先に終わるようにする
+        StubURLProtocol.stub(messageURL, returning: .delayed(0.5, Self.noContent))
+        viewModel.inputURL = first.absoluteString
+        viewModel.inputContext = "こんにちは"
+        await send()
+
+        let undo = viewModel.undoSend(url: first.absoluteString, messageID: "789")
+        viewModel.inputURL = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "790")).absoluteString
+        await send()
+        await undo.value
+
+        let toast = try #require(viewModel.toast)
+        #expect(toast.message.testString == "送信しました")
+        #expect(toast.action != nil)
+        #expect(historyStore.items.first { $0.messageID == "789" }?.deletedAt != nil)
+    }
+
     // MARK: - 一斉送信
 
     @Test("一斉送信がすべて届いたら「N件の宛先に送信しました」を出し、宛先ごとに履歴に残す")

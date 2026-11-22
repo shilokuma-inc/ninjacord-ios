@@ -47,6 +47,9 @@ final class SendMessageViewModel: ObservableObject {
     /// 指定した時間だけ待つ。テストでは待たずに、待った時間を記録する
     private let sleep: @MainActor (Duration) async -> Void
 
+    /// 送信の結果のトーストを出すたびに増やす。取り消しの結果を出すときに、その間に別の送信のトーストへ替わっていないかを見る
+    private var sendResultGeneration = 0
+
     /// 何回目の送信成功でレビューを依頼するか
     private static let reviewRequestSendCount = 3
 
@@ -289,11 +292,16 @@ extension SendMessageViewModel {
     /// - Returns: 削除の Task（テストで終わるのを待つため）
     @discardableResult
     func undoSend(url: String, messageID: String) -> Task<Void, Never> {
-        Task {
+        let generation = sendResultGeneration
+        return Task {
             let result = await messageEditor.delete(webhookURL: url, messageID: messageID, source: .toast)
+            if case .success = result {
+                historyStore.markDeleted(messageID: messageID)
+            }
+            // 削除を待つ間に次の送信が終わっていたら、そのトースト（「取り消す」を含む）を上書きしない
+            guard generation == sendResultGeneration else { return }
             switch result {
             case .success:
-                historyStore.markDeleted(messageID: messageID)
                 toast = Toast(style: .success, message: "送信を取り消しました")
                 haptics.playNotification(isSuccess: true)
             case .failure(let error):
@@ -346,6 +354,7 @@ extension SendMessageViewModel {
                         self?.undoSend(url: url, messageID: messageID)
                     }
                 }
+                sendResultGeneration += 1
                 toast = Toast(style: .success, message: "送信しました", action: undoAction)
                 haptics.playNotification(isSuccess: true)
                 await handleSendSucceeded(
@@ -354,6 +363,7 @@ extension SendMessageViewModel {
                     screenActions: screenActions
                 )
             case .failure(let error):
+                sendResultGeneration += 1
                 toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
                 haptics.playNotification(isSuccess: false)
             }
@@ -382,6 +392,7 @@ extension SendMessageViewModel {
                     hasAttachment: pendingSend.attachment != nil
                 )
             }
+            sendResultGeneration += 1
             if failureCount == 0 {
                 toast = Toast(style: .success, message: "\(results.count)件の宛先に送信しました")
             } else {

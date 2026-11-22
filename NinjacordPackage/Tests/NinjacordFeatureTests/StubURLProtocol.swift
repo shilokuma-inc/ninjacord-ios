@@ -9,9 +9,11 @@ import Foundation
 /// テストごとに `makeURL(returning:)` で別の URL を作って使えば、並べて走るテストどうしで応答と記録が混ざらない。
 /// 送信では `?wait=true` などのクエリを付けて送るので、応答と記録はクエリを除いた URL で引く（受け取った URL はクエリ付きのまま残す）
 final class StubURLProtocol: URLProtocol {
-    enum Stub {
+    indirect enum Stub {
         case response(statusCode: Int, data: Data)
         case error(URLError)
+        /// 指定した秒数だけ待ってから応答する（ほかの処理より後に返したいとき）
+        case delayed(TimeInterval, Stub)
     }
 
     struct ReceivedRequest {
@@ -93,7 +95,15 @@ final class StubURLProtocol: URLProtocol {
             // 応答を決めていない URL には、通信できなかったものとして返す
             return Self.stubs[key] ?? .error(URLError(.cannotConnectToHost))
         }
+        respond(with: stub, to: url)
+    }
+
+    private func respond(with stub: Stub, to url: URL) {
         switch stub {
+        case let .delayed(seconds, stub):
+            DispatchQueue.global().asyncAfter(deadline: .now() + seconds) { [self] in
+                respond(with: stub, to: url)
+            }
         case let .response(statusCode, data):
             guard let response = HTTPURLResponse(
                 url: url,
