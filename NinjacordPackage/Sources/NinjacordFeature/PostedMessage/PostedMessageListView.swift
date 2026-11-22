@@ -14,8 +14,16 @@ struct PostedMessageListView: View {
     @StateObject private var adModel = InlineBannerAdModel()
     /// 宛先に、保存した Webhook URL の名前を出すため
     @StateObject private var urlStore = WebhookURLStore()
+    @ObservedObject private var rewardedAdManager = RewardedAdManager.shared
+    /// リワード広告での一時解放や、それを使い切ったときに描き直すために監視する
+    @ObservedObject private var rewardedUnlock = RewardedUnlockState.shared
     /// 削除の確認ダイアログを出しているメッセージ
     @State private var deletingEntry: SendHistoryEntry?
+    /// 編集画面を開いているメッセージ
+    @State private var editingEntry: SendHistoryEntry?
+    /// Pro でない人が編集しようとしたときの案内（Pro にするか広告を見るか）を出しているメッセージ
+    @State private var upsellEntry: SendHistoryEntry?
+    @State private var isPaywallPresented = false
 
     var body: some View {
         NavigationStack {
@@ -48,7 +56,51 @@ struct PostedMessageListView: View {
         } message: { _ in
             Text("Discordのチャンネルからも削除されます。元に戻せません")
         }
+        .alert(
+            "メッセージの編集はNinjacord Pro限定です",
+            isPresented: Binding(
+                get: { upsellEntry != nil },
+                set: { if !$0 { upsellEntry = nil } }
+            ),
+            presenting: upsellEntry
+        ) { entry in
+            Button("Proを見る") {
+                isPaywallPresented = true
+            }
+            Button("広告を見て1回編集する") {
+                Task {
+                    if await rewardedAdManager.showForUnlock() {
+                        editingEntry = entry
+                    }
+                }
+            }
+            Button("キャンセル", role: .cancel) {}
+        }
         .tint(Color(uiColor: .systemBlue))
+        .sheet(item: $editingEntry) { entry in
+            NavigationStack {
+                PostedMessageEditView(entry: entry, viewModel: viewModel)
+            }
+            // シートは別の View 階層になるため、Pro 状態を明示的に渡す
+            .environmentObject(purchaseManager)
+            .limitedDynamicTypeSize()
+        }
+        .sheet(isPresented: $isPaywallPresented) {
+            NavigationStack {
+                PaywallView(source: .edit)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("閉じる") {
+                                isPaywallPresented = false
+                            }
+                        }
+                    }
+            }
+            .environmentObject(purchaseManager)
+            .limitedDynamicTypeSize()
+        }
+        // Pro でない人に「広告を見て1回編集する」を出せるよう、リワード広告を読み込んでおく
+        .preloadsRewardedAd(when: !canEdit)
         .toast($viewModel.toast)
         .onAppear {
             // 送信画面で送った分・設定画面で消した分を反映する
@@ -78,8 +130,14 @@ struct PostedMessageListView: View {
                         .listRowBackground(Color.appSurface)
                 }
             } footer: {
-                Text("直近\(SendHistoryStore.maxCount)件の送信履歴のうち、送れたメッセージを表示しています")
-                    .foregroundStyle(Color.appTextSecondary)
+                VStack(alignment: .leading, spacing: 4.0) {
+                    Text("直近\(SendHistoryStore.maxCount)件の送信履歴のうち、送れたメッセージを表示しています")
+                    // 削除は無料、編集は Pro 限定（Issue #666）
+                    if !canEdit {
+                        Text("削除は無料です。編集はNinjacord Pro限定で、広告を見ると1回編集できます")
+                    }
+                }
+                .foregroundStyle(Color.appTextSecondary)
             }
         }
         .loadsInlineBannerAd(adModel, when: !viewModel.items.isEmpty)
@@ -89,22 +147,60 @@ struct PostedMessageListView: View {
 
     private func row(_ entry: SendHistoryEntry) -> some View {
         let isProcessing = entry.messageID.map(viewModel.processingMessageIDs.contains) ?? false
-        return PostedMessageRow(entry: entry, destination: destinationName(of: entry), isProcessing: isProcessing)
-            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                Button(role: .destructive) {
-                    deletingEntry = entry
-                } label: {
-                    Label("削除", systemImage: "trash")
-                }
+        return Button {
+            startEditing(entry)
+        } label: {
+            PostedMessageRow(
+                entry: entry,
+                destination: destinationName(of: entry),
+                isProcessing: isProcessing,
+                showsProBadge: !canEdit
+            )
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                deletingEntry = entry
+            } label: {
+                Label("削除", systemImage: "trash")
             }
-            .contextMenu {
-                Button(role: .destructive) {
-                    deletingEntry = entry
-                } label: {
-                    Label("削除", systemImage: "trash")
-                }
+        }
+        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+            Button {
+                startEditing(entry)
+            } label: {
+                Label("編集", systemImage: "pencil")
             }
-            .disabled(isProcessing)
+            .tint(Color.appAccent)
+        }
+        .contextMenu {
+            Button {
+                startEditing(entry)
+            } label: {
+                Label("編集", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                deletingEntry = entry
+            } label: {
+                Label("削除", systemImage: "trash")
+            }
+        }
+        .disabled(isProcessing)
+    }
+
+    /// 編集（Pro 限定）は、リワード広告の一時解放中も使える。App Store 用スクリーンショットでも解放する
+    private var canEdit: Bool {
+        ProFeatureAccess.canUse(isPro: purchaseManager.isPro)
+    }
+
+    /// 編集を始める。Pro でなければ、リワード広告を読み込めていれば Pro にするか広告を見るかを選ばせ、読み込めていなければペイウォールを開く
+    private func startEditing(_ entry: SendHistoryEntry) {
+        if canEdit {
+            editingEntry = entry
+        } else if rewardedAdManager.isReady {
+            upsellEntry = entry
+        } else {
+            isPaywallPresented = true
+        }
     }
 
     /// 送信履歴の保存を OFF にしたあとも残っている一覧の上に出す案内
@@ -170,11 +266,13 @@ struct PostedMessageListView: View {
     }
 }
 
-/// 「投稿済み」の 1 行。送った日時・中身の要約・宛先を並べる
+/// 「投稿済み」の 1 行。送った日時・中身の要約・宛先を並べ、タップで編集を開く
 private struct PostedMessageRow: View {
     let entry: SendHistoryEntry
     let destination: String
     let isProcessing: Bool
+    /// 編集が Pro 限定だと分かるよう、Pro でない人には PRO の印を出す
+    let showsProBadge: Bool
 
     var body: some View {
         HStack(alignment: .center, spacing: 12.0) {
@@ -208,6 +306,19 @@ private struct PostedMessageRow: View {
 
             if isProcessing {
                 ProgressView()
+            } else {
+                if showsProBadge {
+                    Text("PRO")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6.0)
+                        .padding(.vertical, 2.0)
+                        .background(Capsule().fill(Color.appAccent))
+                        .accessibilityLabel("Pro限定")
+                }
+                Image(systemName: "pencil")
+                    .foregroundStyle(Color.appTextSecondary)
+                    .accessibilityHidden(true)
             }
         }
         .padding(.vertical, 2.0)

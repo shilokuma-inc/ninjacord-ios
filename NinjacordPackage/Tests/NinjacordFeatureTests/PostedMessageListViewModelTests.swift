@@ -15,6 +15,8 @@ final class PostedMessageListViewModelTests {
     private let historyStore: SendHistoryStore
     private let analytics = AnalyticsSpy()
     private let haptics = HapticFeedbackSpy()
+    /// リワード広告の一時解放の消費を記録する
+    private let recorder = SendSucceededRecorder()
     private let viewModel: PostedMessageListViewModel
 
     private static let message = MessageEntity(
@@ -32,6 +34,7 @@ final class PostedMessageListViewModelTests {
             historyStore: historyStore,
             client: DiscordWebhookClient(session: StubURLProtocol.session),
             analytics: analytics,
+            rewardedUnlock: RewardedUnlockSpy(recorder: recorder),
             haptics: haptics
         )
     }
@@ -138,5 +141,127 @@ final class PostedMessageListViewModelTests {
 
         #expect(second == nil)
         #expect(StubURLProtocol.requests(to: messageURL).count == 1)
+    }
+
+    // MARK: - 編集
+
+    private static let edited = MessageEntity(
+        username: "レイド告知Bot",
+        avatarURL: "",
+        content: "今夜21:30 レイド開始（変更）",
+        messageEmbedEntity: MessageEmbedEntity(title: "お知らせ")
+    )
+
+    @Test("編集を保存したら Discord で書き換え、送信履歴の中身を書き換えてトーストで知らせる")
+    func editSucceeded() async throws {
+        let (entry, messageURL) = recordPosted(returning: .response(statusCode: 200, data: Data(#"{"id": "789"}"#.utf8)))
+
+        let error = await viewModel.edit(entry, message: Self.edited, canUseProFeatures: true)
+
+        #expect(error == nil)
+        let received = try #require(StubURLProtocol.requests(to: messageURL).first)
+        #expect(received.request.httpMethod == "PATCH")
+        let item = try #require(viewModel.items.first)
+        #expect(item.message == Self.edited)
+        #expect(item.editedAt != nil)
+        #expect(try #require(SendHistoryStore(userDefaults: userDefaults).items.first).message == Self.edited)
+        #expect(viewModel.toast?.message.testString == "メッセージを編集しました")
+        #expect(viewModel.processingMessageIDs.isEmpty)
+        #expect(haptics.notifications == [true])
+        // 編集は Pro 機能なので、リワード広告の一時解放を使い切る
+        #expect(recorder.events == [.consumeRewardedUnlock])
+        #expect(analytics.editEvents == [.init(isSuccess: true, httpStatus: 200)])
+    }
+
+    @Test("Pro でなければ（一時解放もなければ）、通信せずに Pro 限定だと返す")
+    func editRequiresPro() async {
+        let (entry, messageURL) = recordPosted()
+
+        let error = await viewModel.edit(entry, message: Self.edited, canUseProFeatures: false)
+
+        #expect(error == .proRequired)
+        #expect(StubURLProtocol.requests(to: messageURL).isEmpty)
+        #expect(recorder.events.isEmpty)
+    }
+
+    @Test("画像の無いメッセージは、本文（空白だけも含む）と埋め込みを両方とも空にできない")
+    func editEmptyMessage() async {
+        let (entry, messageURL) = recordPosted()
+        var empty = Self.edited
+        empty.content = "  \n"
+        empty.messageEmbedEntity = MessageEmbedEntity()
+
+        let error = await viewModel.edit(entry, message: empty, canUseProFeatures: true)
+
+        #expect(error == .emptyMessage)
+        #expect(StubURLProtocol.requests(to: messageURL).isEmpty)
+    }
+
+    @Test("画像を添付して送ったメッセージは、画像が残るので本文と埋め込みを空にできる")
+    func editEmptyMessageWithAttachment() async {
+        let (entry, _) = recordPosted(
+            returning: .response(statusCode: 200, data: Data(#"{"id": "789"}"#.utf8)),
+            hasAttachment: true
+        )
+        var empty = Self.edited
+        empty.content = ""
+        empty.messageEmbedEntity = MessageEmbedEntity()
+
+        let error = await viewModel.edit(entry, message: empty, canUseProFeatures: true)
+
+        #expect(error == nil)
+    }
+
+    @Test("埋め込みが Discord の上限を超えていたら、通信せずに理由を返す")
+    func editInvalidEmbed() async throws {
+        let (entry, messageURL) = recordPosted()
+        var invalid = Self.edited
+        invalid.messageEmbedEntity = MessageEmbedEntity(title: String(repeating: "あ", count: EmbedLimit.title + 1))
+
+        let error = await viewModel.edit(entry, message: invalid, canUseProFeatures: true)
+
+        let issue = try #require(invalid.messageEmbedEntity.validationIssues().first)
+        #expect(error == .invalidEmbed(issue))
+        #expect(StubURLProtocol.requests(to: messageURL).isEmpty)
+    }
+
+    @Test("Discord で消されていたら、編集できないと返して一覧から外す")
+    func editAlreadyDeleted() async {
+        let body = Data(#"{"message": "Unknown Message", "code": 10008}"#.utf8)
+        let (entry, _) = recordPosted(returning: .response(statusCode: 404, data: body))
+
+        let error = await viewModel.edit(entry, message: Self.edited, canUseProFeatures: true)
+
+        #expect(error == .discord(.unknownMessage))
+        #expect(viewModel.items.isEmpty)
+        #expect(haptics.notifications == [false])
+        #expect(recorder.events.isEmpty)
+    }
+
+    @Test("通信に失敗したら原因を返し、送信履歴の中身は変えない")
+    func editFailed() async throws {
+        let (entry, _) = recordPosted(returning: .error(URLError(.notConnectedToInternet)))
+
+        let error = await viewModel.edit(entry, message: Self.edited, canUseProFeatures: true)
+
+        #expect(error == .discord(.network))
+        #expect(try #require(viewModel.items.first).message == Self.message)
+        #expect(viewModel.toast == nil)
+    }
+
+    @Test("本文を空のまま初期文言で送ったメッセージは、編集画面に初期文言を入れておく")
+    func editableMessage() {
+        var message = Self.message
+        message.content = ""
+        let defaulted = SendHistoryEntry(id: UUID(), sentAt: Date(), url: "", message: message, isSuccess: true)
+        #expect(defaulted.editableMessage.content == DiscordWebhookRequest.defaultContent)
+
+        let withAttachment = SendHistoryEntry(
+            id: UUID(), sentAt: Date(), url: "", message: message, isSuccess: true, hasAttachment: true
+        )
+        #expect(withAttachment.editableMessage.content.isEmpty)
+
+        let normal = SendHistoryEntry(id: UUID(), sentAt: Date(), url: "", message: Self.message, isSuccess: true)
+        #expect(normal.editableMessage == Self.message)
     }
 }
