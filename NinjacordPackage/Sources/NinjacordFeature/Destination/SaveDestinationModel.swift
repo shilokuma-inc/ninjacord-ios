@@ -30,7 +30,13 @@ final class SaveDestinationModel: ObservableObject {
     /// 打ち込んでいる途中で取得しないよう、入力が止まってから取得するまでの待ち時間
     static let checkDelay: Duration = .milliseconds(400)
 
-    @Published var url: String
+    @Published var url: String {
+        didSet {
+            // 確かめ直すまでの間に、前の URL の結果（確認できた・保存できる）が残らないようにする
+            guard url != oldValue else { return }
+            check = trimmedURL.isEmpty ? .empty : .checking
+        }
+    }
     @Published private(set) var name = ""
     @Published private(set) var check: Check = .empty
 

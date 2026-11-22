@@ -136,6 +136,21 @@ final class SaveDestinationModelTests {
         #expect(WebhookURLStore(userDefaults: userDefaults).items == [saved])
     }
 
+    @Test("URL を書き換えたら、確かめ直すまでは前の URL の結果を使わず、保存もできない")
+    func resetsCheckWhenURLChanges() async {
+        let model = makeModel(url: webhookURL().absoluteString)
+        await model.checkURL()
+        #expect(model.canSave)
+
+        model.url = webhookURL(name: "別のWebhook").absoluteString
+
+        #expect(model.check == .checking)
+        #expect(!model.canSave)
+
+        model.url = ""
+        #expect(model.check == .empty)
+    }
+
     @Test("取得している間に URL が書き換えられたら、古い結果は使わない")
     func ignoresStaleResult() async {
         let first = webhookURL(name: "古いWebhook")

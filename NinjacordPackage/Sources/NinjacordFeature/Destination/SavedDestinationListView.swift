@@ -237,12 +237,14 @@ struct SavedDestinationListView: View {
         .listRowBackground(Color.appSurface)
     }
 
-    /// 保存の画面に最初に入れておく URL。送信画面から開いたときは、今使っている保存していない URL
+    /// 保存の画面に最初に入れておく URL。送信画面から開いたときは、「保存していないURLを使う」欄に入れた URL
+    /// （今の宛先が保存していない URL なら、最初からそれが入っている）
     private var saveInitialURL: String {
-        guard case .select(let currentURL, _) = mode, store.item(matching: currentURL) == nil else {
+        guard case .select = mode else {
             return ""
         }
-        return currentURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let url = directURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        return store.item(matching: url) == nil ? url : ""
     }
 
     private func startRenaming(_ item: SavedWebhookURL) {
