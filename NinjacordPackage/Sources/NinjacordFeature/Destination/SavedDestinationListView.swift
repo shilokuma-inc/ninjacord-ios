@@ -130,6 +130,16 @@ struct SavedDestinationListView: View {
                 .onMove { source, destination in
                     store.move(fromOffsets: source, toOffset: destination)
                 }
+
+                // 右上の「＋」だけでは気づきにくいので、一覧のすぐ下にも保存の行を置く（並び替え・スワイプの対象にしないよう ForEach の外）
+                Button {
+                    isSavePresented = true
+                } label: {
+                    Label("宛先を保存", systemImage: "plus.circle.fill")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color.appAccent)
+                }
+                .listRowBackground(Color.appSurface)
             }
         } header: {
             Text("保存した宛先")
