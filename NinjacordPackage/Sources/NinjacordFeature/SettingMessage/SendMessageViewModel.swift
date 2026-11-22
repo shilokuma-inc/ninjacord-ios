@@ -298,7 +298,11 @@ extension SendMessageViewModel {
                 toast = Toast(style: .success, message: "送信を取り消しました")
                 haptics.playNotification(isSuccess: true)
             case .failure(let error):
-                toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
+                // 原因の文言は送信のときと同じものなので、取り消しに失敗したことを先に書く（メッセージは Discord に残っている）
+                toast = Toast(
+                    style: .failure,
+                    verbatimMessage: String(localized: "取り消せませんでした。\(error.localizedDescription)")
+                )
                 haptics.playNotification(isSuccess: false)
             }
         }

@@ -127,7 +127,10 @@ final class PostedMessageListViewModelTests {
         #expect(viewModel.items.map(\.messageID) == ["789"])
         let toast = try #require(viewModel.toast)
         #expect(toast.style == .failure)
-        #expect(toast.message.testString == DiscordWebhookError.network.localizedDescription)
+        #expect(
+            toast.message.testString
+                == String(localized: "削除できませんでした。\(DiscordWebhookError.network.localizedDescription)")
+        )
         #expect(haptics.notifications == [false])
     }
 

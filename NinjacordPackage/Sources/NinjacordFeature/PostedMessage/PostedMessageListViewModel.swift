@@ -71,7 +71,11 @@ final class PostedMessageListViewModel: ObservableObject {
                 toast = Toast(style: .success, message: "メッセージを削除しました")
                 haptics.playNotification(isSuccess: true)
             case .failure(let error):
-                toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
+                // 原因の文言は送信のときと同じものなので、削除に失敗したことを先に書く
+                toast = Toast(
+                    style: .failure,
+                    verbatimMessage: String(localized: "削除できませんでした。\(error.localizedDescription)")
+                )
                 haptics.playNotification(isSuccess: false)
             }
         }

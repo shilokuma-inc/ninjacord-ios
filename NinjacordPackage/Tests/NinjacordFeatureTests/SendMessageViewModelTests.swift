@@ -323,7 +323,10 @@ final class SendMessageViewModelTests {
 
         let toast = try #require(viewModel.toast)
         #expect(toast.style == .failure)
-        #expect(toast.message.testString == DiscordWebhookError.network.localizedDescription)
+        #expect(
+            toast.message.testString
+                == String(localized: "取り消せませんでした。\(DiscordWebhookError.network.localizedDescription)")
+        )
         #expect(historyStore.postedItems.count == 1)
         #expect(fixture.haptics.notifications == [true, false])
     }
