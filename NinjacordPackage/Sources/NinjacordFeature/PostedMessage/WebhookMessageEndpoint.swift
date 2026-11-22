@@ -24,12 +24,12 @@ enum WebhookMessageEndpoint {
 
     /// 送ったメッセージの編集・削除に使う URL（`/webhooks/{id}/{token}/messages/{message.id}`）。
     /// スレッドに送ったメッセージは、同じ `thread_id` を付けないと見つからない（404）ので、クエリはそれだけ残す。
-    /// URL にできないか、メッセージ ID が数字でなければ nil
+    /// 送信のときと同じく前後の空白・改行は除く。URL にできないか、メッセージ ID が数字でなければ nil
     /// https://discord.com/developers/docs/resources/webhook#edit-webhook-message
     static func messageURL(webhookURL: String, messageID: String) -> URL? {
         guard !messageID.isEmpty,
               messageID.allSatisfy({ $0.isASCII && $0.isNumber }),
-              let url = SendMessageViewModel.webhookEndpoint(from: webhookURL),
+              let url = URL(string: webhookURL.trimmingCharacters(in: .whitespacesAndNewlines)),
               var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return nil
         }

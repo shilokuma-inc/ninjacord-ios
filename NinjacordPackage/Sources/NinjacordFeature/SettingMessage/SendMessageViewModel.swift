@@ -174,9 +174,8 @@ extension SendMessageViewModel {
         return results
     }
 
-    /// 入力された Webhook URL を送信先の URL にする。入力チェックと同じく前後の空白・改行は除く。URL にできなければ nil。
-    /// 送ったメッセージの編集・削除の URL（`WebhookMessageEndpoint`）でも使うので、MainActor に縛らない
-    nonisolated static func webhookEndpoint(from string: String) -> URL? {
+    /// 入力された Webhook URL を送信先の URL にする。入力チェックと同じく前後の空白・改行は除く。URL にできなければ nil
+    static func webhookEndpoint(from string: String) -> URL? {
         URL(string: string.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
