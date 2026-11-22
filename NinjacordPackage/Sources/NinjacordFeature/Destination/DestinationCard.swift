@@ -73,7 +73,8 @@ struct DestinationDisplay: Equatable {
 }
 
 /// 送信画面の宛先。URL の入力欄の代わりに、付けた名前と Webhook のアイコンで今の宛先を示す（Issue #674）。
-/// タップで宛先を選ぶシートを開く。保存していない URL を使っているときは、保存のボタンを出す
+/// タップで宛先を選ぶシートを開く。保存していない URL を使っているときは、保存のボタンを出す。
+/// URL の取得方法は、送信画面の「宛先」の見出しの右に置く（`WebhookURLHelpButton`）
 struct DestinationCard: View {
     @Binding var url: String
     /// 送信画面で取得した、今の宛先の Webhook。まだなら nil
@@ -89,17 +90,13 @@ struct DestinationCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4.0) {
-            HStack(spacing: 4.0) {
-                Button {
-                    isPickerPresented = true
-                } label: {
-                    cardContent
-                }
-                .buttonStyle(.plain)
-                .accessibilityHint("宛先を選ぶ画面を開きます")
-
-                WebhookURLHelpButton(url: $url)
+            Button {
+                isPickerPresented = true
+            } label: {
+                cardContent
             }
+            .buttonStyle(.plain)
+            .accessibilityHint("宛先を選ぶ画面を開きます")
 
             if display.state == .unsaved {
                 Button {

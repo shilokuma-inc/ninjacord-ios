@@ -7,14 +7,31 @@ import SwiftUI
 
 /// 送信画面のひとまとまり（宛先・送信者・本文・埋め込み・添付）。見出しと中身を 1 枚の面にまとめる（Discussion #586 の Q1）。
 /// 入力欄（`appSurfaceSecondary`）と見分けられるよう、面は一段明るい `appSurface` で塗る。
-/// `isExpanded` を渡すと見出しで開閉でき、閉じている間は中身の代わりに `collapsedSummary` を出す（Q6）
-struct SendMessageSection<Content: View>: View {
+/// `isExpanded` を渡すと見出しで開閉でき、閉じている間は中身の代わりに `collapsedSummary` を出す（Q6）。
+/// 開閉しない見出しには、右端に `accessory`（宛先の「Webhook URLの取得方法」など）を置ける
+struct SendMessageSection<Content: View, Accessory: View>: View {
     let title: LocalizedStringResource
     /// 開閉の状態。nil なら開閉できない（常に中身を出す）
     var isExpanded: Binding<Bool>?
     /// 閉じているときに、中身の代わりに出す 1 行の要約
     var collapsedSummary: String?
-    @ViewBuilder let content: Content
+    let content: Content
+    /// 開閉しない見出しの右端に出すもの
+    let accessory: Accessory
+
+    init(
+        title: LocalizedStringResource,
+        isExpanded: Binding<Bool>? = nil,
+        collapsedSummary: String? = nil,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder accessory: () -> Accessory
+    ) {
+        self.title = title
+        self.isExpanded = isExpanded
+        self.collapsedSummary = collapsedSummary
+        self.content = content()
+        self.accessory = accessory()
+    }
 
     /// 見出しと中身、中身どうしの間隔。送信画面の入力欄どうしの間隔と同じ値
     private static var spacing: CGFloat { 8.0 }
@@ -24,8 +41,12 @@ struct SendMessageSection<Content: View>: View {
             if let isExpanded {
                 disclosureHeader(isExpanded: isExpanded)
             } else {
-                titleText
-                    .accessibilityAddTraits(.isHeader)
+                HStack(alignment: .firstTextBaseline) {
+                    titleText
+                        .accessibilityAddTraits(.isHeader)
+                    Spacer(minLength: 8.0)
+                    accessory
+                }
             }
 
             if isExpanded?.wrappedValue ?? true {
@@ -71,6 +92,23 @@ struct SendMessageSection<Content: View>: View {
         .buttonStyle(.plain)
         .accessibilityAddTraits(.isHeader)
         .accessibilityValue(isExpanded.wrappedValue ? Text("展開済み") : Text("折りたたみ済み"))
+    }
+}
+
+extension SendMessageSection where Accessory == EmptyView {
+    init(
+        title: LocalizedStringResource,
+        isExpanded: Binding<Bool>? = nil,
+        collapsedSummary: String? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.init(
+            title: title,
+            isExpanded: isExpanded,
+            collapsedSummary: collapsedSummary,
+            content: content,
+            accessory: { EmptyView() }
+        )
     }
 }
 

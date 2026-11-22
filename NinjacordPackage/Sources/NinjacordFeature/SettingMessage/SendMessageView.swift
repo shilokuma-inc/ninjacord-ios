@@ -250,7 +250,7 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
-    /// 宛先: 今の宛先を名前とアイコンで示すカード（タップで選ぶ）と、URL の調べ方、一斉送信。
+    /// 宛先: 今の宛先を名前とアイコンで示すカード（タップで選ぶ）と、一斉送信。見出しの右に URL の取得方法。
     /// 長い URL は入り切らず見分けられないので、URL の入力欄は置かない（Issue #674）
     private var destinationSection: some View {
         SendMessageSection(title: "宛先") {
@@ -270,6 +270,8 @@ extension SendMessageView {
 
             BroadcastButton(targets: $viewModel.broadcastTargets)
                 .padding(.leading, 44.0)
+        } accessory: {
+            WebhookURLHelpButton(url: $viewModel.inputURL)
         }
     }
 
