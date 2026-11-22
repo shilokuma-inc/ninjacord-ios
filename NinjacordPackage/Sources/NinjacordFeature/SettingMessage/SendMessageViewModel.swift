@@ -35,6 +35,8 @@ final class SendMessageViewModel: ObservableObject {
     @Published var isDefaultValueConfirmationPresented = false
 
     private let client: DiscordWebhookClient
+    /// 送信直後のトーストの「取り消す」で、送ったメッセージを削除する
+    private let messageEditor: WebhookMessageEditor
     private let historyStore: SendHistoryStore
     private let analytics: SendMessageAnalytics
     private let sendSuccessCounter: SendSuccessCounter
@@ -85,6 +87,7 @@ final class SendMessageViewModel: ObservableObject {
         sleep: @escaping @MainActor (Duration) async -> Void
     ) {
         self.client = client
+        self.messageEditor = WebhookMessageEditor(client: client, analytics: analytics)
         self.historyStore = historyStore
         self.analytics = analytics
         self.sendSuccessCounter = sendSuccessCounter
@@ -282,6 +285,25 @@ extension SendMessageViewModel {
         defaultValueConfirmation = nil
     }
 
+    /// 送信直後のトーストで「取り消す」を押したとき。送ったメッセージを Discord から削除し、送信履歴に削除済みの印を付ける。
+    /// 削除は無料（Issue #666）。入力欄はそのまま残すので、直して送り直せる
+    /// - Returns: 削除の Task（テストで終わるのを待つため）
+    @discardableResult
+    func undoSend(url: String, messageID: String) -> Task<Void, Never> {
+        Task {
+            let result = await messageEditor.delete(webhookURL: url, messageID: messageID, source: .toast)
+            switch result {
+            case .success:
+                historyStore.markDeleted(messageID: messageID)
+                toast = Toast(style: .success, message: "送信を取り消しました")
+                haptics.playNotification(isSuccess: true)
+            case .failure(let error):
+                toast = Toast(style: .failure, verbatimMessage: error.localizedDescription)
+                haptics.playNotification(isSuccess: false)
+            }
+        }
+    }
+
     private func send(_ pendingSend: PendingSend, screenActions: SendMessageScreenActions) -> Task<Void, Never> {
         switch pendingSend.destination {
         case .single(let url):
@@ -314,11 +336,18 @@ extension SendMessageViewModel {
                 hasAttachment: pendingSend.attachment != nil
             )
             switch result {
-            case .success:
-                toast = Toast(style: .success, message: "送信しました")
+            case .success(let sentMessage):
+                // ID を受け取れたら、誤って送ったときにすぐ消せるよう「取り消す」を出す（送信履歴が OFF でも、その場では消せる）
+                let undoAction = sentMessage.id.map { messageID in
+                    Toast.Action(title: "取り消す") { [weak self] in
+                        self?.undoSend(url: url, messageID: messageID)
+                    }
+                }
+                toast = Toast(style: .success, message: "送信しました", action: undoAction)
                 haptics.playNotification(isSuccess: true)
                 await handleSendSucceeded(
                     usedProFeatures: messageEntity.messageEmbedEntity.usesProFeatures,
+                    offersUndo: undoAction != nil,
                     screenActions: screenActions
                 )
             case .failure(let error):
@@ -358,15 +387,21 @@ extension SendMessageViewModel {
             // 宛先ごとではなく、全件が終わったときに 1 回だけ。1 件でも失敗したらトーストと同じく失敗にする
             haptics.playNotification(isSuccess: failureCount == 0)
             if failureCount < results.count {
-                // 一斉送信そのものが Pro 機能
-                await handleSendSucceeded(usedProFeatures: true, screenActions: screenActions)
+                // 一斉送信そのものが Pro 機能。取り消すと宛先の数だけ消すことになるので、「取り消す」は出さない
+                await handleSendSucceeded(usedProFeatures: true, offersUndo: false, screenActions: screenActions)
             }
         }
     }
 
     /// 送信に成功したあとのリワード広告の解放の消費・レビュー依頼・インタースティシャル広告
-    /// - Parameter usedProFeatures: 埋め込みの Pro 限定の項目や一斉送信など、Pro 機能を使った送信か
-    private func handleSendSucceeded(usedProFeatures: Bool, screenActions: SendMessageScreenActions) async {
+    /// - Parameters:
+    ///   - usedProFeatures: 埋め込みの Pro 限定の項目や一斉送信など、Pro 機能を使った送信か
+    ///   - offersUndo: 成功のトーストに「取り消す」を出したか
+    private func handleSendSucceeded(
+        usedProFeatures: Bool,
+        offersUndo: Bool,
+        screenActions: SendMessageScreenActions
+    ) async {
         // リワード広告の一時解放は、Pro 機能を使った 1 回の送信で使い切る（Discussion #386・判断ログ #389）。
         // 一斉送信は宛先の数ではなく 1 回の操作で 1 回と数え、1 件でも成功していれば使い切る
         if usedProFeatures {
@@ -379,8 +414,8 @@ extension SendMessageViewModel {
         }
         // 広告の印象が付いたままレビューを依頼しないよう、全画面広告はレビュー依頼の次の送信から出す
         if sendSuccessCount > Self.reviewRequestSendCount {
-            // 成功のトーストを見てもらってから表示する
-            await sleep(.seconds(1))
+            // 成功のトーストを見てもらってから表示する。「取り消す」を出したときは、押せる間は広告で覆わない
+            await sleep(offersUndo ? Toast.actionDuration : .seconds(1))
             interstitialAd.showIfAllowed(from: screenActions.rootViewController())
         }
     }

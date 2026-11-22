@@ -2042,6 +2042,22 @@
         }
       }
     },
+    "取り消す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取り消す"
+          }
+        }
+      }
+    },
     "合計 %lld / %lld文字" : {
       "localizations" : {
         "en" : {
@@ -3062,6 +3078,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信に失敗しました（エラーコード: %lld）"
+          }
+        }
+      }
+    },
+    "送信を取り消しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message unsent"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信を取り消しました"
           }
         }
       }

@@ -262,6 +262,72 @@ final class SendMessageViewModelTests {
         #expect(header.hasPrefix("multipart/form-data; boundary="))
     }
 
+    // MARK: - 送信の取り消し
+
+    @Test("メッセージの ID を受け取れたら、成功のトーストに「取り消す」を出す。受け取れなければ出さない")
+    func undoActionOnSuccess() async throws {
+        viewModel.inputURL = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "789")).absoluteString
+        viewModel.inputContext = "こんにちは"
+        await send()
+        let action = try #require(viewModel.toast?.action)
+        #expect(action.title.testString == "取り消す")
+
+        viewModel.inputURL = StubURLProtocol.makeURL(returning: Self.noContent).absoluteString
+        await send()
+        #expect(viewModel.toast?.action == nil)
+    }
+
+    @Test("一斉送信では「取り消す」を出さない")
+    func noUndoActionOnBroadcast() async {
+        viewModel.broadcastTargets = [savedURL("作戦室", returning: Self.sentMessage(id: "111"))]
+        viewModel.inputContext = "こんにちは"
+
+        await send(isPro: true)
+
+        #expect(viewModel.toast?.action == nil)
+    }
+
+    @Test("「取り消す」を押したら送ったメッセージを削除し、送信履歴に削除済みの印を付けてトーストで知らせる。入力欄は残す")
+    func undoSend() async throws {
+        let url = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "789"))
+        let messageURL = try #require(URL(string: url.absoluteString + "/messages/789"))
+        StubURLProtocol.stub(messageURL, returning: Self.noContent)
+        viewModel.inputURL = url.absoluteString
+        viewModel.inputContext = "こんにちは"
+        await send()
+
+        await viewModel.undoSend(url: url.absoluteString, messageID: "789").value
+
+        #expect(StubURLProtocol.requests(to: messageURL).map(\.request.httpMethod) == ["DELETE"])
+        let toast = try #require(viewModel.toast)
+        #expect(toast.style == .success)
+        #expect(toast.message.testString == "送信を取り消しました")
+        #expect(toast.action == nil)
+        #expect(try #require(historyStore.items.first).deletedAt != nil)
+        #expect(historyStore.postedItems.isEmpty)
+        #expect(fixture.analytics.deleteEvents == [.init(isSuccess: true, httpStatus: 204, source: "toast")])
+        #expect(fixture.haptics.notifications == [true, true])
+        #expect(viewModel.inputContext == "こんにちは")
+    }
+
+    @Test("取り消せなければ原因をトーストに出し、送信履歴はそのままにする")
+    func undoSendFailed() async throws {
+        let url = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "789"))
+        let messageURL = try #require(URL(string: url.absoluteString + "/messages/789"))
+        StubURLProtocol.stub(messageURL, returning: .error(URLError(.notConnectedToInternet)))
+        viewModel.inputURL = url.absoluteString
+        viewModel.inputContext = "こんにちは"
+        await send()
+
+        await viewModel.undoSend(url: url.absoluteString, messageID: "789").value
+
+        let toast = try #require(viewModel.toast)
+        #expect(toast.style == .failure)
+        #expect(toast.message.testString == DiscordWebhookError.network.localizedDescription)
+        #expect(historyStore.postedItems.count == 1)
+        #expect(fixture.haptics.notifications == [true, false])
+    }
+
     // MARK: - 一斉送信
 
     @Test("一斉送信がすべて届いたら「N件の宛先に送信しました」を出し、宛先ごとに履歴に残す")

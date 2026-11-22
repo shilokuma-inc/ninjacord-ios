@@ -5,8 +5,9 @@
 
 import UIKit
 
-/// 送信の Analytics。SendMessageViewModel が受け取り、テストでは呼ばれ方を記録するものに差し替える
-protocol SendMessageAnalytics {
+/// 送信の Analytics。SendMessageViewModel が受け取り、テストでは呼ばれ方を記録するものに差し替える。
+/// 送信直後のトーストから取り消す（削除する）ので、送ったメッセージの削除の Analytics も含む
+protocol SendMessageAnalytics: PostedMessageAnalytics {
     func sendMessageSendEvent(isSuccess: Bool, httpStatus: Int?)
     func sendFirstSendCompletedEvent()
 }
