@@ -283,7 +283,10 @@ extension SendMessageView {
             BroadcastButton(targets: $viewModel.broadcastTargets)
                 .padding(.leading, 44.0)
         } accessory: {
-            WebhookURLHelpButton(url: $viewModel.inputURL)
+            // 一斉送信中は宛先のカードが無く、貼り付けた URL に送れないので出さない
+            if viewModel.broadcastTargets.isEmpty {
+                WebhookURLHelpButton(url: $viewModel.inputURL)
+            }
         }
     }
 
