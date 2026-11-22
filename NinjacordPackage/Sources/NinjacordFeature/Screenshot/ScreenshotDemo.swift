@@ -13,6 +13,8 @@ enum ScreenshotDemo {
     enum Scene: String {
         /// 送信画面（入力済み・画像添付あり・送信者を閉じてプレビューを開き、埋め込みの上端までスクロールした状態）
         case send
+        /// 「投稿済み」タブ（送ったメッセージの一覧。先頭は編集済み）
+        case posted
         /// 埋め込みエディタのライブプレビュー
         case embed
         /// 保存済み URL の選択シート
@@ -35,7 +37,7 @@ enum ScreenshotDemo {
     @MainActor
     private static var hasPrepared = false
 
-    /// 各画面より先に、保存済み URL・テンプレート・テーマをデモ用の内容で上書きする。
+    /// 各画面より先に、保存済み URL・テンプレート・送信履歴・テーマをデモ用の内容で上書きする。
     /// 撮影専用の Simulator で使う前提なので、手元のデータは残さない。
     /// テーマの書き込みで App の body が評価し直され MainView.init が再び呼ばれても、
     /// 作り直したデータと各画面が持つ ID がずれないよう、起動ごとに 1 回だけ行う
@@ -58,6 +60,22 @@ enum ScreenshotDemo {
             let added = templateStore.add(name: template.name, message: template.message)
             if template.isPinned {
                 templateStore.togglePin(id: added.id)
+            }
+        }
+
+        // 「投稿済み」の一覧は送信履歴から作るので、送信履歴を保存する設定にしてデモの送信を記録する（古い順に記録する）
+        userDefaults.set(true, forKey: SendHistoryStore.isEnabledKey)
+        let historyStore = SendHistoryStore(userDefaults: userDefaults)
+        historyStore.removeAll()
+        let today = Calendar.current.startOfDay(for: Date())
+        for (index, posted) in content.postedMessages.enumerated().reversed() {
+            let messageID = "13000000000000000\(index)"
+            // 撮影した時刻によって不自然な時刻（深夜など）にならないよう、日付だけ撮影日からずらして時刻は固定にする
+            let day = Calendar.current.date(byAdding: .day, value: -posted.daysAgo, to: today) ?? today
+            let sentAt = Calendar.current.date(bySettingHour: posted.hour, minute: posted.minute, second: 0, of: day) ?? day
+            historyStore.record(url: posted.url, message: posted.message, isSuccess: true, messageID: messageID, at: sentAt)
+            if posted.isEdited {
+                historyStore.markEdited(messageID: messageID, message: posted.message, at: sentAt.addingTimeInterval(120))
             }
         }
     }
@@ -108,12 +126,26 @@ struct ScreenshotDemoContent {
         let isPinned: Bool
     }
 
+    /// 「投稿済み」に出す、送ったメッセージ
+    struct PostedMessage {
+        let url: String
+        let message: MessageEntity
+        /// 送った日（撮影日の何日前か）と時刻
+        let daysAgo: Int
+        let hour: Int
+        let minute: Int
+        /// アプリから編集したか
+        let isEdited: Bool
+    }
+
     let url: String
     let message: MessageEntity
     let savedURLs: [SavedWebhookURL]
     let templates: [Template]
     /// `savedURLs` のうち、一斉送信で選んでおくもの
     let broadcastTargetIndices: [Int]
+    /// 「投稿済み」に出す送信（新しい順）。宛先は `savedURLs` の URL にして、保存した名前を出す
+    let postedMessages: [PostedMessage]
 
     private static func dummyURL(_ number: Int) -> String {
         "https://discord.com/api/webhooks/11800000000000000\(number)/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -121,6 +153,29 @@ struct ScreenshotDemoContent {
 
     private static func savedURL(_ number: Int, _ name: String) -> SavedWebhookURL {
         SavedWebhookURL(id: UUID(), name: name, url: dummyURL(number))
+    }
+
+    private static func posted(
+        _ number: Int,
+        username: String = "",
+        content: String,
+        embedTitle: String = "",
+        at time: (daysAgo: Int, hour: Int, minute: Int),
+        isEdited: Bool = false
+    ) -> PostedMessage {
+        PostedMessage(
+            url: dummyURL(number),
+            message: MessageEntity(
+                username: username,
+                avatarURL: "",
+                content: content,
+                messageEmbedEntity: MessageEmbedEntity(title: embedTitle)
+            ),
+            daysAgo: time.daysAgo,
+            hour: time.hour,
+            minute: time.minute,
+            isEdited: isEdited
+        )
     }
 
     static let japanese = ScreenshotDemoContent(
@@ -191,7 +246,29 @@ struct ScreenshotDemoContent {
                 isPinned: false
             )
         ],
-        broadcastTargetIndices: [0, 1, 2]
+        broadcastTargetIndices: [0, 1, 2],
+        postedMessages: [
+            posted(
+                11, username: "レイド告知Bot", content: "@everyone 今夜のレイドは21:30開始に変更しました！",
+                at: (0, 9, 28), isEdited: true
+            ),
+            posted(
+                12, username: "レイド告知Bot", content: "", embedTitle: "今夜21:00 レイド開始",
+                at: (0, 8, 15)
+            ),
+            posted(
+                13, username: "Release Bot", content: "v2.1.0 を本番環境にリリースしました",
+                at: (1, 22, 40)
+            ),
+            posted(
+                11, username: "サーバー管理", content: "本日18:00〜19:00はサーバーのメンテナンスを行います",
+                at: (1, 17, 5), isEdited: true
+            ),
+            posted(
+                14, content: "晩ごはんは19時です。遅れる人は連絡してね",
+                at: (1, 12, 10)
+            )
+        ]
     )
 
     static let english = ScreenshotDemoContent(
@@ -262,6 +339,28 @@ struct ScreenshotDemoContent {
                 isPinned: false
             )
         ],
-        broadcastTargetIndices: [0, 1, 2]
+        broadcastTargetIndices: [0, 1, 2],
+        postedMessages: [
+            posted(
+                11, username: "Raid Bot", content: "@everyone Tonight's raid now starts at 9:30 PM!",
+                at: (0, 9, 28), isEdited: true
+            ),
+            posted(
+                12, username: "Raid Bot", content: "", embedTitle: "Raid starts tonight at 9 PM",
+                at: (0, 8, 15)
+            ),
+            posted(
+                13, username: "Release Bot", content: "v2.1.0 is now live in production",
+                at: (1, 22, 40)
+            ),
+            posted(
+                11, username: "Server Admin", content: "Scheduled maintenance today from 6 PM to 7 PM",
+                at: (1, 17, 5), isEdited: true
+            ),
+            posted(
+                14, content: "Dinner's at 7. Let us know if you'll be late!",
+                at: (1, 12, 10)
+            )
+        ]
     )
 }

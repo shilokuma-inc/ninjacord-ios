@@ -27,6 +27,8 @@ public struct MainView: View {
         // App Store 用スクリーンショットにオンボーディングを写り込ませない
         let hasCompleted = UserDefaults.standard.bool(forKey: Self.hasCompletedOnboardingKey)
         _isOnboardingPresented = State(initialValue: !hasCompleted && !ScreenshotDemo.isEnabled)
+        // 「投稿済み」の画面を撮るときは、そのタブを開いて始める
+        _selection = State(initialValue: ScreenshotDemo.scene == .posted ? 3 : 1)
     }
 
     public var body: some View {

@@ -9,7 +9,7 @@
   - 背景は Discord のダークテーマのチャンネル画面。見出しの代わりに、メンバーの会話を BIZ UDPGothic で大きく置く。
     グラデーション・光・星・極太の見出しのような、生成された画像でよく見る飾りは使わない。
   - 上に会話、下に端末。端末は黒い縁だけにして、下端からはみ出させる。
-  - 答えるのは 6 枚とも同じ人（みさき / Mia）。1 枚で伝えることは 1 つにする。
+  - 答えるのは全部の画面で同じ人（みさき / Mia）。1 枚で伝えることは 1 つにする。
   - 用途はチャンネル名と会話で広げる（ゲーム部・開発チーム・サーバー管理・テニス部）。
 
   レイアウトは小さな基準の幅（iPhone 440 / iPhone Duo 520 / iPad 600）で組み、CSS の zoom で書き出す寸法に合わせる。
@@ -59,7 +59,7 @@
   const lang = params.get("lang") || "ja";
   document.documentElement.lang = lang;
 
-  // 答える人。6 枚とも同じにして、アプリを使っている人の話として通す
+  // 答える人。全部の画面で同じにして、アプリを使っている人の話として通す
   const MIA = { color: "#e06c75", name: "#f2a7ad" };
   const copy = {
     ja: {
@@ -68,6 +68,8 @@
       scenes: {
         "send": { channel: "ゲーム部-お知らせ", asker: ["けんた", "け", "#a78bdb", "#c9b6f2"],
           ask: "このBotって<br>誰が入れたの？", answer: "入れてないよ。<br>スマホから送ってる 📱" },
+        "posted": { channel: "ゲーム部-お知らせ", asker: ["ゆい", "ゆ", "#d9822b", "#f3c48f"],
+          ask: "さっきの告知、<br>時間が変わってる？", answer: "送ったあとで<br>アプリから直した" },
         "embed": { channel: "ゲーム部-お知らせ", asker: ["そうた", "そ", "#3ba55c", "#9fe0b4"],
           ask: "集合も場所も<br>ひと目でわかる", answer: "埋め込みで<br>並べてみた" },
         "saved-urls": { channel: "開発チーム-デプロイ通知", asker: ["ゆうき", "ゆ", "#4f9ad8", "#a9cff0"],
@@ -86,6 +88,8 @@
       scenes: {
         "send": { channel: "announcements", asker: ["Alex", "A", "#a78bdb", "#c9b6f2"],
           ask: "Wait, who added<br>this bot?", answer: "Nobody. I post it<br>from my phone 📱" },
+        "posted": { channel: "announcements", asker: ["Riley", "R", "#d9822b", "#f3c48f"],
+          ask: "Did the raid time<br>just change?", answer: "Yep. I edited it<br>from the app." },
         "embed": { channel: "announcements", asker: ["Sam", "S", "#3ba55c", "#9fe0b4"],
           ask: "Time and place<br>at a glance. Nice.", answer: "It's an embed.<br>Made it on my phone." },
         "saved-urls": { channel: "deploys", asker: ["Yuki", "Y", "#4f9ad8", "#a9cff0"],
