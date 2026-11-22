@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// アプリのルート View（送信 / 設定のタブ構成）。アプリターゲットから参照するため public。
+/// アプリのルート View（送信 / 投稿済み / 設定のタブ構成）。アプリターゲットから参照するため public。
 public struct MainView: View {
     let analytics = FirebaseAnalytics()
     @State var selection = 1
@@ -38,6 +38,16 @@ public struct MainView: View {
                 .tag(1)
                 .onAppear {
                     analytics.sendAnalyticsScreen(screenName: "SendMessageView")
+                }
+
+            // 送ったメッセージの編集・削除（Issue #666）。設定のタグ（2）は変えずに、送信と設定の間に置く
+            PostedMessageListView()
+                .tabItem {
+                    Label("投稿済み", systemImage: "tray.full.fill")
+                }
+                .tag(3)
+                .onAppear {
+                    analytics.sendAnalyticsScreen(screenName: "PostedMessageListView")
                 }
 
             SettingView()

@@ -100,6 +100,16 @@ final class SendMessageSucceededTests {
         ])
     }
 
+    @Test("成功のトーストに「取り消す」を出したときは、押せる間（トーストを出している間）待ってから全画面広告を出す")
+    func waitsForUndoBeforeInterstitial() async {
+        await send(afterSuccessCount: 3, returning: .response(statusCode: 200, data: Data(#"{"id": "789"}"#.utf8)))
+
+        #expect(recorder.events == [
+            .sleep(Toast.actionDuration),
+            .showInterstitial(from: fixture.rootViewController)
+        ])
+    }
+
     @Test("3 回目までの送信では、全画面広告を出さない", arguments: [0, 1, 2])
     func doesNotShowInterstitialUntilThirdSend(previousSuccessCount: Int) async {
         await send(afterSuccessCount: previousSuccessCount)

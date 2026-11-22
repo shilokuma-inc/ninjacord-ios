@@ -91,6 +91,23 @@ struct DiscordWebhookRequest {
         Self.encodeJSON(parameters, options: .prettyPrinted)
     }
 
+    /// 送ったメッセージを書き換える（Edit Webhook Message）ときの JSON パラメータ。
+    /// 名前・アイコンは Discord の仕様で変えられないので送らない。添付した画像は `attachments` を送らなければそのまま残る。
+    /// 消した本文・埋め込みが Discord でも消えるよう、空の本文は null、埋め込みが無ければ空の配列で送る。
+    /// 送るときと違い、空の本文をアプリの初期文言に置き換えない（空にできるかは呼び出し側で確かめる）
+    /// https://discord.com/developers/docs/resources/webhook#edit-webhook-message-jsonform-params
+    var editParameters: [String: Any] {
+        let content: Any = messageEntity.content.isEmpty ? NSNull() : messageEntity.content
+        let embed = messageEntity.messageEmbedEntity
+        let embeds: [[String: Any]] = embed.hasContent ? [embedParameters(embed)] : []
+        return ["content": content, "embeds": embeds]
+    }
+
+    /// 送ったメッセージを書き換えるときの JSON の本文。パラメータを JSON にできなければ nil
+    var editJSONBody: Data? {
+        Self.encodeJSON(editParameters)
+    }
+
     /// 画像を添付するときに送る multipart/form-data の各パート。メッセージは payload_json、画像は files[0] として送る。
     /// 添付する画像が無いか、パラメータを JSON にできなければ nil
     /// https://discord.com/developers/docs/reference#uploading-files
