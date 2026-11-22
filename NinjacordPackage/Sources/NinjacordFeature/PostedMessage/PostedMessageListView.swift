@@ -110,6 +110,14 @@ struct PostedMessageListView: View {
         .onChange(of: isHistoryEnabled) { _ in
             viewModel.reload()
         }
+        // 開いている間に送信画面の送信が終わって送信履歴が保存されたときも、一覧に反映する。
+        // 送信履歴は画面ごとの別のストアが UserDefaults に書くので、UserDefaults の変更を見る
+        .onReceive(
+            NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+                .receive(on: RunLoop.main)
+        ) { _ in
+            viewModel.reload()
+        }
     }
 
     private var list: some View {
