@@ -6,7 +6,8 @@
 import Foundation
 
 /// 通信せずに、送信先の URL ごとに決めておいたレスポンスかエラーを返す URLProtocol。受け取ったリクエストと本文を URL ごとに記録する。
-/// テストごとに `makeURL(returning:)` で別の URL を作って使えば、並べて走るテストどうしで応答と記録が混ざらない
+/// テストごとに `makeURL(returning:)` で別の URL を作って使えば、並べて走るテストどうしで応答と記録が混ざらない。
+/// 送信では `?wait=true` などのクエリを付けて送るので、応答と記録はクエリを除いた URL で引く（受け取った URL はクエリ付きのまま残す）
 final class StubURLProtocol: URLProtocol {
     enum Stub {
         case response(statusCode: Int, data: Data)
@@ -49,9 +50,26 @@ final class StubURLProtocol: URLProtocol {
         return url
     }
 
-    /// その URL に送られたリクエスト（送った順）
+    /// その URL（送った編集・削除の URL など）に送ったときの応答を決める
+    static func stub(_ url: URL, returning stub: Stub) {
+        lock.withLock {
+            stubs[key(for: url)] = stub
+        }
+    }
+
+    /// その URL に送られたリクエスト（送った順）。クエリは見ない
     static func requests(to url: URL) -> [ReceivedRequest] {
-        lock.withLock { receivedRequests[url] ?? [] }
+        lock.withLock { receivedRequests[key(for: url)] ?? [] }
+    }
+
+    /// 応答と記録を引くための、クエリとフラグメントを除いた URL
+    private static func key(for url: URL) -> URL {
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+        components.query = nil
+        components.fragment = nil
+        return components.url ?? url
     }
 
     override static func canInit(with request: URLRequest) -> Bool {
@@ -69,10 +87,11 @@ final class StubURLProtocol: URLProtocol {
         }
         // URLProtocol には httpBody ではなく httpBodyStream として渡ってくることがある
         let body = request.httpBody ?? request.httpBodyStream.map(Self.readAll)
+        let key = Self.key(for: url)
         let stub = Self.lock.withLock {
-            Self.receivedRequests[url, default: []].append(ReceivedRequest(request: request, body: body))
+            Self.receivedRequests[key, default: []].append(ReceivedRequest(request: request, body: body))
             // 応答を決めていない URL には、通信できなかったものとして返す
-            return Self.stubs[url] ?? .error(URLError(.cannotConnectToHost))
+            return Self.stubs[key] ?? .error(URLError(.cannotConnectToHost))
         }
         switch stub {
         case let .response(statusCode, data):

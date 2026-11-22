@@ -179,19 +179,3 @@ struct DiscordWebhookURLTests {
         )
     }
 }
-
-private extension Result {
-    var successValue: Success? {
-        if case .success(let value) = self {
-            return value
-        }
-        return nil
-    }
-
-    var failureValue: Failure? {
-        if case .failure(let error) = self {
-            return error
-        }
-        return nil
-    }
-}

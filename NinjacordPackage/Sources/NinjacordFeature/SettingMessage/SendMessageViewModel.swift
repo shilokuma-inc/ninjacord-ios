@@ -109,7 +109,8 @@ final class SendMessageViewModel: ObservableObject {
     }
 
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
-    /// 失敗時は Discord のレスポンスから判定した原因を返す。URL にできなければ、通信せずに invalidToken を返す
+    /// 成功時は送ったメッセージ（編集・削除に使う ID）を、失敗時は Discord のレスポンスから判定した原因を返す。
+    /// URL にできなければ、通信せずに invalidToken を返す
     @discardableResult
     /// - Parameter countsAsSend: 送信成功回数（初回送信の計測・レビュー依頼・全画面広告の判定に使う）に数えるか。
     ///   一斉送信では宛先ごとではなく 1 回の操作で 1 回と数えるため、呼び出し元でまとめて数える
@@ -119,9 +120,9 @@ final class SendMessageViewModel: ObservableObject {
         messageEntity: MessageEntity,
         attachment: ImageAttachment? = nil,
         countsAsSend: Bool = true
-    ) async -> Result<Void, DiscordWebhookError> {
+    ) async -> Result<SentWebhookMessage, DiscordWebhookError> {
         let webhookRequest = DiscordWebhookRequest(messageEntity: messageEntity, attachment: attachment)
-        let response: DiscordWebhookClient.Response
+        let response: DiscordWebhookClient.Response<SentWebhookMessage>
         if let endpoint = Self.webhookEndpoint(from: url) {
             response = await client.send(webhookRequest, to: endpoint)
         } else {
@@ -143,7 +144,7 @@ extension SendMessageViewModel {
     /// 一斉送信の宛先 1 件ごとの結果
     struct BroadcastResult {
         let url: String
-        let result: Result<Void, DiscordWebhookError>
+        let result: Result<SentWebhookMessage, DiscordWebhookError>
     }
 
     /// 複数の Webhook に同じメッセージを 1 件ずつ順に送る（Pro 限定の一斉送信）。
@@ -170,8 +171,9 @@ extension SendMessageViewModel {
         return results
     }
 
-    /// 入力された Webhook URL を送信先の URL にする。入力チェックと同じく前後の空白・改行は除く。URL にできなければ nil
-    static func webhookEndpoint(from string: String) -> URL? {
+    /// 入力された Webhook URL を送信先の URL にする。入力チェックと同じく前後の空白・改行は除く。URL にできなければ nil。
+    /// 送ったメッセージの編集・削除の URL（`WebhookMessageEndpoint`）でも使うので、MainActor に縛らない
+    nonisolated static func webhookEndpoint(from string: String) -> URL? {
         URL(string: string.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 

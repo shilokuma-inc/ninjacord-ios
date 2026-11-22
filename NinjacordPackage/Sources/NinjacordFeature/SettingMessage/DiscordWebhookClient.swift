@@ -7,11 +7,11 @@ import Foundation
 
 /// Discord の Webhook に送信する通信。URLSession の async API で送り、レスポンスを待って結果を返す
 struct DiscordWebhookClient {
-    /// 送信の結果。Analytics にステータスコードも記録するため、成否と一緒に返す
-    struct Response {
+    /// 通信の結果。Analytics にステータスコードも記録するため、成否と一緒に返す
+    struct Response<Success> {
         /// Discord が返した HTTP ステータスコード。通信できずレスポンスが無いときは nil
         let statusCode: Int?
-        let result: Result<Void, DiscordWebhookError>
+        let result: Result<Success, DiscordWebhookError>
     }
 
     private let session: URLSession
@@ -21,33 +21,23 @@ struct DiscordWebhookClient {
         self.session = session
     }
 
-    /// Webhook に送る。ステータスコードが 2xx 以外なら失敗にする（Alamofire の validate() と同じ）
-    func send(_ webhookRequest: DiscordWebhookRequest, to url: URL) async -> Response {
+    /// Webhook に送る。ステータスコードが 2xx 以外なら失敗にする（Alamofire の validate() と同じ）。
+    /// `wait=true` を付けて送り、Discord が作ったメッセージの ID を受け取る
+    func send(_ webhookRequest: DiscordWebhookRequest, to url: URL) async -> Response<SentWebhookMessage> {
         guard let request = makeURLRequest(webhookRequest, url: url, boundary: Self.makeBoundary()) else {
             // 送る中身を作れなければ、通信せずに失敗にする（#473）
             return Response(statusCode: nil, result: .failure(.unknown(statusCode: nil)))
         }
-        let data: Data
-        let response: URLResponse
-        do {
-            (data, response) = try await session.data(for: request)
-        } catch {
-            return Response(statusCode: nil, result: .failure(DiscordWebhookError(statusCode: nil, data: nil)))
+        return await perform(request) { data in
+            // 2xx なら送れている。本文を読めなくても成功にし、ID が無いので編集・削除だけできなくする
+            SentWebhookMessage(id: try? JSONDecoder().decode(MessageResponseBody.self, from: data).id)
         }
-        guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-            return Response(statusCode: nil, result: .failure(DiscordWebhookError(statusCode: nil, data: nil)))
-        }
-        guard (200..<300).contains(statusCode) else {
-            let error = DiscordWebhookError(statusCode: statusCode, data: data)
-            return Response(statusCode: statusCode, result: .failure(error))
-        }
-        return Response(statusCode: statusCode, result: .success(()))
     }
 
     /// 送る URLRequest を組み立てる。画像を添付するなら multipart/form-data、しなければ JSON で送る。
     /// 送る中身（パラメータの JSON）を作れなければ nil
     func makeURLRequest(_ webhookRequest: DiscordWebhookRequest, url: URL, boundary: String) -> URLRequest? {
-        var request = URLRequest(url: url)
+        var request = URLRequest(url: WebhookMessageEndpoint.executeURL(from: url))
         request.httpMethod = "POST"
         if webhookRequest.attachment != nil {
             guard let multipartBody = webhookRequest.multipartBody(boundary: boundary) else {
@@ -65,6 +55,28 @@ struct DiscordWebhookClient {
         return request
     }
 
+    /// 通信して、2xx なら本文から成功の値を作る。2xx 以外はステータスコードと本文から原因を判定する
+    private func perform<Success>(
+        _ request: URLRequest,
+        success: (Data) -> Success
+    ) async -> Response<Success> {
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            return Response(statusCode: nil, result: .failure(DiscordWebhookError(statusCode: nil, data: nil)))
+        }
+        guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
+            return Response(statusCode: nil, result: .failure(DiscordWebhookError(statusCode: nil, data: nil)))
+        }
+        guard (200..<300).contains(statusCode) else {
+            let error = DiscordWebhookError(statusCode: statusCode, data: data)
+            return Response(statusCode: statusCode, result: .failure(error))
+        }
+        return Response(statusCode: statusCode, result: .success(success(data)))
+    }
+
     /// multipart/form-data の境界。Alamofire と同じく、送るたびに乱数で作る
     private static func makeBoundary() -> String {
         String(
@@ -73,4 +85,16 @@ struct DiscordWebhookClient {
             UInt32.random(in: .min ... .max)
         )
     }
+}
+
+/// Webhook で送ったメッセージ。`wait=true` で送ると、Discord が作ったメッセージが返る
+struct SentWebhookMessage: Equatable {
+    /// メッセージの ID。編集・削除に使う。レスポンスを読めなかったときは nil（送れてはいる）
+    let id: String?
+}
+
+/// Execute Webhook（`wait=true`）のレスポンスのうち、使う項目だけ
+/// https://discord.com/developers/docs/resources/message#message-object
+private struct MessageResponseBody: Decodable {
+    let id: String
 }
