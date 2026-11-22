@@ -586,22 +586,6 @@
         }
       }
     },
-    "URLが入力されていません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URL is not entered"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URLが入力されていません"
-          }
-        }
-      }
-    },
     "URLの形式が正しくありません" : {
       "localizations" : {
         "en" : {
@@ -826,22 +810,6 @@
         }
       }
     },
-    "https:// から始まるWebhook URLを入力してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a Webhook URL starting with https://"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https:// から始まるWebhook URLを入力してください"
-          }
-        }
-      }
-    },
     "「%@」として保存済みです" : {
       "localizations" : {
         "en" : {
@@ -854,6 +822,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "「%@」として保存済みです"
+          }
+        }
+      }
+    },
+    "「宛先」をタップして、Discordで「ウェブフックURLをコピー」したURLを貼り付け直してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap Destination and paste the URL from \"Copy Webhook URL\" in Discord again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「宛先」をタップして、Discordで「ウェブフックURLをコピー」したURLを貼り付け直してください"
+          }
+        }
+      }
+    },
+    "「宛先」をタップして、保存した宛先から選ぶか、Webhook URLを貼り付けてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap Destination, then pick a saved destination or paste a webhook URL."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「宛先」をタップして、保存した宛先から選ぶか、Webhook URLを貼り付けてください"
           }
         }
       }
@@ -2858,6 +2858,22 @@
         }
       }
     },
+    "宛先が選ばれていません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No destination selected"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先が選ばれていません"
+          }
+        }
+      }
+    },
     "宛先の名前を入れてください" : {
       "localizations" : {
         "en" : {
@@ -3990,22 +4006,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信中…"
-          }
-        }
-      }
-    },
-    "送信先のWebhook URLを入力してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter the destination Webhook URL"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "送信先のWebhook URLを入力してください"
           }
         }
       }
