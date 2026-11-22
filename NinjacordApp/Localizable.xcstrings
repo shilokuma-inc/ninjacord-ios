@@ -634,38 +634,6 @@
         }
       }
     },
-    "URL欄の横のブックマークから、保存したURLをすぐに呼び出せます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap the bookmark next to the URL field to quickly pick a saved URL."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URL欄の横のブックマークから、保存したURLをすぐに呼び出せます"
-          }
-        }
-      }
-    },
-    "URL設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URL Setting"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "URL設定"
-          }
-        }
-      }
-    },
     "Webhook URL" : {
       "localizations" : {
         "en" : {
@@ -1002,18 +970,18 @@
         }
       }
     },
-    "このアプリのURL欄に貼り付けます" : {
+    "このアプリの「宛先」に貼り付けます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Paste it into the URL field in this app."
+            "value" : "Paste it into Destination in this app."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このアプリのURL欄に貼り付けます"
+            "value" : "このアプリの「宛先」に貼り付けます"
           }
         }
       }
@@ -1130,18 +1098,18 @@
         }
       }
     },
-    "よく使うURLは保存" : {
+    "よく使う宛先は保存" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save the URLs you use often"
+            "value" : "Save Frequent Destinations"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "よく使うURLは保存"
+            "value" : "よく使う宛先は保存"
           }
         }
       }
@@ -1354,18 +1322,18 @@
         }
       }
     },
-    "コピーしたWebhook URLをURL欄に入れられます" : {
+    "コピーしたWebhook URLを宛先に入れられます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can put the copied Webhook URL into the URL field."
+            "value" : "You can paste the copied webhook URL as the destination."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "コピーしたWebhook URLをURL欄に入れられます"
+            "value" : "コピーしたWebhook URLを宛先に入れられます"
           }
         }
       }
@@ -3994,22 +3962,6 @@
         }
       }
     },
-    "送信先URL設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Destination URL Setting"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "送信先URL設定"
-          }
-        }
-      }
-    },
     "送信先のWebhook URLを入力してください" : {
       "localizations" : {
         "en" : {
@@ -4246,6 +4198,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信画面から送ったメッセージがここに表示され、あとから編集・削除できます"
+          }
+        }
+      }
+    },
+    "送信画面の「宛先」から、保存した宛先を名前で選べます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a saved destination by name from Destination on the Sending tab."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信画面の「宛先」から、保存した宛先を名前で選べます"
           }
         }
       }
