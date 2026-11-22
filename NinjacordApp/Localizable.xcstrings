@@ -244,6 +244,22 @@
         }
       }
     },
+    "Discordのチャンネルからも削除されます。元に戻せません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It will also be deleted from the Discord channel. This can't be undone."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordのチャンネルからも削除されます。元に戻せません"
+          }
+        }
+      }
+    },
     "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします" : {
       "localizations" : {
         "en" : {
@@ -387,6 +403,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します"
+          }
+        }
+      }
+    },
+    "ONにする前に送ったメッセージは表示されません。設定の「送信履歴」からいつでもOFFにできます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messages sent before turning it on won't appear. You can turn it off anytime under Send History in the Setting tab."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ONにする前に送ったメッセージは表示されません。設定の「送信履歴」からいつでもOFFにできます"
           }
         }
       }
@@ -826,6 +858,22 @@
         }
       }
     },
+    "このメッセージを削除しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this message?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このメッセージを削除しますか？"
+          }
+        }
+      }
+    },
     "すべて削除" : {
       "localizations" : {
         "en" : {
@@ -886,6 +934,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "はじめる"
+          }
+        }
+      }
+    },
+    "まだ送ったメッセージはありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No messages sent yet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ送ったメッセージはありません"
           }
         }
       }
@@ -1722,6 +1786,22 @@
         }
       }
     },
+    "メッセージを削除しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message deleted"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージを削除しました"
+          }
+        }
+      }
+    },
     "メッセージを送信！" : {
       "localizations" : {
         "en" : {
@@ -2038,6 +2118,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "利用規約"
+          }
+        }
+      }
+    },
+    "削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
           }
         }
       }
@@ -2410,6 +2506,22 @@
         }
       }
     },
+    "投稿済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posted"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "投稿済み"
+          }
+        }
+      }
+    },
     "折りたたみ済み" : {
       "localizations" : {
         "en" : {
@@ -2650,6 +2762,22 @@
         }
       }
     },
+    "画像だけのメッセージ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image-only message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像だけのメッセージ"
+          }
+        }
+      }
+    },
     "画像のURL" : {
       "localizations" : {
         "en" : {
@@ -2726,6 +2854,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画像を添付できませんでした。10MBまでの画像を選んでください"
+          }
+        }
+      }
+    },
+    "直近%lld件の送信履歴のうち、送れたメッセージを表示しています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Showing the messages that were sent successfully among your last %lld sends."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "直近%lld件の送信履歴のうち、送れたメッセージを表示しています"
+          }
+        }
+      }
+    },
+    "編集済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集済み"
           }
         }
       }
@@ -3002,6 +3162,22 @@
         }
       }
     },
+    "送ったメッセージをあとから編集・削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit or delete messages after sending"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送ったメッセージをあとから編集・削除"
+          }
+        }
+      }
+    },
     "送信" : {
       "localizations" : {
         "en" : {
@@ -3210,6 +3386,22 @@
         }
       }
     },
+    "送信履歴の保存がOFFのため、これから送るメッセージはここに追加されません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send history is off, so messages you send from now on won't be added here."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信履歴の保存がOFFのため、これから送るメッセージはここに追加されません"
+          }
+        }
+      }
+    },
     "送信履歴はありません" : {
       "localizations" : {
         "en" : {
@@ -3274,6 +3466,22 @@
         }
       }
     },
+    "送信履歴を保存すると、この端末から送ったメッセージを、ここから編集・削除できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on send history to edit or delete messages you send from this device right here."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信履歴を保存すると、この端末から送ったメッセージを、ここから編集・削除できます"
+          }
+        }
+      }
+    },
     "送信成功" : {
       "localizations" : {
         "en" : {
@@ -3318,6 +3526,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信日時を表示する"
+          }
+        }
+      }
+    },
+    "送信画面から送ったメッセージがここに表示され、あとから編集・削除できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messages you send from the Sending tab appear here, and you can edit or delete them later."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信画面から送ったメッセージがここに表示され、あとから編集・削除できます"
           }
         }
       }
