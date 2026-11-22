@@ -158,11 +158,13 @@ struct PostedMessageListView: View {
             )
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(role: .destructive) {
+            // destructive にすると、確認ダイアログで決める前に行を消すアニメーションが始まるので、赤い色だけを付ける
+            Button {
                 deletingEntry = entry
             } label: {
                 Label("削除", systemImage: "trash")
             }
+            .tint(.red)
         }
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             Button {
