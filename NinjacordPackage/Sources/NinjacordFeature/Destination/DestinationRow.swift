@@ -42,7 +42,10 @@ struct WebhookAvatarView: View {
             loadedURL = nil
             // 撮影モードではデモの URL（読めない値）を読みに行かない
             guard let url, !url.isEmpty, !ScreenshotDemo.isEnabled else { return }
-            image = await Self.loader.image(from: url)
+            let loaded = await Self.loader.image(from: url)
+            // URL が変わってキャンセルされた読み込みの結果は使わない（古い URL の画像や読み込み済みの印が残らないように）
+            guard !Task.isCancelled else { return }
+            image = loaded
             loadedURL = url
         }
     }
