@@ -1002,6 +1002,22 @@
         }
       }
     },
+    "この内容をテンプレートに保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as Template"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この内容をテンプレートに保存"
+          }
+        }
+      }
+    },
     "この宛先を保存" : {
       "localizations" : {
         "en" : {
@@ -1526,6 +1542,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "テンプレート"
+          }
+        }
+      }
+    },
+    "テンプレートから呼び出す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use a Template"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートから呼び出す"
           }
         }
       }

@@ -19,6 +19,9 @@ struct SendMessageView: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @StateObject private var viewModel = SendMessageViewModel()
     @StateObject private var webhookProfileStore = WebhookProfileStore()
+    /// テンプレートの保存先。上の「テンプレートから呼び出す」と下の「この内容をテンプレートに保存」で共有し、
+    /// 保存したらすぐに呼び出すボタンを出す（Issue #675）
+    @StateObject private var templateStore = MessageTemplateStore()
 
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
@@ -73,9 +76,10 @@ struct SendMessageView: View {
                     minimumBottomHeight: minimumBottomHeight(width:)
                 ) {
                     VStack(spacing: Self.sectionSpacing) {
-                        // 宛先にも中身にも属さないので、セクションの外の先頭にまとめる（Discussion #586 の Q4）
-                        MessageTemplateButtons(message: viewModel.currentMessage, onApply: viewModel.applyTemplate) {
-                            viewModel.toast = Toast(style: .success, message: "テンプレートを保存しました")
+                        // 宛先にも中身にも属さないので、セクションの外の先頭に置く（Discussion #586 の Q4）。
+                        // 呼び出すものが無いときは出さない（Issue #675）
+                        if !templateStore.items.isEmpty {
+                            MessageTemplateLoadButton(store: templateStore, onApply: viewModel.applyTemplate)
                         }
 
                         destinationSection
@@ -90,7 +94,15 @@ struct SendMessageView: View {
                     .frame(maxWidth: Self.contentMaxWidth)
 
                     Spacer()
-                        .frame(height: 24.0)
+                        .frame(height: 20.0)
+
+                    // 送る前に「この内容を残しておく」と思ったときに押せるよう、送信ボタンのすぐ上に置く（Issue #675）
+                    MessageTemplateSaveButton(store: templateStore, message: viewModel.currentMessage) {
+                        viewModel.toast = Toast(style: .success, message: "テンプレートを保存しました")
+                    }
+
+                    Spacer()
+                        .frame(height: 16.0)
 
                     sendButton
                 } bottom: {
