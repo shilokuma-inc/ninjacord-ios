@@ -212,6 +212,22 @@
         }
       }
     },
+    "DiscordでコピーしたWebhook URLを貼り付けてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste the webhook URL you copied in Discord."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DiscordでコピーしたWebhook URLを貼り付けてください"
+          }
+        }
+      }
+    },
     "Discordで障害が発生しています。しばらく待ってから送信してください" : {
       "localizations" : {
         "en" : {
@@ -698,6 +714,22 @@
         }
       }
     },
+    "Webhook URLの形式ではありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not a webhook URL"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook URLの形式ではありません"
+          }
+        }
+      }
+    },
     "Webhook URLをコピー" : {
       "localizations" : {
         "en" : {
@@ -710,6 +742,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Webhook URLをコピー"
+          }
+        }
+      }
+    },
+    "Webhook「%@」" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook「%@」"
+          }
+        }
+      }
+    },
+    "Webhookが見つかりません。Discordで削除されていないか確認してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook not found. Make sure it hasn't been deleted in Discord."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhookが見つかりません。Discordで削除されていないか確認してください"
           }
         }
       }
@@ -762,6 +826,38 @@
         }
       }
     },
+    "Webhookを確認しています…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the webhook…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhookを確認しています…"
+          }
+        }
+      }
+    },
+    "Webhookを確認できました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhook found"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webhookを確認できました"
+          }
+        }
+      }
+    },
     "https:// から始まるWebhook URLを入力してください" : {
       "localizations" : {
         "en" : {
@@ -774,6 +870,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "https:// から始まるWebhook URLを入力してください"
+          }
+        }
+      }
+    },
+    "「%@」として保存済みです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already saved as \"%@\""
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」として保存済みです"
           }
         }
       }
@@ -1286,6 +1398,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スキップ"
+          }
+        }
+      }
+    },
+    "スレッド" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thread"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スレッド"
           }
         }
       }
@@ -2026,6 +2154,22 @@
         }
       }
     },
+    "一覧に出す名前です。例: ゲーム部 #お知らせ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The name shown in your list. For example: Gaming Club #announcements"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一覧に出す名前です。例: ゲーム部 #お知らせ"
+          }
+        }
+      }
+    },
     "不明な宛先" : {
       "localizations" : {
         "en" : {
@@ -2378,6 +2522,22 @@
         }
       }
     },
+    "名前のないWebhook" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unnamed webhook"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前のないWebhook"
+          }
+        }
+      }
+    },
     "名前を入れてください" : {
       "localizations" : {
         "en" : {
@@ -2586,6 +2746,22 @@
         }
       }
     },
+    "宛先の名前を入れてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a name for this destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先の名前を入れてください"
+          }
+        }
+      }
+    },
     "宛先の選択を解除して1件ずつ送るか、Proにしてください" : {
       "localizations" : {
         "en" : {
@@ -2598,6 +2774,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "宛先の選択を解除して1件ずつ送るか、Proにしてください"
+          }
+        }
+      }
+    },
+    "宛先を保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先を保存"
           }
         }
       }
@@ -3498,6 +3690,22 @@
         }
       }
     },
+    "送り先" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送り先"
+          }
+        }
+      }
+    },
     "送信" : {
       "localizations" : {
         "en" : {
@@ -3882,6 +4090,22 @@
         }
       }
     },
+    "通信できず、Webhookを確認できませんでした。このまま保存することもできます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't reach Discord to check the webhook. You can still save it."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通信できず、Webhookを確認できませんでした。このまま保存することもできます"
+          }
+        }
+      }
+    },
     "通信に失敗しました。ネットワーク接続を確認してください" : {
       "localizations" : {
         "en" : {
@@ -3910,6 +4134,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選んだ宛先に、同じメッセージを1件ずつ順に送ります"
+          }
+        }
+      }
+    },
+    "選択中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択中"
           }
         }
       }
