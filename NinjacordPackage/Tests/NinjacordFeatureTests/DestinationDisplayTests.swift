@@ -10,7 +10,10 @@ import Testing
 /// 送信画面の宛先カードに出す内容（`DestinationDisplay`）。URL（トークン）は出さず、名前で示す（Issue #674）
 struct DestinationDisplayTests {
     private static let url = "https://discord.com/api/webhooks/1180000000000000011/secretTOKEN"
-    private static let profile = WebhookProfile(name: "レイド告知Bot", avatarURL: URL(string: "https://cdn.discordapp.com/a.png"))
+    private static let webhookName = "レイド告知Bot"
+    private static let profile = WebhookProfile(name: webhookName, avatarURL: URL(string: "https://cdn.discordapp.com/a.png"))
+    /// 実装と同じ、名前を差し込むローカライズのキーで期待値を作る
+    private static let webhookSubtitle = String(localized: "Webhook「\(webhookName)」")
 
     @Test("宛先が空なら、選ぶよう案内する")
     func empty() {
@@ -25,14 +28,14 @@ struct DestinationDisplayTests {
         let display = DestinationDisplay.resolve(url: Self.url, saved: saved, profile: nil)
         #expect(display.state == .saved)
         #expect(display.title == "ゲーム部 #お知らせ")
-        #expect(display.subtitle == String(localized: "Webhook「レイド告知Bot」"))
+        #expect(display.subtitle == Self.webhookSubtitle)
     }
 
     @Test("保存した宛先で Webhook の名前をまだ覚えていなければ、取得したものを使い、無ければ短い表示にする")
     func savedWithoutCachedProfile() {
         let saved = SavedWebhookURL(id: UUID(), name: "ゲーム部 #お知らせ", url: Self.url)
         let fetched = DestinationDisplay.resolve(url: Self.url, saved: saved, profile: Self.profile)
-        #expect(fetched.subtitle == String(localized: "Webhook「レイド告知Bot」"))
+        #expect(fetched.subtitle == Self.webhookSubtitle)
         #expect(fetched.avatarURL == "https://cdn.discordapp.com/a.png")
 
         let notFetched = DestinationDisplay.resolve(url: Self.url, saved: saved, profile: nil)
