@@ -162,7 +162,8 @@ struct PostedMessageListView: View {
                 entry: entry,
                 destination: destinationName(of: entry),
                 isProcessing: isProcessing,
-                showsProBadge: !canEdit
+                // App Store 用スクリーンショットでも、編集が Pro 限定だと分かるよう出す（審査ガイドライン 2.3.2、Discussion #355）
+                showsProBadge: !canEdit || ScreenshotDemo.isEnabled
             )
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
