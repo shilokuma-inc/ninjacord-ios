@@ -70,9 +70,11 @@ struct SendMessageView: View {
                 // 入力欄から送信ボタンまではスクロールの中に入れ、下端の広告の領域は動かさない
                 SendMessageScrollLayout(
                     onTapBackground: dismissKeyboard,
-                    // 撮影する送信画面では、上端に固定したプレビューの下に埋め込み・添付（6.9 inch では送信ボタンまで）が写るよう、
-                    // 埋め込みの上端までスクロールしておく。送信者と本文はプレビューに内容が出るのでパネルの裏に送る
-                    scrollTargetOnAppear: ScreenshotDemo.scene == .send ? "embed" : nil,
+                    // 撮影する送信画面では、上端に固定したプレビューの下に埋め込み・添付・送信ボタンが写るよう、
+                    // 送信ボタンの下端までスクロールしておく。送信者と本文はプレビューに内容が出るのでパネルの裏に送る。
+                    // 送信ボタンの上にテンプレートの保存ボタンを置いたので（Issue #675）、埋め込みの上端に合わせると送信ボタンが隠れる
+                    scrollTargetOnAppear: ScreenshotDemo.scene == .send ? "send" : nil,
+                    scrollTargetAnchor: .bottom,
                     minimumBottomHeight: minimumBottomHeight(width:)
                 ) {
                     VStack(spacing: Self.sectionSpacing) {
@@ -86,7 +88,6 @@ struct SendMessageView: View {
                         senderSection
                         contentSection
                         embedSection
-                            .id("embed")
                         attachmentSection
                     }
                     .padding(.horizontal)
@@ -105,6 +106,7 @@ struct SendMessageView: View {
                         .frame(height: 16.0)
 
                     sendButton
+                        .id("send")
                 } bottom: {
                     if showsBannerAd {
                         BannerView()

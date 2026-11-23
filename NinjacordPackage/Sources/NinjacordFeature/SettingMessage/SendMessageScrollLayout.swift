@@ -13,6 +13,8 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
     /// 表示したときに、`content` の中のこの ID（`.id(_:)`）の View の上端までスクロールしておく。nil なら動かさない。
     /// 収まっているときは動かない
     var scrollTargetOnAppear: String?
+    /// `scrollTargetOnAppear` の View のどこを画面に合わせるか。既定は上端
+    var scrollTargetAnchor: UnitPoint = .top
     /// `bottom` に必ず残す高さ。引数は画面の幅（バナー広告の高さは幅で決まるため）
     var minimumBottomHeight: (CGFloat) -> CGFloat = { _ in 0 }
     @ViewBuilder let content: Content
@@ -65,7 +67,7 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
         }
     }
 
-    /// `scrollTargetOnAppear` があれば、その View の上端までスクロールする。
+    /// `scrollTargetOnAppear` があれば、その View の `scrollTargetAnchor` の位置までスクロールする。
     /// 添付画像やアイコンの読み込みで `content` の高さが決まるのを待ってから動かす
     private func scrollToTarget(_ scrollProxy: ScrollViewProxy) async {
         guard let scrollTargetOnAppear else { return }
@@ -74,7 +76,7 @@ struct SendMessageScrollLayout<Content: View, Bottom: View>: View {
         } catch {
             return
         }
-        scrollProxy.scrollTo(scrollTargetOnAppear, anchor: .top)
+        scrollProxy.scrollTo(scrollTargetOnAppear, anchor: scrollTargetAnchor)
     }
 }
 
