@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-/// 設定タブから開く、保存済み Webhook URL の管理画面（閲覧・追加・削除）
+/// 設定タブから開く、保存した宛先の管理画面（追加・名前の変更・削除・並び替え）
 struct WebhookURLSettingView: View {
     var body: some View {
-        SavedWebhookURLListView(onSelect: nil)
-            .navigationTitle("URL設定")
+        SavedDestinationListView(mode: .manage)
+            .navigationTitle("保存した宛先")
     }
 }
 

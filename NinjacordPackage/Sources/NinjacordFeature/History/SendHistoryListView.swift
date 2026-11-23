@@ -9,6 +9,8 @@ import SwiftUI
 struct SendHistoryListView: View {
     @StateObject private var store = SendHistoryStore()
     @StateObject private var adModel = InlineBannerAdModel()
+    /// 宛先に、保存した宛先の名前を出すため
+    @StateObject private var urlStore = WebhookURLStore()
 
     var body: some View {
         ZStack {
@@ -39,6 +41,7 @@ struct SendHistoryListView: View {
         .navigationTitle("送信履歴")
         .onAppear {
             store.reload()
+            urlStore.reload()
         }
     }
 
@@ -67,12 +70,11 @@ struct SendHistoryListView: View {
                         .lineLimit(2)
                 }
 
-                // URL の末尾はトークンなので、先頭（どの Webhook か）が見えるよう末尾を省略する
-                Text(entry.url)
+                // URL にはトークンが含まれるので出さず、保存した宛先の名前（保存していなければ Webhook ID の末尾）を出す（Issue #674）
+                Text(urlStore.displayName(for: entry.url))
                     .font(.caption)
                     .foregroundStyle(Color.appTextSecondary)
                     .lineLimit(1)
-                    .truncationMode(.tail)
             }
         }
     }

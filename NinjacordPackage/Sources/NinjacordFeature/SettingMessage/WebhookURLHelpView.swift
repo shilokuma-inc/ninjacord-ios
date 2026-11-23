@@ -15,7 +15,7 @@ struct WebhookURLHelpView: View {
     /// Discord の Web 版。ログインするとそのままクライアントに入れる
     private static let discordWebURL = URL(string: "https://discord.com/app")!
 
-    /// 貼り付けた Webhook URL を受け取る。送信画面の URL 欄に入れてシートを閉じる
+    /// 貼り付けた Webhook URL を受け取る。送信画面の宛先に入れてシートを閉じる
     var onPasteWebhookURL: (String) -> Void = { _ in }
 
     @Environment(\.openURL) private var openURL
@@ -32,7 +32,7 @@ struct WebhookURLHelpView: View {
         "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます",
         "「連携サービス」→「ウェブフック」を開きます",
         "「新しいウェブフック」を作り、「ウェブフックURLをコピー」を押します",
-        "このアプリのURL欄に貼り付けます"
+        "このアプリの「宛先」に貼り付けます"
     ]
 
     var body: some View {
@@ -146,11 +146,11 @@ extension WebhookURLHelpView {
         })
     }
 
-    /// コピーした Webhook URL を URL 欄に入れる導線。手順 4 を読んだ流れで押せるよう手順の直後に置く。
+    /// コピーした Webhook URL を宛先に入れる導線。手順 4 を読んだ流れで押せるよう手順の直後に置く。
     /// PasteButton は押したときだけクリップボードを読むので、「ペーストを許可」の確認が出ない
     private var pasteWebhookURLSection: some View {
         VStack(alignment: .leading, spacing: 12.0) {
-            Text("コピーしたWebhook URLをURL欄に入れられます")
+            Text("コピーしたWebhook URLを宛先に入れられます")
                 .font(.system(size: 15))
                 .foregroundStyle(Color.appTextSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -176,7 +176,7 @@ extension WebhookURLHelpView {
         }
     }
 
-    /// Discord の Webhook URL だけを URL 欄に入れる。それ以外は入れずに知らせる
+    /// Discord の Webhook URL だけを宛先に入れる。それ以外は入れずに知らせる
     private func pasteWebhookURL(_ string: String) {
         let url = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard url.range(of: DiscordWebhookURL.pattern, options: .regularExpression) != nil else {

@@ -19,6 +19,9 @@ struct SendMessageView: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @StateObject private var viewModel = SendMessageViewModel()
     @StateObject private var webhookProfileStore = WebhookProfileStore()
+    /// テンプレートの保存先。上の「テンプレートから呼び出す」と下の「この内容をテンプレートに保存」で共有し、
+    /// 保存したらすぐに呼び出すボタンを出す（Issue #675）
+    @StateObject private var templateStore = MessageTemplateStore()
 
     /// 入力欄の最大幅（左右の余白を含む）。iPhone では画面幅のほうが狭いので効かない
     private static let contentMaxWidth: CGFloat = 600.0
@@ -73,9 +76,10 @@ struct SendMessageView: View {
                     minimumBottomHeight: minimumBottomHeight(width:)
                 ) {
                     VStack(spacing: Self.sectionSpacing) {
-                        // 宛先にも中身にも属さないので、セクションの外の先頭にまとめる（Discussion #586 の Q4）
-                        MessageTemplateButtons(message: viewModel.currentMessage, onApply: viewModel.applyTemplate) {
-                            viewModel.toast = Toast(style: .success, message: "テンプレートを保存しました")
+                        // 宛先にも中身にも属さないので、セクションの外の先頭に置く（Discussion #586 の Q4）。
+                        // 呼び出すものが無いときは出さない（Issue #675）
+                        if !templateStore.items.isEmpty {
+                            MessageTemplateLoadButton(store: templateStore, onApply: viewModel.applyTemplate)
                         }
 
                         destinationSection
@@ -90,7 +94,15 @@ struct SendMessageView: View {
                     .frame(maxWidth: Self.contentMaxWidth)
 
                     Spacer()
-                        .frame(height: 24.0)
+                        .frame(height: 20.0)
+
+                    // 送る前に「この内容を残しておく」と思ったときに押せるよう、送信ボタンのすぐ上に置く（Issue #675）
+                    MessageTemplateSaveButton(store: templateStore, message: viewModel.currentMessage) {
+                        viewModel.toast = Toast(style: .success, message: "テンプレートを保存しました")
+                    }
+
+                    Spacer()
+                        .frame(height: 16.0)
 
                     sendButton
                 } bottom: {
@@ -250,25 +262,19 @@ extension SendMessageView {
 }
 
 extension SendMessageView {
-    /// 宛先: Webhook URL と、URL を選ぶ・調べるボタン、一斉送信
+    /// 宛先: 今の宛先を名前とアイコンで示すカード（タップで選ぶ）と、一斉送信。見出しの右に URL の取得方法。
+    /// 長い URL は入り切らず見分けられないので、URL の入力欄は置かない（Issue #674）
     private var destinationSection: some View {
         SendMessageSection(title: "宛先") {
             if viewModel.broadcastTargets.isEmpty {
-                // 見出しの分だけ高くなるので、横のボタンは入力欄の中央にそろえる
-                HStack(alignment: .textFieldCenter) {
-                    ClearableIconTextField(
-                        icon: MessagePartIcon(part: .destination),
-                        placeholder: "URLを入れてください",
-                        text: $viewModel.inputURL,
-                        title: "Webhook URL"
-                    )
-                    .onTapGesture {
-                        self.isEditing = true
-                    }
-
-                    WebhookURLHelpButton(url: $viewModel.inputURL)
-
-                    SavedWebhookURLButton(url: $viewModel.inputURL)
+                DestinationCard(
+                    url: $viewModel.inputURL,
+                    profile: webhookProfileStore.profile(for: viewModel.inputURL)
+                )
+                // カードに Webhook の名前とアイコンを出すため、宛先が変わったら取得する
+                .task(id: viewModel.inputURL) {
+                    guard !ScreenshotDemo.isEnabled else { return }
+                    await webhookProfileStore.load(for: viewModel.inputURL)
                 }
             } else {
                 broadcastTargetsRow
@@ -276,6 +282,11 @@ extension SendMessageView {
 
             BroadcastButton(targets: $viewModel.broadcastTargets)
                 .padding(.leading, 44.0)
+        } accessory: {
+            // 一斉送信中は宛先のカードが無く、貼り付けた URL に送れないので出さない
+            if viewModel.broadcastTargets.isEmpty {
+                WebhookURLHelpButton(url: $viewModel.inputURL)
+            }
         }
     }
 

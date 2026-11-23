@@ -19,6 +19,8 @@ final class WebhookProfileStore: ObservableObject {
     @Published private(set) var profiles: [URL: WebhookProfile] = [:]
     /// 取得に失敗した日時。`failureRetryInterval` の間は同じ URL へ取得し直さない
     private var failedDates: [URL: Date] = [:]
+    /// 取得している URL。送信画面のカード・プレビュー・送信者の要約が同じ URL を同時に読みに来ても、通信は 1 回にする
+    private var inFlightURLs: Set<URL> = []
 
     private let client: WebhookProfileClient
     /// 指定した時間だけ待つ。キャンセルされたら投げる。テストでは待たずに済ませる
@@ -56,9 +58,12 @@ final class WebhookProfileStore: ObservableObject {
         } catch {
             return
         }
-        guard !Task.isCancelled else {
+        // 待っている間に、ほかの呼び出しが取得を始めた・取得し終えたなら通信しない
+        guard !Task.isCancelled, needsFetch(webhookURL.url), !inFlightURLs.contains(webhookURL.url) else {
             return
         }
+        inFlightURLs.insert(webhookURL.url)
+        defer { inFlightURLs.remove(webhookURL.url) }
         switch await client.fetch(webhookURL) {
         case .success(let profile):
             // 取得中に入力が変わっても、取れた結果は同じ URL に戻ったときのために覚えておく
