@@ -12,8 +12,23 @@ struct Toast: Equatable {
         case failure
     }
 
+    /// トーストの右端に出すボタン（送信の取り消しなど）。押すとトーストを閉じてから `handler` を呼ぶ
+    struct Action {
+        let title: Text
+        let handler: @MainActor () -> Void
+
+        init(title: LocalizedStringKey, handler: @escaping @MainActor () -> Void) {
+            self.title = Text(title)
+            self.handler = handler
+        }
+    }
+
+    /// ボタンのあるトーストを表示しておく時間。読んでから押せるよう、ボタンの無いトーストより長くする
+    static let actionDuration: Duration = .seconds(5)
+
     let style: Style
     let message: Text
+    let action: Action?
 
     static func == (lhs: Toast, rhs: Toast) -> Bool {
         lhs.id == rhs.id
@@ -22,24 +37,29 @@ struct Toast: Equatable {
     /// 同じ内容のトーストを続けて出したときも表示し直せるよう、表示ごとに別の値として扱う
     private let id = UUID()
 
-    init(style: Style, message: LocalizedStringKey) {
+    init(style: Style, message: LocalizedStringKey, action: Action? = nil) {
         self.style = style
         self.message = Text(message)
+        self.action = action
     }
 
     /// 翻訳済みの文言（`LocalizedError.errorDescription` など）をそのまま表示する
     init(style: Style, verbatimMessage: String) {
         self.style = style
         self.message = Text(verbatim: verbatimMessage)
+        self.action = nil
     }
 }
 
 struct ToastModifier: ViewModifier {
     @Binding var toast: Toast?
 
-    /// トーストを表示しておく時間。失敗時は原因の説明文を読めるよう長めにする
-    private func duration(for style: Toast.Style) -> Duration {
-        switch style {
+    /// トーストを表示しておく時間。失敗時は原因の説明文を読めるよう長めにする。ボタンがあれば押せるようさらに長くする
+    private func duration(for toast: Toast) -> Duration {
+        if toast.action != nil {
+            return Toast.actionDuration
+        }
+        switch toast.style {
         case .success:
             return .seconds(2.5)
         case .failure:
@@ -51,7 +71,11 @@ struct ToastModifier: ViewModifier {
         content
             .overlay(alignment: .top) {
                 if let toast {
-                    ToastView(toast: toast)
+                    ToastView(toast: toast) {
+                        // 先に閉じる。ボタンの処理が次のトーストを出したときに、それを消さないように
+                        self.toast = nil
+                        toast.action?.handler()
+                    }
                         .padding(.horizontal)
                         .padding(.top, 8.0)
                         .transition(.move(edge: .top).combined(with: .opacity))
@@ -63,7 +87,7 @@ struct ToastModifier: ViewModifier {
             .animation(.easeInOut(duration: 0.25), value: toast)
             .task(id: toast) {
                 guard let toast else { return }
-                try? await Task.sleep(for: duration(for: toast.style))
+                try? await Task.sleep(for: duration(for: toast))
                 // 待機中に別のトーストへ差し替わった場合は task(id:) ごとキャンセルされるので、ここには来ない
                 guard !Task.isCancelled else { return }
                 self.toast = nil
@@ -73,6 +97,8 @@ struct ToastModifier: ViewModifier {
 
 private struct ToastView: View {
     let toast: Toast
+    /// ボタンを押したとき
+    let onAction: () -> Void
 
     var body: some View {
         HStack(spacing: 8.0) {
@@ -82,6 +108,18 @@ private struct ToastView: View {
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
+            if let action = toast.action {
+                Button(action: onAction) {
+                    action.title
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Color.appAccent)
+                        .padding(.leading, 8.0)
+                        // トーストの高さのまま、押せる範囲を HIG の最小サイズ（44pt）まで広げる
+                        .frame(minHeight: 44.0)
+                        .contentShape(Rectangle())
+                }
+                .padding(.vertical, -12.0)
+            }
         }
         .padding(.horizontal, 16.0)
         .padding(.vertical, 12.0)
@@ -91,7 +129,8 @@ private struct ToastView: View {
                 .fill(.regularMaterial)
                 .shadow(radius: 4.0)
         )
-        .accessibilityElement(children: .combine)
+        // ボタンがあれば VoiceOver で押せるよう、まとめずに読ませる
+        .accessibilityElement(children: toast.action == nil ? .combine : .contain)
     }
 
     private var iconName: String {

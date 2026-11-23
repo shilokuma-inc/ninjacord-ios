@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// 送信履歴の一覧（新しい順・閲覧のみ）
+/// 送信履歴の一覧（新しい順・閲覧のみ）。送ったメッセージの編集・削除は「投稿済み」タブで行う
 struct SendHistoryListView: View {
     @StateObject private var store = SendHistoryStore()
     @StateObject private var adModel = InlineBannerAdModel()
@@ -49,9 +49,17 @@ struct SendHistoryListView: View {
                 .accessibilityLabel(entry.isSuccess ? Text("送信成功") : Text("送信失敗"))
 
             VStack(alignment: .leading, spacing: 4.0) {
-                Text(entry.sentAt, format: .dateTime.year().month().day().hour().minute())
-                    .font(.caption)
-                    .foregroundStyle(Color.appTextSecondary)
+                HStack(spacing: 6.0) {
+                    Text(entry.sentAt, format: .dateTime.year().month().day().hour().minute())
+                    // 「投稿済み」で編集・削除したメッセージ（Issue #666）
+                    if entry.deletedAt != nil {
+                        Text("削除済み")
+                    } else if entry.editedAt != nil {
+                        Text("編集済み")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(Color.appTextSecondary)
 
                 if !entry.message.summary.isEmpty {
                     Text(entry.message.summary)

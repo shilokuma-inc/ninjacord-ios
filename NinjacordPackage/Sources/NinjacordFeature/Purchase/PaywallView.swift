@@ -15,6 +15,8 @@ struct PaywallView: View {
         case embed
         case templates
         case broadcast
+        /// 「投稿済み」での送ったメッセージの編集
+        case edit
     }
 
     let source: Source
@@ -127,7 +129,8 @@ struct PaywallView: View {
             free: "タイトル・説明のみ",
             pro: "色・フィールド・画像・フッターなども"
         ),
-        BenefitComparisonItem(id: "broadcast", title: "一斉送信", free: nil, pro: "複数のWebhookへ")
+        BenefitComparisonItem(id: "broadcast", title: "一斉送信", free: nil, pro: "複数のWebhookへ"),
+        BenefitComparisonItem(id: "postedMessages", title: "送ったメッセージ", free: "削除のみ", pro: "編集・削除")
     ]
 
     @ViewBuilder

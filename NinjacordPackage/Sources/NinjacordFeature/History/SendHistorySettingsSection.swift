@@ -50,12 +50,15 @@ struct SendHistorySettingsSection: View {
                 Button("すべて削除", role: .destructive) {
                     store.removeAll()
                 }
+            } message: {
+                // 編集・削除に使うメッセージ ID も送信履歴にだけ残しているため（Issue #666）
+                Text("「投稿済み」のメッセージも、アプリから編集・削除できなくなります。Discordのメッセージは消えません")
             }
         } header: {
             Text("送信履歴")
                 .foregroundStyle(Color.appTextSecondary)
         } footer: {
-            Text("ONにすると、直近\(SendHistoryStore.maxCount)件の送信内容をこの端末の中にだけ保存します")
+            Text("ONにすると、直近\(SendHistoryStore.maxCount)件の送信内容をこの端末の中にだけ保存します。送ったメッセージは「投稿済み」から編集・削除できます")
                 .foregroundStyle(Color.appTextSecondary)
         }
         .onAppear {

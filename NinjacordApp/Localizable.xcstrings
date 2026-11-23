@@ -244,6 +244,22 @@
         }
       }
     },
+    "Discordのチャンネルからも削除されます。元に戻せません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It will also be deleted from the Discord channel. This can't be undone."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordのチャンネルからも削除されます。元に戻せません"
+          }
+        }
+      }
+    },
     "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします" : {
       "localizations" : {
         "en" : {
@@ -359,6 +375,22 @@
         }
       }
     },
+    "Ninjacord Proにするか、広告を見ると編集できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upgrade to Ninjacord Pro, or watch an ad to edit."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninjacord Proにするか、広告を見ると編集できます"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "en" : {
@@ -375,18 +407,34 @@
         }
       }
     },
-    "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します" : {
+    "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します。送ったメッセージは「投稿済み」から編集・削除できます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "When on, the last %lld messages you send are saved only on this device."
+            "value" : "When on, the last %lld messages you send are saved only on this device. You can edit or delete sent messages in the Posted tab."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します"
+            "value" : "ONにすると、直近%lld件の送信内容をこの端末の中にだけ保存します。送ったメッセージは「投稿済み」から編集・削除できます"
+          }
+        }
+      }
+    },
+    "ONにする前に送ったメッセージは表示されません。設定の「送信履歴」からいつでもOFFにできます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messages sent before turning it on won't appear. You can turn it off anytime under Send History in the Setting tab."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ONにする前に送ったメッセージは表示されません。設定の「送信履歴」からいつでもOFFにできます"
           }
         }
       }
@@ -730,6 +778,22 @@
         }
       }
     },
+    "「投稿済み」のメッセージも、アプリから編集・削除できなくなります。Discordのメッセージは消えません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You will no longer be able to edit or delete messages in the Posted tab from the app. Messages on Discord will not be deleted."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「投稿済み」のメッセージも、アプリから編集・削除できなくなります。Discordのメッセージは消えません"
+          }
+        }
+      }
+    },
     "「新しいウェブフック」を作り、「ウェブフックURLをコピー」を押します" : {
       "localizations" : {
         "en" : {
@@ -826,6 +890,22 @@
         }
       }
     },
+    "このメッセージを削除しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this message?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このメッセージを削除しますか？"
+          }
+        }
+      }
+    },
     "すべて削除" : {
       "localizations" : {
         "en" : {
@@ -886,6 +966,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "はじめる"
+          }
+        }
+      }
+    },
+    "まだ送ったメッセージはありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No messages sent yet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ送ったメッセージはありません"
           }
         }
       }
@@ -1674,6 +1770,22 @@
         }
       }
     },
+    "メッセージが見つかりません。Discordで削除された可能性があります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message not found. It may have been deleted in Discord."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージが見つかりません。Discordで削除された可能性があります"
+          }
+        }
+      }
+    },
     "メッセージの本文" : {
       "localizations" : {
         "en" : {
@@ -1690,6 +1802,22 @@
         }
       }
     },
+    "メッセージの編集はNinjacord Pro限定です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editing messages is a Ninjacord Pro feature"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージの編集はNinjacord Pro限定です"
+          }
+        }
+      }
+    },
     "メッセージを入れてください" : {
       "localizations" : {
         "en" : {
@@ -1702,6 +1830,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メッセージを入れてください"
+          }
+        }
+      }
+    },
+    "メッセージを削除しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message deleted"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージを削除しました"
+          }
+        }
+      }
+    },
+    "メッセージを編集" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージを編集"
+          }
+        }
+      }
+    },
+    "メッセージを編集しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message edited"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージを編集しました"
           }
         }
       }
@@ -2026,6 +2202,118 @@
         }
       }
     },
+    "削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
+          }
+        }
+      }
+    },
+    "削除できませんでした。%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't delete. %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除できませんでした。%@"
+          }
+        }
+      }
+    },
+    "削除のみ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete only"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除のみ"
+          }
+        }
+      }
+    },
+    "削除は無料です。編集はNinjacord Pro限定で、広告を見ると1回編集できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting is free. Editing is a Ninjacord Pro feature; watch an ad to edit once."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除は無料です。編集はNinjacord Pro限定で、広告を見ると1回編集できます"
+          }
+        }
+      }
+    },
+    "削除済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除済み"
+          }
+        }
+      }
+    },
+    "取り消す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取り消す"
+          }
+        }
+      }
+    },
+    "取り消せませんでした。%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't unsend. %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取り消せませんでした。%@"
+          }
+        }
+      }
+    },
     "合計 %lld / %lld文字" : {
       "localizations" : {
         "en" : {
@@ -2086,6 +2374,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "名前を入れてください"
+          }
+        }
+      }
+    },
+    "名前・アイコン・添付した画像は、Discordの仕様で変更できません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord doesn't allow changing the name, icon, or attached image."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前・アイコン・添付した画像は、Discordの仕様で変更できません"
           }
         }
       }
@@ -2362,6 +2666,22 @@
         }
       }
     },
+    "広告を見て1回編集する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch an ad to edit once"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告を見て1回編集する"
+          }
+        }
+      }
+    },
     "復元できる購入が見つかりませんでした" : {
       "localizations" : {
         "en" : {
@@ -2374,6 +2694,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "復元できる購入が見つかりませんでした"
+          }
+        }
+      }
+    },
+    "投稿済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posted"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "投稿済み"
           }
         }
       }
@@ -2438,6 +2774,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本文: %@"
+          }
+        }
+      }
+    },
+    "本文か埋め込みを入れてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a message or an embed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文か埋め込みを入れてください"
           }
         }
       }
@@ -2554,6 +2906,22 @@
         }
       }
     },
+    "添付した画像はそのまま残ります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The attached image stays as is."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添付した画像はそのまま残ります"
+          }
+        }
+      }
+    },
     "無制限" : {
       "localizations" : {
         "en" : {
@@ -2614,6 +2982,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画像"
+          }
+        }
+      }
+    },
+    "画像だけのメッセージ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image-only message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像だけのメッセージ"
           }
         }
       }
@@ -2682,6 +3066,22 @@
         }
       }
     },
+    "画像を添付していないメッセージは、本文と埋め込みを両方とも空にはできません。消したいときは一覧から削除してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A message without an image can't have both its text and embed empty. To remove it, delete it from the list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像を添付していないメッセージは、本文と埋め込みを両方とも空にはできません。消したいときは一覧から削除してください"
+          }
+        }
+      }
+    },
     "画像を添付できませんでした。10MBまでの画像を選んでください" : {
       "localizations" : {
         "en" : {
@@ -2694,6 +3094,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画像を添付できませんでした。10MBまでの画像を選んでください"
+          }
+        }
+      }
+    },
+    "直近%lld件の送信履歴のうち、送れたメッセージを表示しています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Showing the messages that were sent successfully among your last %lld sends."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "直近%lld件の送信履歴のうち、送れたメッセージを表示しています"
+          }
+        }
+      }
+    },
+    "編集" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集"
+          }
+        }
+      }
+    },
+    "編集できませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't edit the message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集できませんでした"
+          }
+        }
+      }
+    },
+    "編集・削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit & delete"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集・削除"
+          }
+        }
+      }
+    },
+    "編集済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集済み"
           }
         }
       }
@@ -2970,6 +3450,38 @@
         }
       }
     },
+    "送ったメッセージ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent messages"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送ったメッセージ"
+          }
+        }
+      }
+    },
+    "送ったメッセージをあとから編集・削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit or delete messages after sending"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送ったメッセージをあとから編集・削除"
+          }
+        }
+      }
+    },
     "送信" : {
       "localizations" : {
         "en" : {
@@ -3046,6 +3558,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信に失敗しました（エラーコード: %lld）"
+          }
+        }
+      }
+    },
+    "送信を取り消しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message unsent"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信を取り消しました"
           }
         }
       }
@@ -3162,6 +3690,22 @@
         }
       }
     },
+    "送信履歴の保存がOFFのため、これから送るメッセージはここに追加されません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send history is off, so messages you send from now on won't be added here."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信履歴の保存がOFFのため、これから送るメッセージはここに追加されません"
+          }
+        }
+      }
+    },
     "送信履歴はありません" : {
       "localizations" : {
         "en" : {
@@ -3226,6 +3770,22 @@
         }
       }
     },
+    "送信履歴を保存すると、この端末から送ったメッセージを、ここから編集・削除できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on send history to edit or delete messages you send from this device right here."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信履歴を保存すると、この端末から送ったメッセージを、ここから編集・削除できます"
+          }
+        }
+      }
+    },
     "送信成功" : {
       "localizations" : {
         "en" : {
@@ -3270,6 +3830,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信日時を表示する"
+          }
+        }
+      }
+    },
+    "送信画面から送ったメッセージがここに表示され、あとから編集・削除できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messages you send from the Sending tab appear here, and you can edit or delete them later."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信画面から送ったメッセージがここに表示され、あとから編集・削除できます"
           }
         }
       }

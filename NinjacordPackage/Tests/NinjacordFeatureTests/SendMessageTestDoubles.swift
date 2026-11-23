@@ -66,15 +66,25 @@ final class HapticFeedbackSpy: HapticFeedbackPlaying {
     }
 }
 
-/// 送信の Analytics に送った値を記録する（Firebase には送らない）
+/// 送信と、送ったメッセージの編集・削除の Analytics に送った値を記録する（Firebase には送らない）
 final class AnalyticsSpy: SendMessageAnalytics {
     struct SendEvent: Equatable {
         let isSuccess: Bool
         let httpStatus: Int?
     }
 
+    /// 送ったメッセージの削除の Analytics
+    struct DeleteEvent: Equatable {
+        let isSuccess: Bool
+        let httpStatus: Int?
+        let source: String
+    }
+
     private(set) var sendEvents: [SendEvent] = []
     private(set) var firstSendCompletedCount = 0
+    /// 送ったメッセージの編集の Analytics（成否とステータスコード）
+    fileprivate(set) var editEvents: [SendEvent] = []
+    fileprivate(set) var deleteEvents: [DeleteEvent] = []
 
     func sendMessageSendEvent(isSuccess: Bool, httpStatus: Int?) {
         sendEvents.append(SendEvent(isSuccess: isSuccess, httpStatus: httpStatus))
@@ -82,5 +92,15 @@ final class AnalyticsSpy: SendMessageAnalytics {
 
     func sendFirstSendCompletedEvent() {
         firstSendCompletedCount += 1
+    }
+}
+
+extension AnalyticsSpy: PostedMessageAnalytics {
+    func sendMessageEditEvent(isSuccess: Bool, httpStatus: Int?) {
+        editEvents.append(SendEvent(isSuccess: isSuccess, httpStatus: httpStatus))
+    }
+
+    func sendMessageDeleteEvent(isSuccess: Bool, httpStatus: Int?, source: String) {
+        deleteEvents.append(DeleteEvent(isSuccess: isSuccess, httpStatus: httpStatus, source: source))
     }
 }

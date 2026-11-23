@@ -36,6 +36,10 @@ final class SendMessageViewModelTests {
 
     private static let noContent = StubURLProtocol.Stub.response(statusCode: 204, data: Data())
     private static let notFound = StubURLProtocol.Stub.response(statusCode: 404, data: Data())
+    /// `wait=true` で送ったときのように、作ったメッセージを返す
+    private static func sentMessage(id: String) -> StubURLProtocol.Stub {
+        .response(statusCode: 200, data: Data(#"{"id": "\#(id)", "channel_id": "42"}"#.utf8))
+    }
     private static let attachment = ImageAttachment(
         data: Data([0x89, 0x50, 0x4E, 0x47]),
         fileName: "image.png",
@@ -171,6 +175,21 @@ final class SendMessageViewModelTests {
         #expect(StubURLProtocol.requests(to: url).count == 1)
     }
 
+    @Test("Discord が返したメッセージの ID と画像の添付の有無を送信履歴に残し、「投稿済み」に出す")
+    func sendRecordsMessageID() async throws {
+        let url = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "1234567890"))
+        viewModel.inputURL = url.absoluteString
+        viewModel.inputContext = "スクリーンショット"
+        viewModel.attachment = Self.attachment
+
+        await send()
+
+        let entry = try #require(historyStore.items.first)
+        #expect(entry.messageID == "1234567890")
+        #expect(entry.hasAttachment)
+        #expect(historyStore.postedItems.map(\.id) == [entry.id])
+    }
+
     @Test("Pro 限定の項目を使った送信なら、送信後の流れに Pro 機能を使ったと渡す")
     func sendSucceededWithProFeatures() async {
         viewModel.inputURL = StubURLProtocol.makeURL(returning: Self.noContent).absoluteString
@@ -243,6 +262,96 @@ final class SendMessageViewModelTests {
         #expect(header.hasPrefix("multipart/form-data; boundary="))
     }
 
+    // MARK: - 送信の取り消し
+
+    @Test("メッセージの ID を受け取れたら、成功のトーストに「取り消す」を出す。受け取れなければ出さない")
+    func undoActionOnSuccess() async throws {
+        viewModel.inputURL = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "789")).absoluteString
+        viewModel.inputContext = "こんにちは"
+        await send()
+        let action = try #require(viewModel.toast?.action)
+        #expect(action.title.testString == "取り消す")
+
+        viewModel.inputURL = StubURLProtocol.makeURL(returning: Self.noContent).absoluteString
+        await send()
+        #expect(viewModel.toast?.action == nil)
+    }
+
+    @Test("一斉送信では「取り消す」を出さない")
+    func noUndoActionOnBroadcast() async {
+        viewModel.broadcastTargets = [savedURL("作戦室", returning: Self.sentMessage(id: "111"))]
+        viewModel.inputContext = "こんにちは"
+
+        await send(isPro: true)
+
+        #expect(viewModel.toast?.action == nil)
+    }
+
+    @Test("「取り消す」を押したら送ったメッセージを削除し、送信履歴に削除済みの印を付けてトーストで知らせる。入力欄は残す")
+    func undoSend() async throws {
+        let url = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "789"))
+        let messageURL = try #require(URL(string: url.absoluteString + "/messages/789"))
+        StubURLProtocol.stub(messageURL, returning: Self.noContent)
+        viewModel.inputURL = url.absoluteString
+        viewModel.inputContext = "こんにちは"
+        await send()
+
+        await viewModel.undoSend(url: url.absoluteString, messageID: "789").value
+
+        #expect(StubURLProtocol.requests(to: messageURL).map(\.request.httpMethod) == ["DELETE"])
+        let toast = try #require(viewModel.toast)
+        #expect(toast.style == .success)
+        #expect(toast.message.testString == "送信を取り消しました")
+        #expect(toast.action == nil)
+        #expect(try #require(historyStore.items.first).deletedAt != nil)
+        #expect(historyStore.postedItems.isEmpty)
+        #expect(fixture.analytics.deleteEvents == [.init(isSuccess: true, httpStatus: 204, source: "toast")])
+        #expect(fixture.haptics.notifications == [true, true])
+        #expect(viewModel.inputContext == "こんにちは")
+    }
+
+    @Test("取り消せなければ原因をトーストに出し、送信履歴はそのままにする")
+    func undoSendFailed() async throws {
+        let url = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "789"))
+        let messageURL = try #require(URL(string: url.absoluteString + "/messages/789"))
+        StubURLProtocol.stub(messageURL, returning: .error(URLError(.notConnectedToInternet)))
+        viewModel.inputURL = url.absoluteString
+        viewModel.inputContext = "こんにちは"
+        await send()
+
+        await viewModel.undoSend(url: url.absoluteString, messageID: "789").value
+
+        let toast = try #require(viewModel.toast)
+        #expect(toast.style == .failure)
+        #expect(
+            toast.message.testString
+                == String(localized: "取り消せませんでした。\(DiscordWebhookError.network.localizedDescription)")
+        )
+        #expect(historyStore.postedItems.count == 1)
+        #expect(fixture.haptics.notifications == [true, false])
+    }
+
+    @Test("取り消しの削除を待つ間に次の送信が終わったら、そのトーストは上書きしない（送信履歴の削除済みの印は付ける）")
+    func undoSendDoesNotOverwriteNewerToast() async throws {
+        let first = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "789"))
+        let messageURL = try #require(URL(string: first.absoluteString + "/messages/789"))
+        // 削除の応答を遅らせ、次の送信が先に終わるようにする
+        StubURLProtocol.stub(messageURL, returning: .delayed(0.5, Self.noContent))
+        viewModel.inputURL = first.absoluteString
+        viewModel.inputContext = "こんにちは"
+        await send()
+
+        let undo = viewModel.undoSend(url: first.absoluteString, messageID: "789")
+        viewModel.inputURL = StubURLProtocol.makeURL(returning: Self.sentMessage(id: "790")).absoluteString
+        await send()
+        await undo.value
+
+        let toast = try #require(viewModel.toast)
+        #expect(toast.message.testString == "送信しました")
+        #expect(toast.action != nil)
+        #expect(historyStore.items.first { $0.messageID == "789" }?.deletedAt != nil)
+    }
+
     // MARK: - 一斉送信
 
     @Test("一斉送信がすべて届いたら「N件の宛先に送信しました」を出し、宛先ごとに履歴に残す")
@@ -264,6 +373,21 @@ final class SendMessageViewModelTests {
         #expect(historyResults == [true, true])
         // 一斉送信そのものが Pro 機能
         #expect(recorder.events == [.consumeRewardedUnlock])
+    }
+
+    @Test("一斉送信では、宛先ごとに Discord が返したメッセージの ID を送信履歴に残す")
+    func broadcastRecordsMessageIDs() async throws {
+        let first = savedURL("作戦室", returning: Self.sentMessage(id: "111"))
+        let second = savedURL("雑談", returning: Self.notFound)
+        let third = savedURL("告知", returning: Self.sentMessage(id: "333"))
+        viewModel.broadcastTargets = [first, second, third]
+        viewModel.inputContext = "こんにちは"
+
+        await send(isPro: true)
+
+        // 履歴は新しい順なので、後に送った宛先が先頭
+        #expect(historyStore.items.map(\.messageID) == ["333", nil, "111"])
+        #expect(historyStore.postedItems.map(\.url) == [third.url, first.url])
     }
 
     @Test("一斉送信でも、画像を添付していれば宛先ごとに multipart/form-data で送る")

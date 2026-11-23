@@ -36,6 +36,11 @@ let package = Package(
                     package: "swift-package-manager-google-user-messaging-platform"
                 ),
                 .product(name: "LicenseList", package: "LicenseList")
+            ],
+            exclude: ["Screenshot/Resources/CREDITS.md"],
+            resources: [
+                // App Store のスクリーンショットを撮るときのデモの画像（ScreenshotDemo）。出典は同じフォルダの CREDITS.md
+                .process("Screenshot/Resources")
             ]
         ),
         // NinjacordApp の scheme の TestAction から実行する（CI の Build ワークフローでも流す）

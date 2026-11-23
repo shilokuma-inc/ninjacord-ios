@@ -11,7 +11,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 | UI フレームワーク | SwiftUI |
 | 言語 / Xcode | Swift 5 / Xcode 26.6 |
 | Deployment Target | iOS 16.0 |
-| バージョン | `MARKETING_VERSION` 2.3.0 |
+| バージョン | `MARKETING_VERSION` 2.4.0 |
 | Bundle ID (本番) | `ml.mrs1669.discord-bot-helper` |
 | App Store | https://apps.apple.com/jp/app/ninja-cord/id6498937487 |
 
@@ -78,7 +78,8 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 
 - 撮る画面・枚数・並び順は Discussion #355 で決めた。変えるときは `AppStore/screenshots.json` と `ScreenshotDemo.Scene` を合わせて直す。
 - 撮影はアプリの撮影モード（起動引数 `-screenshot-demo -screenshot-scene <名前>`、`Screenshot/ScreenshotDemo.swift`）で行う。デモの文言は言語ごとに `ScreenshotDemoContent` に持つ。
-- 手元で撮るなら `Tools/capture_screenshots.sh APP_IPHONE_67`（出力は `build/screenshots/`）。
+- 手元で撮るなら `Tools/capture_screenshots.sh APP_IPHONE_67`（出力は `build/screenshots/`）。撮ったのはアプリの画面そのもので、App Store にはそのまま上げない。
+- App Store に上げるスクリーンショットは、撮った画面を `Tools/compose_screenshots.sh APP_IPHONE_67` で Discord のチャンネル画面とメンバーの会話の構図に書き出したもの（出力は `build/app-store-screenshots/`、Issue #662）。元は `AppStore/screenshots/src/frame.html` で、会話の文言は画面（`screenshots.json` の scene）と言語ごとにそこに持つ。画面や言語を足したら文言も足す。iPhone / iPhone Duo / iPad は縦横比で見分けて組み方を変える。
 - クリエイティブアセットの元は `AppStore/creative/src/creative.html`。6.9 inch のスクリーンショットを撮ってから `Tools/render_creative_assets.sh` で書き出し、画像もコミットする。置き場所のグループと仕様は App Asset Library の参照データから引く（`Tools/upload_creative_assets.py --ref-data` で見られる）。
 - 「このバージョンの最新情報」は `AppStore/metadata/<言語>.json` の `whatsNew`（`version` と `text`）。`version` が反映先と一致するときだけ書き込むので、リリースごとに両方を書き換える。
 - 対応言語を増やしたら `AppStore/languages.json` と `AppStore/metadata/<言語>.json`、`ScreenshotDemoContent` に足す。
@@ -89,7 +90,7 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 - 名前・サブタイトルは `AppStore/metadata/<言語>.json`、プライバシーポリシーの URL・著作権は `shared.json` に書く（`Tools/upload_metadata.py`）。カテゴリ・コンテンツの権利・年齢制限・審査の情報・リリースの方法・価格と配信状況は `AppStore/app_info.json` に書く（`Tools/upload_app_info.py`。template-app-ios から移植した）。
 - JSON の値は 2.2.0 の時点の App Store Connect に揃えてある。App Store Connect の画面で変えたら JSON も直す（次に反映すると JSON の値に戻るため）。`Metadata/App Store` の dry-run は、編集できるバージョンが無くても審査中・配信中の値と比べるので、いつでもずれを確かめられる。
 - 価格と配信状況は、App Store Connect で未設定のときだけ（dry-run でない実行で）JSON の値を書き込む。Ninja Cord は設定済みなので、ワークフローは触らない（変えるときは App Store Connect の画面で）。
-- 審査のメモは `AppStore/review_notes.txt`（英語）に書く。画面の文言を変えたら、メモに書いたボタンやタブの名前（`Webhook URL`・`Sending`・`Send a message!`）も合わせて直す。差分のログには内容を出さず字数だけを出す。
+- 審査のメモは `AppStore/review_notes.txt`（英語）に書く。画面の文言を変えたら、メモに書いたボタンやタブの名前（`Webhook URL`・`Sending`・`Send a message!`・`Undo`・`Save send history`・`Posted`・`Setting`）も合わせて直す。差分のログには内容を出さず字数だけを出す。
 - 審査の連絡先は JSON に書かず、Organization の Secrets（`APP_REVIEW_CONTACT_FIRST_NAME` / `_LAST_NAME` / `_PHONE` / `_EMAIL`）から渡す。値はログに出さない。
 
 ### リリースのときに流す順

@@ -32,6 +32,36 @@ final class FirebaseAnalytics {
         )
     }
 
+    /// 送ったメッセージの編集の結果を記録する。本文などの入力内容は送らない
+    /// - Parameters:
+    ///   - isSuccess: 編集に成功したか
+    ///   - httpStatus: Discord が返した HTTP ステータスコード。レスポンスが無い通信エラーは nil
+    func sendMessageEditEvent(isSuccess: Bool, httpStatus: Int?) {
+        Analytics.logEvent(
+            "message_edit",
+            parameters: [
+                "result": isSuccess ? "success" : "failure",
+                "http_status": httpStatus ?? 0
+            ]
+        )
+    }
+
+    /// 送ったメッセージの削除の結果を記録する
+    /// - Parameters:
+    ///   - isSuccess: 削除に成功したか（Discord で先に消されていたときは失敗・404 として記録する）
+    ///   - httpStatus: Discord が返した HTTP ステータスコード。レスポンスが無い通信エラーは nil
+    ///   - source: 削除した場所（`WebhookMessageEditor.DeleteSource`）
+    func sendMessageDeleteEvent(isSuccess: Bool, httpStatus: Int?, source: String) {
+        Analytics.logEvent(
+            "message_delete",
+            parameters: [
+                "result": isSuccess ? "success" : "failure",
+                "http_status": httpStatus ?? 0,
+                "source": source
+            ]
+        )
+    }
+
     /// インストール後、初めてメッセージ送信に成功したことを記録する
     func sendFirstSendCompletedEvent() {
         Analytics.logEvent("first_send_completed", parameters: nil)

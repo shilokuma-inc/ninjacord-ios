@@ -11,6 +11,8 @@ enum DiscordWebhookError: LocalizedError, Equatable {
     case unknownWebhook
     /// Webhook URL のトークン部分が正しくない
     case invalidToken
+    /// 編集・削除しようとした、送ったメッセージが見つからない（Discord で削除された）
+    case unknownMessage
     /// 送信内容が Discord に受け付けられなかった（画像 URL の形式・文字数など）
     case invalidMessage
     /// 短時間に送信しすぎて制限された
@@ -25,6 +27,7 @@ enum DiscordWebhookError: LocalizedError, Equatable {
     /// Discord の JSON エラーコード
     /// https://discord.com/developers/docs/topics/opcodes-and-status-codes#json
     private enum JSONErrorCode {
+        static let unknownMessage = 10008
         static let unknownWebhook = 10015
         static let invalidWebhookToken = 50027
     }
@@ -44,6 +47,9 @@ enum DiscordWebhookError: LocalizedError, Equatable {
         }
 
         switch (statusCode, body?.code) {
+        // 送ったメッセージの編集・削除では、Webhook はあってもメッセージが無いときも 404 になるので、先に見分ける
+        case (_, JSONErrorCode.unknownMessage):
+            self = .unknownMessage
         case (_, JSONErrorCode.unknownWebhook), (404, _):
             self = .unknownWebhook
         case (_, JSONErrorCode.invalidWebhookToken), (401, _), (403, _):
@@ -65,6 +71,8 @@ enum DiscordWebhookError: LocalizedError, Equatable {
             return String(localized: "Webhookが見つかりません。URLが正しいか、Webhookが削除されていないか確認してください")
         case .invalidToken:
             return String(localized: "Webhook URLが正しくありません。Discordでコピーし直してください")
+        case .unknownMessage:
+            return String(localized: "メッセージが見つかりません。Discordで削除された可能性があります")
         case .invalidMessage:
             return String(localized: "送信内容に誤りがあります。プロフィール画像のURLや文字数を確認してください")
         case .rateLimited:
