@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct PrivacyPolicyView: View {
-    private static let baseUrl: String = "https://shilokuma-inc.github.io"
-    private static let path: String = "/iOS-Release-Sample/PrivacyPolicy/discord-bot-helper/PrivacyPolicy.html"
+    private static let baseUrl: String = "https://shilokuma.jp"
+    private static let path: String = "/privacy/ninja-cord/"
     /// プライバシーポリシーの URL。ペイウォールなど他の画面からもリンクするため static にしている
     static var url: URL? {
         URL(string: baseUrl + path)

@@ -84,7 +84,7 @@ extension SendMessageViewModel {
         return nil
     }
 
-    /// http / https のスキームとホストを持つ URL かどうか
+    /// http / https のスキームとホストを持ち、送信先の URL にできるかどうか
     private func isValidURL(_ string: String) -> Bool {
         guard let components = URLComponents(string: string),
               let scheme = components.scheme?.lowercased(),
@@ -92,6 +92,7 @@ extension SendMessageViewModel {
               let host = components.host, !host.isEmpty else {
             return false
         }
-        return true
+        // URLComponents では読めても URL(string:) では読めない文字列は、送れないのでここで止める（#472）
+        return Self.webhookEndpoint(from: string) != nil
     }
 }

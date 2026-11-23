@@ -23,7 +23,10 @@ struct DiscordWebhookClient {
 
     /// Webhook に送る。ステータスコードが 2xx 以外なら失敗にする（Alamofire の validate() と同じ）
     func send(_ webhookRequest: DiscordWebhookRequest, to url: URL) async -> Response {
-        let request = makeURLRequest(webhookRequest, url: url, boundary: Self.makeBoundary())
+        guard let request = makeURLRequest(webhookRequest, url: url, boundary: Self.makeBoundary()) else {
+            // 送る中身を作れなければ、通信せずに失敗にする（#473）
+            return Response(statusCode: nil, result: .failure(.unknown(statusCode: nil)))
+        }
         let data: Data
         let response: URLResponse
         do {
@@ -41,16 +44,21 @@ struct DiscordWebhookClient {
         return Response(statusCode: statusCode, result: .success(()))
     }
 
-    /// 送る URLRequest を組み立てる。画像を添付するなら multipart/form-data、しなければ JSON で送る
-    func makeURLRequest(_ webhookRequest: DiscordWebhookRequest, url: URL, boundary: String) -> URLRequest {
+    /// 送る URLRequest を組み立てる。画像を添付するなら multipart/form-data、しなければ JSON で送る。
+    /// 送る中身（パラメータの JSON）を作れなければ nil
+    func makeURLRequest(_ webhookRequest: DiscordWebhookRequest, url: URL, boundary: String) -> URLRequest? {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        // 画像を添付するときも JSON の本文を作る（Alamofire で送っていたときと同じく、作れなければ try! で落ちる。#473）
-        let jsonBody = webhookRequest.jsonBody
-        if let multipartBody = webhookRequest.multipartBody(boundary: boundary) {
+        if webhookRequest.attachment != nil {
+            guard let multipartBody = webhookRequest.multipartBody(boundary: boundary) else {
+                return nil
+            }
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             request.httpBody = multipartBody
         } else {
+            guard let jsonBody = webhookRequest.jsonBody else {
+                return nil
+            }
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = jsonBody
         }

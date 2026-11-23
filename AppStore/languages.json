@@ -5,10 +5,14 @@
     "appleLanguage: 撮影時にアプリへ渡す -AppleLanguages の値（Localizable.xcstrings の言語コード）",
     "appleLocale:   撮影時にアプリへ渡す -AppleLocale の値（日付や数値の書式）",
     "storeLocale:   App Store Connect のロケール（アプリの言語コードとは別物）",
-    "Localizable.xcstrings に訳を入れた言語を増やしたら、ここにも足す。"
+    "assetsFrom:    ほかの言語のスクリーンショットとクリエイティブアセットを流用するときの流用元。書いた言語は撮影も書き出しもしない（appleLanguage / appleLocale は書かない）",
+    "Localizable.xcstrings に訳を入れた言語を増やしたら、ここにも足す。",
+    "en-GB はインド向け（インドのストアの既定の言語は English (U.K.) で、en-US は使われない）。es-MX は米国のキーワード枠を増やすため（米国のストアは Spanish (Mexico) の掲載情報も検索に使う）。どちらもアプリの言語は増やさず、en の画像と掲載文を流用する（Issue #651）。"
   ],
   "languages": [
     { "language": "ja", "appleLanguage": "ja", "appleLocale": "ja_JP", "storeLocale": "ja" },
-    { "language": "en", "appleLanguage": "en", "appleLocale": "en_US", "storeLocale": "en-US" }
+    { "language": "en", "appleLanguage": "en", "appleLocale": "en_US", "storeLocale": "en-US" },
+    { "language": "en-GB", "storeLocale": "en-GB", "assetsFrom": "en" },
+    { "language": "es-MX", "storeLocale": "es-MX", "assetsFrom": "en" }
   ]
 }

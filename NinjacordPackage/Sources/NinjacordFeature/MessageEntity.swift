@@ -61,11 +61,12 @@ struct MessageEmbedEntity: Codable, Equatable {
         includesTimestamp = try container.decodeIfPresent(Bool.self, forKey: .includesTimestamp) ?? false
     }
 
-    /// 送る内容が 1 つでもあるか。無ければ embed 自体を送らない
+    /// 送る内容が 1 つでもあるか。無ければ embed 自体を送らない。
+    /// 名前も値も空のフィールド行は送らない（`sendableFields`）ので、内容に数えない（#461）
     var hasContent: Bool {
         let texts = [title, description, footerText, imageURL, thumbnailURL]
         return texts.contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-            || !fields.isEmpty
+            || !sendableFields.isEmpty
     }
 }
 

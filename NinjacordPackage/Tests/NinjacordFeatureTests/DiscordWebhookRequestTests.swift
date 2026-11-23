@@ -36,13 +36,13 @@ struct DiscordWebhookRequestTests {
         ])
     }
 
-    /// 本文の既定の文言はローカライズされていない（Discussion #459 の Q4 の 1）。
+    /// 本文の既定の文言は端末の言語に合わせる（#469）ので、文言そのものではなく `defaultContent` と比べる。
     /// 名前は空なら送らず、Discord 側で Webhook の名前で出す（Discussion #586 の Q7）
     @Test("名前が空なら username を送らず、本文が空なら「なんか書いてね」を送る")
     func omittedUsernameAndDefaultContent() {
         #expect(request(.make()).parameters.dictionary == [
             "avatar_url": "",
-            "content": "なんか書いてね"
+            "content": DiscordWebhookRequest.defaultContent
         ])
         #expect(request(.make(content: "こんにちは")).parameters["username"] == nil)
     }
@@ -84,7 +84,7 @@ struct DiscordWebhookRequestTests {
         ]
     )
     func defaultContentWithoutDisplayedEmbed(embed: MessageEmbedEntity) {
-        #expect(request(.make(embed: embed)).parameters["content"] as? String == "なんか書いてね")
+        #expect(request(.make(embed: embed)).parameters["content"] as? String == DiscordWebhookRequest.defaultContent)
     }
 
     @Test("本文が空でも、画像を添付すれば本文を送らない")
@@ -96,7 +96,7 @@ struct DiscordWebhookRequestTests {
     @Test("空のフィールド行だけの埋め込みなら、本文には「なんか書いてね」が入る")
     func defaultContentWithBlankFieldRowOnly() {
         let embed = MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)])
-        #expect(request(.make(embed: embed)).parameters["content"] as? String == "なんか書いてね")
+        #expect(request(.make(embed: embed)).parameters["content"] as? String == DiscordWebhookRequest.defaultContent)
     }
 
     // MARK: - 初期文言に置き換える項目
@@ -104,7 +104,9 @@ struct DiscordWebhookRequestTests {
     @Test("名前・本文が空なら、本文だけを初期文言に置き換える")
     func defaultedContentOnly() {
         #expect(request(.make()).defaultedFields == [.content])
-        #expect(DiscordWebhookRequest.DefaultedField.content.value == "なんか書いてね")
+        #expect(DiscordWebhookRequest.DefaultedField.content.value == DiscordWebhookRequest.defaultContent)
+        // 本文も埋め込みも無いと Discord は 400 を返すので、初期文言は空にしない
+        #expect(!DiscordWebhookRequest.defaultContent.isEmpty)
     }
 
     @Test("名前・本文が入っていれば、初期文言に置き換えない")
@@ -201,11 +203,11 @@ struct DiscordWebhookRequestTests {
         #expect(embedParameters(of: embed) == ["fields": [["name": "集合", "value": "", "inline": true]]])
     }
 
-    /// 空のフィールド行だけでも embed を送る（今の挙動。#461）
-    @Test("空のフィールド行だけなら、中身の無い embed を送る")
+    /// 中身の無い embed（`{}`）は送らない（#461）
+    @Test("空のフィールド行だけなら、埋め込みを送らない")
     func blankFieldRowOnly() {
         let embed = MessageEmbedEntity(fields: [MessageEmbedField(name: "", value: "", isInline: false)])
-        #expect(embedParameters(of: embed) == [:])
+        #expect(embedParameters(of: embed) == nil)
     }
 
     @Test("送信日時は ISO 8601（UTC、秒まで）で送り、送らない設定なら timestamp を付けない")
@@ -227,13 +229,25 @@ struct DiscordWebhookRequestTests {
             embed: MessageEmbedEntity(title: "お知らせ", includesTimestamp: true)
         )
         let webhookRequest = request(message)
-        let body = webhookRequest.jsonBody
+        let body = try #require(webhookRequest.jsonBody)
 
         let decoded = try #require(try JSONSerialization.jsonObject(with: body) as? NSDictionary)
         #expect(decoded == webhookRequest.parameters.dictionary)
         // prettyPrinted なので改行とインデントが入る
         let text = try #require(String(data: body, encoding: .utf8))
         #expect(text.hasPrefix("{\n  \""))
+    }
+
+    @Test("JSON にできない値が入っていれば、落ちずに nil を返す（#473）")
+    func encodeJSONInvalidObject() {
+        #expect(DiscordWebhookRequest.encodeJSON(["value": Double.nan]) == nil)
+        #expect(DiscordWebhookRequest.encodeJSON(["date": Date()]) == nil)
+    }
+
+    @Test("JSON にできる値は、既定では prettyPrinted にせずに書き出す")
+    func encodeJSONValidObject() throws {
+        let data = try #require(DiscordWebhookRequest.encodeJSON(["content": "本文"]))
+        #expect(String(data: data, encoding: .utf8) == #"{"content":"本文"}"#)
     }
 
     // MARK: - multipart/form-data

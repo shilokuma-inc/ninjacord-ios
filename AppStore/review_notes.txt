@@ -1,0 +1,3 @@
+No account or sign-in is required. To test sending, paste a Discord webhook URL into the "Webhook URL" field on the Sending tab and tap "Send a message!".
+
+The App Tracking Transparency prompt appears on first launch, right after the getting-started guide is closed (after Google's consent form in regions where it is required).

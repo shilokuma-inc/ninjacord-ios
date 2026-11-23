@@ -6,6 +6,7 @@ set -euo pipefail
 #   Tools/capture_screenshots.sh APP_IPHONE_67 [ja,en]
 #
 # 撮る画面と機種は AppStore/screenshots.json、言語は AppStore/languages.json で決める。
+# ほかの言語の画像を流用する言語（languages.json の assetsFrom）は撮らず、流用元を撮る（例: en-GB を指定すると en を撮る）。
 # 画面ごと・言語ごとにアプリを起動し直し、起動引数で「デモデータ」「最初に開く画面」「言語」を渡す
 # （アプリ側は ScreenshotDemo.swift）。1 回ビルドしたものを使い回すので、言語を増やしても時間は大きく伸びない。
 #
@@ -37,21 +38,25 @@ CONFIG="python3 Tools/app_store_config.py"
 
 SDK_VERSION="$(xcrun --sdk iphonesimulator --show-sdk-version)"
 
-# ビルドに使う SDK より新しいランタイム（ベータなど）には入れられないので、SDK 以下で一番新しいものを使う
+# ビルドに使う SDK より新しいランタイム（ベータなど）には入れられないので、SDK 以下で一番新しいものを使う。
+# 機種（デバイスタイプの ID）を渡すと、その機種に対応したランタイムに絞る
+# （iPhone Duo だけに対応するランタイムのように、新しいランタイムが既存の機種に対応しないことがある）
 latest_ios_runtime() {
     xcrun simctl list -j runtimes | python3 -c "
 import json, sys
 sdk = [int(part) for part in sys.argv[1].split('.')]
+device_type = sys.argv[2] if len(sys.argv) > 2 else ''
 runtimes = [
     r for r in json.load(sys.stdin).get('runtimes', [])
     if r.get('isAvailable') and 'SimRuntime.iOS' in r.get('identifier', '')
     and [int(part) for part in r['version'].split('.')][:2] <= sdk[:2]
+    and (not device_type or device_type in [d.get('identifier') for d in r.get('supportedDeviceTypes', [])])
 ]
 if not runtimes:
     sys.exit(1)
 latest = max(runtimes, key=lambda r: [int(part) for part in r['version'].split('.')])
 print(latest['identifier'])
-" "$SDK_VERSION"
+" "$SDK_VERSION" "$@"
 }
 
 device_type_id_for_name() {
@@ -70,16 +75,14 @@ if ! RUNTIME_ID="$(latest_ios_runtime)"; then
     xcodebuild -downloadPlatform iOS
     RUNTIME_ID="$(latest_ios_runtime)"
 fi
-# 変数名の直後に全角文字が続くと、macOS の bash 3.2 はロケールによって全角文字の先頭バイトを変数名の一部と見なす
-# （unbound variable になる。GitHub Actions のランナーで再現）ので、必ず波括弧で閉じる
-echo "ランタイム: ${RUNTIME_ID}（SDK ${SDK_VERSION}）"
-
 UDID=""
 DEVICE_NAME=""
 while IFS= read -r -u 3 candidate; do
     if DEVICE_TYPE_ID="$(device_type_id_for_name "$candidate")" \
-        && UDID="$(xcrun simctl create "Ninjacord-Screenshot-$DISPLAY_TYPE" "$DEVICE_TYPE_ID" "$RUNTIME_ID" 2>/dev/null)"; then
+        && DEVICE_RUNTIME_ID="$(latest_ios_runtime "$DEVICE_TYPE_ID")" \
+        && UDID="$(xcrun simctl create "Ninjacord-Screenshot-$DISPLAY_TYPE" "$DEVICE_TYPE_ID" "$DEVICE_RUNTIME_ID" 2>/dev/null)"; then
         DEVICE_NAME="$candidate"
+        RUNTIME_ID="$DEVICE_RUNTIME_ID"
         break
     fi
     UDID=""
@@ -90,6 +93,10 @@ if [ -z "$UDID" ]; then
     xcrun simctl list devicetypes >&2 || true
     exit 1
 fi
+
+# 変数名の直後に全角文字が続くと、macOS の bash 3.2 はロケールによって全角文字の先頭バイトを変数名の一部と見なす
+# （unbound variable になる。GitHub Actions のランナーで再現）ので、必ず波括弧で閉じる
+echo "ランタイム: ${RUNTIME_ID}（SDK ${SDK_VERSION}）"
 
 cleanup() {
     xcrun simctl shutdown "$UDID" 2>/dev/null || true
@@ -191,7 +198,7 @@ capture_when_settled() {
 }
 
 # プロセス置換の中で失敗しても set -e では止まらず、前回の撮影結果のまま検証を通ってしまうので、先に取り出しておく
-LANGUAGE_LIST="$($CONFIG languages "$LANGUAGES")"
+LANGUAGE_LIST="$($CONFIG asset-languages "$LANGUAGES")"
 
 # simctl が標準入力を読んでしまわないよう、一覧は別のファイル記述子から読む
 while IFS=$'\t' read -r -u 3 language apple_language apple_locale store_locale; do

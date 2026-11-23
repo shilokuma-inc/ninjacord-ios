@@ -858,6 +858,22 @@
         }
       }
     },
+    "なんか書いてね" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write something!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なんか書いてね"
+          }
+        }
+      }
+    },
     "はじめる" : {
       "localizations" : {
         "en" : {
@@ -2774,22 +2790,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表示あり"
-          }
-        }
-      }
-    },
-    "表示される内容がありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nothing to display"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "表示される内容がありません"
           }
         }
       }

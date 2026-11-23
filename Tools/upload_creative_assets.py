@@ -4,6 +4,7 @@
 iOS 27 から、スクリーンショットとは別に「クリエイティブアセット」を App Store に載せられる
 （https://developer.apple.com/app-store/asset-best-practices/）。置き場所と元ネタは
 `AppStore/creative_assets.json`、画像は `AppStore/creative/<言語>/<ファイル名>`。
+ほかの言語の画像を流用する言語（languages.json の assetsFrom）は、流用元の言語のフォルダの画像を上げる。
 
     python3 Tools/upload_creative_assets.py               # 全言語を反映する
     python3 Tools/upload_creative_assets.py --dry-run     # 何も書き換えず、やることだけ出す
@@ -253,9 +254,9 @@ def main() -> int:
 
     # 画像が揃っているかは API を叩く前に確かめる
     missing = [
-        str(ASSETS_DIR / language.language / asset["file"])
+        str(ASSETS_DIR / language.assets_language / asset["file"])
         for language in targets for asset in assets
-        if not (ASSETS_DIR / language.language / asset["file"]).is_file()
+        if not (ASSETS_DIR / language.assets_language / asset["file"]).is_file()
     ]
     if missing and not args.ref_data:
         raise SystemExit("画像がありません:\n  " + "\n  ".join(missing))
@@ -279,28 +280,39 @@ def main() -> int:
         return 0
 
     version = client.find_version(app["id"], args.app_version)
-    print(f"対象: {app['attributes']['name']} {version['attributes']['versionString']} "
+    version_string = version["attributes"]["versionString"]
+    print(f"対象: {app['attributes']['name']} {version_string} "
           f"({version['attributes']['appStoreState']})")
     if args.dry_run:
         print("--dry-run: App Store Connect には何も書き込みません")
 
+    # 書き込みを始める前に、全言語のロケールがあるかを確かめる。
+    # 途中の言語で止まると、前の言語だけ配置が差し替わって言語間で食い違う
     localizations = client.localizations(version["id"])
+    missing_locales = [
+        f"{language.language} → {language.store_locale}"
+        for language in targets if language.store_locale not in localizations
+    ]
+    if missing_locales:
+        raise SystemExit(
+            f"App Store Connect の {version_string} に無い言語: {', '.join(missing_locales)}\n"
+            "App Store Connect でこれらの言語を追加してから実行してください。"
+        )
+
     for language in targets:
-        localization_id = localizations.get(language.store_locale)
-        if localization_id is None:
-            raise SystemExit(f"App Store Connect に {language.store_locale} の言語がありません")
+        localization_id = localizations[language.store_locale]
         print(f"  {language.language} → {language.store_locale}")
 
         for asset in assets:
             placement_type = asset["placementType"]
-            path = ASSETS_DIR / language.language / asset["file"]
+            path = ASSETS_DIR / language.assets_language / asset["file"]
             existing = library.placements(localization_id, placement_type)
             if args.dry_run:
                 print(f"    {placement_type}: {path.name} を配置する予定（既存の配置 {len(existing)} 件を外す）")
                 continue
 
             reference_name = (f"{asset.get('referenceName', placement_type)} "
-                              f"{language.language} {version['attributes']['versionString']}")
+                              f"{language.language} {version_string}")
             image = library.upload_image(path, reference_name)
             spec = ref_data.image_spec(image.get("specId") or "") or {}
             groups = ref_data.groups_for_spec(placement_type, image.get("specId") or "")

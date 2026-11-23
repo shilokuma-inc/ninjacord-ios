@@ -8,6 +8,7 @@
 シェルから使うときはタブ区切りで出す。
 
     python3 Tools/app_store_config.py languages [ja,en]   # 言語ごとの撮影・反映の設定
+    python3 Tools/app_store_config.py asset-languages [ja,en-GB]  # 撮影・書き出しをする言語（流用する言語は流用元に置き換える）
     python3 Tools/app_store_config.py scenes              # 撮る画面
     python3 Tools/app_store_config.py devices APP_IPHONE_67
     python3 Tools/app_store_config.py sizes APP_IPHONE_67
@@ -42,6 +43,8 @@ class Language(NamedTuple):
     apple_locale: str
     #: App Store Connect のロケール
     store_locale: str
+    #: スクリーンショットとクリエイティブアセットを置く言語。ほかの言語の画像を流用する言語（assetsFrom）は流用元
+    assets_language: str
 
 
 class Scene(NamedTuple):
@@ -51,11 +54,49 @@ class Scene(NamedTuple):
     scene: str
 
 
+def _load_languages() -> dict[str, Language]:
+    """languages.json の全言語を読み、流用（assetsFrom）の指定が正しいかを確かめる。
+
+    assetsFrom を書いた言語は撮影もクリエイティブアセットの書き出しもせず、流用元の画像を App Store Connect に上げる
+    （例: インド向けの en-GB は en の画像を使う）。撮影の起動引数（appleLanguage / appleLocale）は流用元のものになる。
+    """
+    entries = json.loads(LANGUAGES_FILE.read_text(encoding="utf-8"))["languages"]
+    raw = {entry["language"]: entry for entry in entries}
+    problems = []
+    loaded: dict[str, Language] = {}
+    for language, entry in raw.items():
+        source = entry.get("assetsFrom")
+        if source is None:
+            base = entry
+        else:
+            base = raw.get(source)
+            if base is None:
+                problems.append(f"{language} の assetsFrom（{source}）が {LANGUAGES_FILE.name} にありません")
+                continue
+            if "assetsFrom" in base:
+                problems.append(f"{language} の assetsFrom（{source}）も流用する言語です。撮影する言語を指定してください")
+                continue
+            # 撮影しない言語に撮影の設定があると、そちらが使われると読み違えるので書かせない
+            extra = [key for key in ("appleLanguage", "appleLocale") if key in entry]
+            if extra:
+                problems.append(f"{language} は {source} の画像を流用するので {', '.join(extra)} は書かない")
+                continue
+        loaded[language] = Language(
+            language=language,
+            apple_language=base["appleLanguage"],
+            apple_locale=base["appleLocale"],
+            store_locale=entry["storeLocale"],
+            assets_language=source or language,
+        )
+    if problems:
+        raise SystemExit("\n".join(problems))
+    return loaded
+
+
 def languages(selected: list[str] | None = None) -> list[Language]:
     """指定した言語（省略時は全言語）の設定を返す。知らない言語を指定したらその場で止める。"""
-    entries = json.loads(LANGUAGES_FILE.read_text(encoding="utf-8"))["languages"]
-    known = {entry["language"]: entry for entry in entries}
-    targets = [entry["language"] for entry in entries] if selected is None else selected
+    known = _load_languages()
+    targets = list(known) if selected is None else selected
 
     unknown = [language for language in targets if language not in known]
     if unknown:
@@ -63,15 +104,21 @@ def languages(selected: list[str] | None = None) -> list[Language]:
             f"{LANGUAGES_FILE.name} に無い言語: {', '.join(unknown)}\n"
             f"指定できるのは: {', '.join(known)}"
         )
-    return [
-        Language(
-            language=language,
-            apple_language=known[language]["appleLanguage"],
-            apple_locale=known[language]["appleLocale"],
-            store_locale=known[language]["storeLocale"],
-        )
-        for language in targets
-    ]
+    return [known[language] for language in targets]
+
+
+def asset_languages(selected: list[str] | None = None) -> list[Language]:
+    """指定した言語（省略時は全言語）を反映するのに、撮影・書き出しが要る言語を返す。
+
+    画像を流用する言語は流用元に置き換え、重複を除く（例: en-GB だけを指定すると en を撮る）。
+    """
+    known = _load_languages()
+    result: list[Language] = []
+    for target in languages(selected):
+        source = known[target.assets_language]
+        if source not in result:
+            result.append(source)
+    return result
 
 
 def _screenshots_config() -> dict:
@@ -142,13 +189,19 @@ def parse_list(raw: str | None) -> list[str] | None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("command", choices=("languages", "scenes", "devices", "sizes", "display-types", "bundle-id"))
+    parser.add_argument(
+        "command",
+        choices=("languages", "asset-languages", "scenes", "devices", "sizes", "display-types", "bundle-id"),
+    )
     parser.add_argument("argument", nargs="?", default=None)
     args = parser.parse_args()
 
-    if args.command == "languages":
-        for entry in languages(parse_list(args.argument)):
-            print("\t".join(entry))
+    if args.command in ("languages", "asset-languages"):
+        selected = parse_list(args.argument)
+        entries = languages(selected) if args.command == "languages" else asset_languages(selected)
+        # シェルは 4 列を read で受けるので、列を増やすとロケールに流用元が混ざる。assets_language は出さない
+        for entry in entries:
+            print("\t".join((entry.language, entry.apple_language, entry.apple_locale, entry.store_locale)))
     elif args.command == "scenes":
         for entry in scenes():
             print("\t".join(entry))

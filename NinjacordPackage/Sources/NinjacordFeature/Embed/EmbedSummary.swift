@@ -45,8 +45,6 @@ struct EmbedSummary: Equatable {
         case empty
         /// 色・送信日時だけで、埋め込みとして送られない
         case notSent
-        /// 埋め込みは送るが、Discord 上で表示される中身が無い（名前も値も空のフィールド行と、色・送信日時だけ）
-        case nothingDisplayed
         /// 埋め込みを送り、表示される中身がある。タイトルが空なら title は nil（前後の空白は除く）
         case filled(title: String?, items: [Item])
     }
@@ -55,11 +53,9 @@ struct EmbedSummary: Equatable {
 
     init(embed: MessageEmbedEntity) {
         let items = Self.items(of: embed)
-        if embed.hasDisplayedContent {
+        if embed.hasContent {
             let title = embed.title.trimmingCharacters(in: .whitespacesAndNewlines)
             state = .filled(title: title.isEmpty ? nil : title, items: items)
-        } else if embed.hasContent {
-            state = .nothingDisplayed
         } else if items.isEmpty {
             state = .empty
         } else {
@@ -82,8 +78,6 @@ struct EmbedSummary: Equatable {
             return String(localized: "未設定")
         case .notSent:
             return String(localized: "色と送信日時だけでは送られません")
-        case .nothingDisplayed:
-            return String(localized: "表示される内容がありません")
         case .filled(_, let items):
             // 表示される中身があって項目が無いのは、タイトルだけのとき
             guard !items.isEmpty else {

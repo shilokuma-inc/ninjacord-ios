@@ -6,7 +6,9 @@
 
 - macOS の bash 3.2 は、`$VAR（` のように変数名の直後に全角文字が続くと、ロケール依存の文字判定で全角文字の先頭バイトを変数名の一部と見なすことがあり、`set -u` で `unbound variable` になる。GitHub Actions の macOS ランナーで再現し、手元の Mac では再現しないことがあるため、ローカルで通っても安心できない。シェルスクリプトやワークフローの `run` で全角文字を扱うときは必ず `${VAR}` で閉じる（Issue #400）。
 - `Metadata/App Store` の dry-run は数十秒で終わり、App Store Connect の現在値と `AppStore/metadata/*.json` の差分を Job Summary に出す。反映先は `PREPARE_FOR_SUBMISSION` のバージョンだけなので、配信中の掲載文は変わらない。
+- GitHub Actions は Secrets の値を、どこに出てもログで `***` に伏せる。審査の連絡先の Secrets（`APP_REVIEW_CONTACT_FIRST_NAME` / `_LAST_NAME`）を渡す `Metadata/App Store` では、同じ名前を含む著作権（`2024 Takumi Muraishi`）の差分が `2024 *** ***` と出る。値の食い違いを確かめるときは、伏せ字の前後（年や `©` の有無）で見る（Issue #628）。
 - `Screenshots/App Store` は撮影に 30〜60 分かかる。ログは失敗したジョブ以外は完了まで取れない（`gh run view --log` は実行中のジョブでは空）。
+- クリエイティブアセットの書き出し（`Tools/render_creative_assets.sh`）に使う 6.9 inch の画面は、`Screenshots/App Store` の成果物 `screenshots-APP_IPHONE_67` を `gh run download` で取れば、手元で撮り直さずに済む。最新の成功した実行が一部の画面サイズだけの撮り直しで 6.9 inch を含まないことがある（2026-11-07 は 6.3 inch だけ）。その前の実行が失敗でも、6.9 inch のジョブが成功していれば成果物は使える（`gh run view <id> --json jobs` で確かめる）。CI で撮った画面には Dynamic Island が写っていて、2026-11-06 に手元の `Tools/capture_screenshots.sh` で撮った画面には写っていなかったので、どちらで書き出したかで端末の上部の見た目が変わる（Issue #641）。
 
 ## ビルド・依存（Swift Package Manager）
 
@@ -26,11 +28,15 @@
 ## ローカライズチェック（Tools/check_localizations.py）
 
 - Xcode 既定の DerivedData（`~/Library/Developer/Xcode/DerivedData/NinjacordApp-*`）を `--derived-data` に渡すと、別の Configuration の古いビルドや、コードがまだ `NinjacordApp` ターゲットにあった頃の `.stringsdata` まで拾い、今は無い文言（`埋め込みタイトルを入れてください` など）を未登録と報告する。手元で確かめるときは、そのビルドで書き出された `Debug-iphonesimulator` の `.stringsdata`（`NinjacordFeature.build` のものと、アプリターゲットは `NinjacordApp.stringsdata` だけ）を別のディレクトリに同じ階層で集めて渡す。CI は毎回新しい DerivedData なので起きない（Issue #620）。
+- `NinjacordFeatureTests` は scheme の TestAction でホストアプリなしに動く（`Bundle.main` は xctest のランナーで、`Localizable.xcstrings` を持たない）。そのため、テストの中の `String(localized:)` は Simulator の言語に関係なく、常にキー（日本語の文言）を返す。訳が正しいかはテストでは確かめられないので、`Check localizations` と、Simulator を起動引数 `-AppleLanguages "(en)"` で起動して確かめる。テストで文言を比べるときは、直書きせずに元の値（`DiscordWebhookRequest.defaultContent` など）と比べる（Issue #469）。
 
 ## Simulator での確認
 
 - Debug ビルドの広告（AdMob のテスト広告）は、起動のたびに出る中身も高さも変わる。撮影モードで変更前と変更後のスクリーンショットを見比べるときは、広告の位置と、広告の高さが変わったぶんずれる部分（テンプレート一覧のネイティブ広告の下など）は差とみなさない。広告を写さずに比べたいなら `NinjacordApp-Screenshot` の scheme でビルドする（Issue #476）。
+- 埋め込みのフィールドなど Pro 限定の項目は、Xcode から実行しないと StoreKit の設定ファイル（`NinjacordPro.storekit`）が効かず Pro にできないので、`xcodebuild` でビルドして `simctl` で起動したアプリでは画面から入力できない。その状態の画面を確かめるときは、テンプレートを UserDefaults に書いてから送信画面の「テンプレート」で呼び出す。インストールのあと、起動する前に `xcrun simctl spawn <端末> defaults write ml.mrs1669.discord-bot-helper messageTemplates -data <JSON の 16 進>`（JSON は `MessageTemplate` の配列）で書けば読み込まれた。`hasCompletedOnboarding -bool YES` も書けばチュートリアルを飛ばせる（Issue #637）。
+- Simulator の UI を操作するツール（idb など）が入っていない環境で、送信を押したあとのダイアログや設定の奥の画面を撮るなら、コミットしない一時的な変更で起動直後にその状態にする。たとえば `SendMessageView` の `.onAppear` で入力欄に値を入れて `viewModel.sendMessage(...)` を呼ぶ、`MainView` の `selection` と `SettingView` の `isPrivacyPolicyPresented` を初期値で開く、など。変更を `git diff > <patch>` で取っておけば、develop と作業ブランチの両方に `git apply` して同じ条件で Before / After を撮れる。送信画面の下のほう（埋め込み・添付）まで 1 枚に写すには、起動前に `xcrun simctl spawn <端末> defaults write ml.mrs1669.discord-bot-helper isSendMessageSenderExpanded -bool NO`（`isSendMessagePreviewExpanded` も）で、送信者と「Discordでの見え方」を閉じておく（Issue #461・#469・#643）。
 
 ## リリース
 
 - 審査対応などで `release/vX.Y.Z` に直接マージした修正は、`develop` に自動では戻らない（v2.0.0 の ATT の修正 #437・#453 が抜けていた）。リリース後に `master` へ反映するときは、`git fetch origin` で remote-tracking の参照を最新にしてから `git log origin/develop..origin/release/vX.Y.Z` で release にだけあるコミットを確かめ、あれば release を `develop` にもマージする（#505）。
+- そのバージョンが承認されたあとに同じ `MARKETING_VERSION` のビルドを上げると、アップロード自体は成功するが、App Store Connect の取り込みで ITMS-90186（Invalid Pre-Release Train）/ ITMS-90062（承認済みより高い CFBundleShortVersionString が必要）のメールが来て弾かれる。v2.2.0 では、release を切ったあとも develop が 2.2.0 のままで、承認後の develop へのマージで起きた。承認の前に develop の `MARKETING_VERSION` を次のバージョンに上げておき、release を develop に戻すのはそのあとにする（#634）。

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """App Store Connect API の薄いクライアント。
 
-スクリーンショット（`upload_screenshots.py`）とメタデータ（`upload_metadata.py`）の
-両方から使う。認証・バージョンの絞り込み・言語（`appStoreVersionLocalizations`）の
-取り回しは共通なので、ここに 1 つだけ置く。
+スクリーンショット（`upload_screenshots.py`）・メタデータ（`upload_metadata.py`）・
+App 情報（`upload_app_info.py`）などから使う。認証・バージョンと App 情報の絞り込み・
+言語（`appStoreVersionLocalizations` / `appInfoLocalizations`）の取り回しは共通なので、ここに 1 つだけ置く。
 
 認証は App Store Connect API Key（.p8）。次の環境変数から読む想定。
 
@@ -41,6 +41,14 @@ EDITABLE_STATES = {
     "INVALID_BINARY",
 }
 
+#: App 情報（appInfos。名前・サブタイトル・カテゴリ・年齢制限など）を書き換えられる状態。
+#: 配信中のアプリには配信中の App 情報（READY_FOR_DISTRIBUTION）と、次のバージョン用の App 情報の 2 つがある
+EDITABLE_APP_INFO_STATES = {
+    "PREPARE_FOR_SUBMISSION",
+    "DEVELOPER_REJECTED",
+    "REJECTED",
+}
+
 #: アップロード後、Apple 側の取り込みが終わるのを待つ上限（秒）
 DELIVERY_TIMEOUT = 300
 
@@ -56,7 +64,10 @@ TOKEN_REFRESH_MARGIN = 5 * 60
 
 
 class ApiError(RuntimeError):
-    pass
+    def __init__(self, message: str, status: int | None = None):
+        super().__init__(message)
+        #: HTTP のステータスコード（転送の失敗など、API の応答でないときは None）
+        self.status = status
 
 
 class AppStoreConnect:
@@ -89,7 +100,7 @@ class AppStoreConnect:
                 raw = response.read()
         except urllib.error.HTTPError as error:
             detail = error.read().decode(errors="replace")
-            raise ApiError(f"{method} {url} が {error.code} で失敗しました\n{detail}") from None
+            raise ApiError(f"{method} {url} が {error.code} で失敗しました\n{detail}", error.code) from None
         return json.loads(raw) if raw else {}
 
     def get(self, path: str, params: dict | None = None) -> dict:
@@ -98,6 +109,18 @@ class AppStoreConnect:
             query = urllib.parse.urlencode(params)
             url = f"{url}?{query}"
         return self._request("GET", url)
+
+    def get_or_none(self, path: str, params: dict | None = None) -> dict | None:
+        """1 件を返すエンドポイントの `data`。まだ作られていない（404 か data が null）なら None。
+
+        価格・配信状況・審査の情報などは、App Store Connect で一度も設定していないと 404 になる。
+        """
+        try:
+            return self.get(path, params).get("data")
+        except ApiError as error:
+            if error.status == 404:
+                return None
+            raise
 
     def get_all(self, path: str, params: dict | None = None) -> list[dict]:
         """ページングをたどって全件返す。"""
@@ -132,24 +155,39 @@ class AppStoreConnect:
             raise SystemExit(f"bundleId が {bundle_id} のアプリが見つかりません")
         return apps[0]
 
-    def find_version(self, app_id: str, version_string: str | None) -> dict:
-        versions = self.get_all(
+    def versions(self, app_id: str) -> list[dict]:
+        return self.get_all(
             f"/v1/apps/{app_id}/appStoreVersions",
             {"filter[platform]": "IOS", "limit": 50},
         )
-        editable = [v for v in versions if v["attributes"]["appStoreState"] in EDITABLE_STATES]
+
+    @staticmethod
+    def is_editable(version: dict) -> bool:
+        return version["attributes"]["appStoreState"] in EDITABLE_STATES
+
+    def find_version(self, app_id: str, version_string: str | None, reference: bool = False) -> dict:
+        """書き換えられるバージョンを返す。
+
+        `reference` を True にすると（dry-run で使う）、編集できるバージョンが無いときに止めず、
+        いちばん新しいバージョン（審査中・配信中など）を比べる相手として返す。
+        返したバージョンが書き換えられるかは `is_editable` で見る。
+        """
+        versions = self.versions(app_id)
+        editable = [v for v in versions if self.is_editable(v)]
 
         if version_string:
             for version in versions:
                 if version["attributes"]["versionString"] == version_string:
                     state = version["attributes"]["appStoreState"]
-                    if state not in EDITABLE_STATES:
+                    if state not in EDITABLE_STATES and not reference:
                         raise SystemExit(
                             f"バージョン {version_string} は {state} のため編集できません"
                         )
                     return version
             raise SystemExit(f"バージョン {version_string} が見つかりません")
 
+        if not editable and reference and versions:
+            return max(versions, key=lambda v: v["attributes"].get("createdDate") or "")
         if not editable:
             states = ", ".join(sorted({v["attributes"]["appStoreState"] for v in versions}))
             raise SystemExit(
@@ -163,6 +201,73 @@ class AppStoreConnect:
                 f"編集できるバージョンが複数あります（{names}）。--app-version で選んでください。"
             )
         return editable[0]
+
+    def find_app_info(self, app_id: str, reference: bool = False) -> dict:
+        """書き換えられる App 情報（appInfos）を返す。
+
+        App 情報はバージョンとは別のリソースで、名前・サブタイトル・プライバシーポリシーの URL（言語ごと）と、
+        カテゴリ・年齢制限を持つ。次のバージョンを作ると、そのバージョン用の App 情報が「提出準備中」でできる。
+
+        `reference` を True にすると（dry-run で使う）、書き換えられる App 情報が無いときに止めず、
+        審査中のバージョンの App 情報か、無ければ配信中の App 情報を比べる相手として返す。
+        """
+        infos = self.get_all(f"/v1/apps/{app_id}/appInfos")
+
+        def state(info: dict) -> str | None:
+            # state が無い古い応答では、非推奨の appStoreState（バージョンと同じ値）で見る
+            return info["attributes"].get("state") or info["attributes"].get("appStoreState")
+
+        def editable(info: dict) -> bool:
+            if info["attributes"].get("state"):
+                return info["attributes"]["state"] in EDITABLE_APP_INFO_STATES
+            return info["attributes"].get("appStoreState") in EDITABLE_STATES
+
+        candidates = [info for info in infos if editable(info)]
+        if not candidates and reference and infos:
+            # 配信中（READY_FOR_DISTRIBUTION）より、審査中など次のバージョン用のものを優先する
+            live_states = {"READY_FOR_DISTRIBUTION", "READY_FOR_SALE"}
+            live = [info for info in infos if state(info) in live_states]
+            pending = [info for info in infos if state(info) not in live_states | {"REPLACED_WITH_NEW_INFO"}]
+            return (pending or live or infos)[0]
+        if not candidates:
+            states = ", ".join(sorted({str(state(info)) for info in infos}))
+            raise SystemExit(
+                "編集できる状態の App 情報がありません"
+                f"（いまある状態: {states or 'なし'}）。"
+                "App Store Connect で次のバージョンを作ってから実行してください。"
+            )
+        if len(candidates) > 1:
+            raise SystemExit(
+                f"編集できる App 情報が {len(candidates)} つあります。App Store Connect の画面で状態を確認してください。"
+            )
+        return candidates[0]
+
+    def app_info_localization_entries(self, app_info_id: str) -> dict[str, dict]:
+        """ロケール → そのロケールの `appInfoLocalizations`（名前・サブタイトルなどの現在値を含む）。"""
+        entries = self.get_all(f"/v1/appInfos/{app_info_id}/appInfoLocalizations")
+        return {entry["attributes"]["locale"]: entry for entry in entries}
+
+    def create_app_info_localization(self, app_info_id: str, locale: str, attributes: dict) -> str:
+        """App 情報に言語を追加する。名前（name）が無いと作れない。
+
+        バージョンの言語（appStoreVersionLocalizations）とは別物で、片方を作ってももう片方はできない。
+        アプリを作ったときの言語（プライマリ言語）にしか無いので、2 つ目の言語はここで作る。
+        """
+        if self.dry_run:
+            return "dry-run"
+        response = self.post(
+            "/v1/appInfoLocalizations",
+            {
+                "data": {
+                    "type": "appInfoLocalizations",
+                    "attributes": {**attributes, "locale": locale},
+                    "relationships": {
+                        "appInfo": {"data": {"type": "appInfos", "id": app_info_id}}
+                    },
+                }
+            },
+        )
+        return response["data"]["id"]
 
     def localizations(self, version_id: str) -> dict[str, str]:
         return {locale: entry["id"] for locale, entry in self.localization_entries(version_id).items()}

@@ -73,7 +73,7 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(viewModel.isDefaultValueConfirmationPresented)
         let confirmation = try #require(viewModel.defaultValueConfirmation)
         #expect(confirmation.defaultedFields == [.content])
-        #expect(confirmation.message.contains("なんか書いてね"))
+        #expect(confirmation.message.contains(DiscordWebhookRequest.defaultContent))
         #expect(requests(to: url) == 0)
         #expect(!viewModel.isSending)
     }
@@ -88,7 +88,7 @@ final class SendMessageDefaultValueConfirmationTests {
 
         let confirmation = try #require(viewModel.defaultValueConfirmation)
         #expect(confirmation.defaultedFields == [.content])
-        #expect(confirmation.message.contains("なんか書いてね"))
+        #expect(confirmation.message.contains(DiscordWebhookRequest.defaultContent))
         #expect(!confirmation.message.contains("以下、名無しにかわりましてVIPがお送りします"))
     }
 
@@ -187,7 +187,7 @@ final class SendMessageDefaultValueConfirmationTests {
         #expect(requests(to: url) == 1)
         let body = try #require(StubURLProtocol.requests(to: url).first?.body)
         let parameters = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
-        #expect(parameters["content"] as? String == "なんか書いてね")
+        #expect(parameters["content"] as? String == DiscordWebhookRequest.defaultContent)
         // 名前が空なら username を送らず、Webhook の名前で出す
         #expect(parameters["username"] == nil)
         #expect(setting.isEnabled)

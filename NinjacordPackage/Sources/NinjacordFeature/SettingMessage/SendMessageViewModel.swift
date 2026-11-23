@@ -109,7 +109,7 @@ final class SendMessageViewModel: ObservableObject {
     }
 
     /// Webhook にメッセージを送信する。通信が完了（成功・失敗とも）するまで待機し、送信結果を返す。
-    /// 失敗時は Discord のレスポンスから判定した原因を返す
+    /// 失敗時は Discord のレスポンスから判定した原因を返す。URL にできなければ、通信せずに invalidToken を返す
     @discardableResult
     /// - Parameter countsAsSend: 送信成功回数（初回送信の計測・レビュー依頼・全画面広告の判定に使う）に数えるか。
     ///   一斉送信では宛先ごとではなく 1 回の操作で 1 回と数えるため、呼び出し元でまとめて数える
@@ -121,9 +121,13 @@ final class SendMessageViewModel: ObservableObject {
         countsAsSend: Bool = true
     ) async -> Result<Void, DiscordWebhookError> {
         let webhookRequest = DiscordWebhookRequest(messageEntity: messageEntity, attachment: attachment)
-        // URL にできないときは apple.com に送る（今の挙動のまま。#472）
-        let endpoint = URL(string: url) ?? URL(string: "https://www.apple.com/")!
-        let response = await client.send(webhookRequest, to: endpoint)
+        let response: DiscordWebhookClient.Response
+        if let endpoint = Self.webhookEndpoint(from: url) {
+            response = await client.send(webhookRequest, to: endpoint)
+        } else {
+            // URL にできなければ送らずに失敗にする。一斉送信の 2 件目以降は入力チェックを通らないので、ここでも止める（#472）
+            response = DiscordWebhookClient.Response(statusCode: nil, result: .failure(.invalidToken))
+        }
         analytics.sendMessageSendEvent(
             isSuccess: (try? response.result.get()) != nil,
             httpStatus: response.statusCode
@@ -164,6 +168,11 @@ extension SendMessageViewModel {
             recordSendSuccess()
         }
         return results
+    }
+
+    /// 入力された Webhook URL を送信先の URL にする。入力チェックと同じく前後の空白・改行は除く。URL にできなければ nil
+    static func webhookEndpoint(from string: String) -> URL? {
+        URL(string: string.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     private func recordSendSuccess() {
