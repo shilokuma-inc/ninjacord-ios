@@ -13,6 +13,22 @@ struct MessageEntity: Codable, Equatable {
     var avatarURL: String
     var content: String
     var messageEmbedEntity: MessageEmbedEntity
+    /// フォーラム・メディアチャンネルに新しい投稿として送るときのタイトル（thread_name）。
+    /// テンプレート・送信履歴にも残すが、フォーラムでない宛先には送らない（Issue #699）
+    var threadName = ""
+}
+
+extension MessageEntity {
+    /// タイトルを足す前（2.5.0 まで）に保存したテンプレート・送信履歴には無いので、空として読み込む。
+    /// 自動で作られる memberwise init を残すため、extension に書く
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        username = try container.decode(String.self, forKey: .username)
+        avatarURL = try container.decode(String.self, forKey: .avatarURL)
+        content = try container.decode(String.self, forKey: .content)
+        messageEmbedEntity = try container.decode(MessageEmbedEntity.self, forKey: .messageEmbedEntity)
+        threadName = try container.decodeIfPresent(String.self, forKey: .threadName) ?? ""
+    }
 }
 
 /// Discord の埋め込み（embed）。空の項目は送らない
