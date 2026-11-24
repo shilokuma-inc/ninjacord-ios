@@ -13,6 +13,22 @@ struct MessageEntity: Codable, Equatable {
     var avatarURL: String
     var content: String
     var messageEmbedEntity: MessageEmbedEntity
+    /// 送信オプション（通知を鳴らさない など）。メッセージの一部として、テンプレート・送信履歴にも残す（Issue #698）
+    var sendOptions = MessageSendOptions()
+}
+
+extension MessageEntity {
+    /// 送信オプションを追加する前に保存したテンプレート・送信履歴には sendOptions が無いので、すべてオフで読み込む。
+    /// memberwise initializer を残すため、extension に書く
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        username = try container.decode(String.self, forKey: .username)
+        avatarURL = try container.decode(String.self, forKey: .avatarURL)
+        content = try container.decode(String.self, forKey: .content)
+        messageEmbedEntity = try container.decode(MessageEmbedEntity.self, forKey: .messageEmbedEntity)
+        sendOptions = try container.decodeIfPresent(MessageSendOptions.self, forKey: .sendOptions)
+            ?? MessageSendOptions()
+    }
 }
 
 /// Discord の埋め込み（embed）。空の項目は送らない
