@@ -1,0 +1,18 @@
+{
+  "_comment": [
+    "App Store 用のスクリーンショットの撮影と、クリエイティブアセットで使うアプリの設定（app-kit の撮影のワークフローが読む）。",
+    "project / scheme: 撮影でビルドするプロジェクトと Scheme。広告を出さない NinjacordApp-Screenshot の Scheme を使う。",
+    "configuration: 撮影でビルドする構成。広告を写さないよう、ADS_ENABLED = NO の NinjacordApp-Screenshot にする。",
+    "Bundle ID は project.pbxproj の PRODUCT_BUNDLE_IDENTIFIER から読む（ここに bundleId を書けばそちらを使う）。",
+    "simulatorPrefix: 撮影で作る Simulator の名前の頭。",
+    "screenshotDemoSource: 撮影モードの Swift ファイル。screenshots.json の scene が ScreenshotDemo.Scene にあるかを突き合わせる。",
+    "appIcon: クリエイティブアセットに載せるアプリアイコン。",
+    "今の Tools/capture_screenshots.sh は、同じ Scheme と構成を既定の値に持つ（このファイルは読まない）。"
+  ],
+  "project": "NinjacordApp.xcodeproj",
+  "scheme": "NinjacordApp-Screenshot",
+  "configuration": "NinjacordApp-Screenshot",
+  "simulatorPrefix": "NinjacordApp",
+  "screenshotDemoSource": "NinjacordPackage/Sources/NinjacordFeature/Screenshot/ScreenshotDemo.swift",
+  "appIcon": "NinjacordApp/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
+}
