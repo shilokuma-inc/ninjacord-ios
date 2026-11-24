@@ -226,6 +226,7 @@ extension SendMessageView {
                 content: viewModel.inputContext,
                 embed: viewModel.inputEmbed,
                 attachment: viewModel.attachment,
+                threadName: viewModel.isForumDestination ? viewModel.inputThreadName : nil,
                 webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
                 // 撮影モードではデモのプロフィール画像の URL を読みに行かず、同梱のアイコンを出す
                 avatarLoader: ScreenshotDemo.isEnabled
@@ -271,7 +272,8 @@ extension SendMessageView {
             if viewModel.broadcastTargets.isEmpty {
                 DestinationCard(
                     url: $viewModel.inputURL,
-                    profile: webhookProfileStore.profile(for: viewModel.inputURL)
+                    profile: webhookProfileStore.profile(for: viewModel.inputURL),
+                    isForum: viewModel.isForumDestination
                 )
                 // カードに Webhook の名前とアイコンを出すため、宛先が変わったら取得する
                 .task(id: viewModel.inputURL) {
@@ -335,9 +337,24 @@ extension SendMessageView {
         )
     }
 
-    /// 本文: Discord のメッセージの本文
+    /// 本文: Discord のメッセージの本文。フォーラム・メディアチャンネルの宛先なら、その上に投稿のタイトル
     private var contentSection: some View {
         SendMessageSection(title: "本文") {
+            // タイトルはメッセージの一部（テンプレートに残す）で、Discord の投稿の画面と同じく本文の上に置く。
+            // フォーラムでない宛先には送れない（220003）ので、宛先がフォーラムのときだけ出す（Issue #699）
+            if viewModel.isForumDestination {
+                ClearableIconTextField(
+                    icon: Image(systemName: "text.bubble"),
+                    placeholder: "投稿のタイトルを入れてください",
+                    text: $viewModel.inputThreadName,
+                    title: "投稿のタイトル",
+                    note: "フォーラムに新しい投稿を作ります"
+                )
+                .onTapGesture {
+                    self.isEditing = true
+                }
+            }
+
             ClearableIconTextField(
                 icon: MessagePartIcon(part: .content),
                 placeholder: "メッセージを入れてください",

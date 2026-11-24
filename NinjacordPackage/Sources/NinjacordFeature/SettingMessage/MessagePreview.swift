@@ -6,7 +6,7 @@
 import SwiftUI
 
 /// 送るメッセージが Discord 上でどう見えるかの簡易プレビュー。
-/// アイコン・名前・本文・埋め込み・添付画像を並べる。`EmbedPreview` と同じく Discussion #259 の方針で完全には再現せず、
+/// アイコン・名前・本文・埋め込み・添付画像を並べ、フォーラムの新しい投稿ならその上にタイトルを出す。`EmbedPreview` と同じく Discussion #259 の方針で完全には再現せず、
 /// アプリのテーマに関係なく Discord のダークテーマ風の配色で描く
 struct MessagePreview: View {
     let username: String
@@ -14,6 +14,8 @@ struct MessagePreview: View {
     let content: String
     let embed: MessageEmbedEntity
     let attachment: ImageAttachment?
+    /// フォーラム・メディアチャンネルに新しい投稿として送るときのタイトル。新しい投稿でなければ nil で、出さない（Issue #699）
+    var threadName: String?
     /// Discord 側で Webhook に設定されている名前とアイコン。名前・プロフィール画像の URL が空のときに代わりに出す。未取得なら nil
     var webhookProfile: WebhookProfile?
     var avatarLoader = AvatarImageLoader()
@@ -37,32 +39,39 @@ struct MessagePreview: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12.0) {
-            avatar
-
-            VStack(alignment: .leading, spacing: 4.0) {
-                header
-                // 本文が空でも初期文言を送るときは、本文の場所を示す。埋め込みや画像があって本文を送らないときは出さない
-                if sendsContent {
-                    Text(content.isEmpty ? String(localized: "メッセージの本文") : content)
-                        .font(.system(size: 16))
-                        .foregroundStyle(content.isEmpty ? DiscordPalette.placeholder : DiscordPalette.text)
-                }
-                if showsEmbed {
-                    EmbedPreview(embed: embed)
-                        .padding(.top, 4.0)
-                }
-                if let attachmentThumbnail {
-                    attachmentThumbnail.image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: attachmentThumbnail.size.width, maxHeight: attachmentThumbnail.size.height)
-                        .clipShape(RoundedRectangle(cornerRadius: 8.0))
-                        .padding(.top, 4.0)
-                        .accessibilityHidden(true)
-                }
+        VStack(alignment: .leading, spacing: 8.0) {
+            // Discord のフォーラムの投稿と同じく、最初のメッセージの上にタイトルを出す
+            if let threadName {
+                threadTitle(threadName)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(alignment: .top, spacing: 12.0) {
+                avatar
+
+                VStack(alignment: .leading, spacing: 4.0) {
+                    header
+                    // 本文が空でも初期文言を送るときは、本文の場所を示す。埋め込みや画像があって本文を送らないときは出さない
+                    if sendsContent {
+                        Text(content.isEmpty ? String(localized: "メッセージの本文") : content)
+                            .font(.system(size: 16))
+                            .foregroundStyle(content.isEmpty ? DiscordPalette.placeholder : DiscordPalette.text)
+                    }
+                    if showsEmbed {
+                        EmbedPreview(embed: embed)
+                            .padding(.top, 4.0)
+                    }
+                    if let attachmentThumbnail {
+                        attachmentThumbnail.image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: attachmentThumbnail.size.width, maxHeight: attachmentThumbnail.size.height)
+                            .clipShape(RoundedRectangle(cornerRadius: 8.0))
+                            .padding(.top, 4.0)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .padding(Self.padding)
         .background(DiscordPalette.messageBackground)
@@ -127,6 +136,15 @@ struct MessagePreview: View {
         .frame(width: Self.avatarSize, height: Self.avatarSize)
         .clipShape(Circle())
         .accessibilityHidden(true)
+    }
+
+    /// フォーラムの投稿のタイトル。送るときと同じく前後の空白を除き、空なら仮の文言を未入力の色で出す
+    private func threadTitle(_ threadName: String) -> some View {
+        let title = threadName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return Text(title.isEmpty ? String(localized: "投稿のタイトル") : title)
+            .font(.system(size: 20, weight: .bold))
+            .foregroundStyle(title.isEmpty ? DiscordPalette.placeholder : DiscordPalette.title)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// 名前と、Webhook から送ったメッセージに付くバッジ
@@ -214,6 +232,18 @@ private extension ImageAttachment {
         content: "",
         embed: MessageEmbedEntity(title: "お知らせ", description: "本日18時からメンテナンスです"),
         attachment: nil
+    )
+    .padding()
+}
+
+#Preview("フォーラムの新しい投稿") {
+    MessagePreview(
+        username: "レイド告知Bot",
+        avatarURL: "",
+        content: "今週の進捗をまとめました",
+        embed: MessageEmbedEntity(),
+        attachment: nil,
+        threadName: "週報 11/25"
     )
     .padding()
 }

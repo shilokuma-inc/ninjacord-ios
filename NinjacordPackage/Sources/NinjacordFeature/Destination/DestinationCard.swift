@@ -79,6 +79,8 @@ struct DestinationCard: View {
     @Binding var url: String
     /// 送信画面で取得した、今の宛先の Webhook。まだなら nil
     let profile: WebhookProfile?
+    /// フォーラム・メディアチャンネルの宛先か（タイトルを付けて新しい投稿として送る。Issue #699）
+    var isForum = false
 
     @StateObject private var store = WebhookURLStore()
     @State private var isPickerPresented = ScreenshotDemo.scene == .savedURLs
@@ -171,6 +173,9 @@ struct DestinationCard: View {
                         .lineLimit(1)
                     if display.isThread {
                         ThreadBadge()
+                    }
+                    if isForum {
+                        ForumBadge()
                     }
                 }
                 if let subtitle = display.subtitle {
