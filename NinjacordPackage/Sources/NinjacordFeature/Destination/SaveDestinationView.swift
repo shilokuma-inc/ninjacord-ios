@@ -16,7 +16,11 @@ struct SaveDestinationView: View {
     /// - Parameter initialURL: 最初に入れておく URL（送信画面で使っている、保存していない URL など）
     init(initialURL: String = "", onSaved: @escaping (SavedWebhookURL) -> Void = { _ in }) {
         self.onSaved = onSaved
-        _model = StateObject(wrappedValue: SaveDestinationModel(initialURL: initialURL, store: WebhookURLStore()))
+        _model = StateObject(wrappedValue: SaveDestinationModel(
+            initialURL: initialURL,
+            store: WebhookURLStore(),
+            forumDestinations: .shared
+        ))
     }
 
     var body: some View {
@@ -45,6 +49,16 @@ struct SaveDestinationView: View {
                     Text("一覧に出す名前です。例: ゲーム部 #お知らせ")
                 }
                 .listRowBackground(Color.appSurface)
+
+                // Webhook URL からはフォーラムか分からないので、自分で設定する（Issue #699）
+                if model.canBeForum {
+                    Section {
+                        Toggle("フォーラム・メディアチャンネル", isOn: $model.isForum)
+                    } footer: {
+                        Text("オンにすると、タイトルを付けて新しい投稿として送ります")
+                    }
+                    .listRowBackground(Color.appSurface)
+                }
             }
             .scrollContentBackground(.hidden)
             .background(Color.appBackground)
