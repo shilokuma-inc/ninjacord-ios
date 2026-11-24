@@ -1018,6 +1018,38 @@
         }
       }
     },
+    "この宛先はフォーラム・メディアチャンネルです。「本文」の「投稿のタイトル」を入れて、もう一度送信してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This destination is a forum or media channel. Enter a Post title under Message, then send again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この宛先はフォーラム・メディアチャンネルです。「本文」の「投稿のタイトル」を入れて、もう一度送信してください"
+          }
+        }
+      }
+    },
+    "この宛先はフォーラム・メディアチャンネルではないため、タイトルを付けて送れません。フォーラムの設定を外したので、もう一度送信してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This destination isn't a forum or media channel, so it can't take a post title. The forum setting has been turned off. Send again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この宛先はフォーラム・メディアチャンネルではないため、タイトルを付けて送れません。フォーラムの設定を外したので、もう一度送信してください"
+          }
+        }
+      }
+    },
     "この宛先を保存" : {
       "localizations" : {
         "en" : {
@@ -1286,6 +1318,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ウェブフックを作るには、そのサーバーで「ウェブフックの管理」の権限が必要です"
+          }
+        }
+      }
+    },
+    "オンにすると、タイトルを付けて新しい投稿として送ります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When on, messages are sent as new posts with a title."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オンにすると、タイトルを付けて新しい投稿として送ります"
           }
         }
       }
@@ -1766,6 +1814,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フィールドを追加"
+          }
+        }
+      }
+    },
+    "フォーラム" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forum"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーラム"
+          }
+        }
+      }
+    },
+    "フォーラムに新しい投稿を作ります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creates a new forum post."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーラムに新しい投稿を作ります"
+          }
+        }
+      }
+    },
+    "フォーラムに設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set as Forum"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーラムに設定"
+          }
+        }
+      }
+    },
+    "フォーラムを解除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unset Forum"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーラムを解除"
+          }
+        }
+      }
+    },
+    "フォーラム・メディアチャンネル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forum or Media Channel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーラム・メディアチャンネル"
+          }
+        }
+      }
+    },
+    "フォーラム・メディアチャンネルには、タイトルを付けて新しい投稿として送ります。「本文」の「投稿のタイトル」を入れてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forum and media channels need a title for each new post. Enter a Post title under Message."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーラム・メディアチャンネルには、タイトルを付けて新しい投稿として送ります。「本文」の「投稿のタイトル」を入れてください"
           }
         }
       }
@@ -2986,18 +3130,18 @@
         }
       }
     },
-    "左にスワイプすると、名前の変更と削除ができます" : {
+    "左にスワイプすると、名前の変更・フォーラムの設定・削除ができます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Swipe left to rename or delete."
+            "value" : "Swipe left to rename, set as a forum, or delete."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "左にスワイプすると、名前の変更と削除ができます"
+            "value" : "左にスワイプすると、名前の変更・フォーラムの設定・削除ができます"
           }
         }
       }
@@ -3094,6 +3238,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "復元できる購入が見つかりませんでした"
+          }
+        }
+      }
+    },
+    "投稿のタイトル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Post title"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "投稿のタイトル"
+          }
+        }
+      }
+    },
+    "投稿のタイトルが入力されていません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No post title entered"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "投稿のタイトルが入力されていません"
+          }
+        }
+      }
+    },
+    "投稿のタイトルを入れてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a post title"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "投稿のタイトルを入れてください"
           }
         }
       }
