@@ -5,52 +5,94 @@
 
 import SwiftUI
 
-/// 送信画面に置く、テンプレートの呼び出し・保存ボタン。一覧のシートと保存のアラートもここで持つ
-struct MessageTemplateButtons: View {
-    /// 保存するときの中身（送信画面の入力欄の内容）
-    let message: MessageEntity
+/// 送信画面の上に置く「テンプレートから呼び出す」ボタン。一覧のシートもここで持つ。
+/// テンプレートが 1 件も無いときは呼び出すものが無いので、置く側で出さない（Issue #675）
+struct MessageTemplateLoadButton: View {
+    /// 送信画面と共有するテンプレートの保存先。シートで削除された分は、閉じたときに読み直す
+    @ObservedObject var store: MessageTemplateStore
     /// 一覧でテンプレートを選んだとき
     let onApply: (MessageTemplate) -> Void
+
+    @EnvironmentObject private var purchaseManager: PurchaseManager
+    @State private var isListPresented = ScreenshotDemo.scene == .templates
+
+    var body: some View {
+        HStack {
+            Spacer()
+
+            Button {
+                isListPresented = true
+            } label: {
+                Label("テンプレートから呼び出す", systemImage: "doc.on.doc")
+            }
+        }
+        .font(.system(size: 15, weight: .semibold))
+        .tint(Color.appAccent)
+        .frame(minHeight: 44.0)
+        .sheet(isPresented: $isListPresented, onDismiss: store.reload) {
+            NavigationStack {
+                MessageTemplateListView { template in
+                    onApply(template)
+                    isListPresented = false
+                }
+                .navigationTitle("テンプレート")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("閉じる") {
+                            isListPresented = false
+                        }
+                    }
+                }
+            }
+            // シートは別の View 階層になるため、Pro 状態を明示的に渡す
+            .environmentObject(purchaseManager)
+            .limitedDynamicTypeSize()
+        }
+    }
+}
+
+/// 「メッセージを送信！」ボタンのすぐ上に置く「この内容をテンプレートに保存」ボタン。
+/// 名前を付けるアラート・上限のアラート・ペイウォールもここで持つ（Issue #675）
+struct MessageTemplateSaveButton: View {
+    /// 送信画面と共有するテンプレートの保存先。保存すると「テンプレートから呼び出す」がすぐ出る
+    @ObservedObject var store: MessageTemplateStore
+    /// 保存するときの中身（送信画面の入力欄の内容）
+    let message: MessageEntity
     /// 保存したとき（送信画面でトーストを出すため）
     let onSave: () -> Void
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
-    @StateObject private var store = MessageTemplateStore()
-    @State private var isListPresented = ScreenshotDemo.scene == .templates
     @State private var isSaveAlertPresented = false
     @State private var isLimitAlertPresented = false
     @State private var isPaywallPresented = false
     @State private var name = ""
 
     var body: some View {
-        HStack(spacing: 16.0) {
-            Spacer()
-
-            Button {
-                isListPresented = true
-            } label: {
-                Label("テンプレート", systemImage: "doc.on.doc")
+        Button {
+            // 一覧シートで削除された分を反映してから上限を判定する
+            store.reload()
+            // 無制限の保存は Pro 購読のみ。リワード広告の一時解放の対象外（PR #398 の回答）
+            if store.canAdd(isPro: ProFeatureAccess.canUseUnlimitedTemplates(isPro: purchaseManager.isPro)) {
+                name = ""
+                isSaveAlertPresented = true
+            } else {
+                isLimitAlertPresented = true
             }
-
-            Button {
-                // 一覧シートで削除された分を反映してから上限を判定する
-                store.reload()
-                // 無制限の保存は Pro 購読のみ。リワード広告の一時解放の対象外（PR #398 の回答）
-                if store.canAdd(isPro: ProFeatureAccess.canUseUnlimitedTemplates(isPro: purchaseManager.isPro)) {
-                    name = ""
-                    isSaveAlertPresented = true
-                } else {
-                    isLimitAlertPresented = true
-                }
-            } label: {
-                Label("保存", systemImage: "square.and.arrow.down")
-            }
-            // 何も入力していない状態を保存しても使い道が無いので押せなくする
-            .disabled(!message.hasContent)
+        } label: {
+            Label("この内容をテンプレートに保存", systemImage: "square.and.arrow.down")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Color.appAccent)
+                .padding(.horizontal, 20.0)
+                .frame(minHeight: 44.0)
+                // 下の「メッセージを送信！」より目立たないよう、塗らずに枠線だけにする
+                .overlay(Capsule().stroke(Color.appAccent, lineWidth: 1.5))
+                .contentShape(Capsule())
+                .opacity(message.hasContent ? 1.0 : 0.4)
         }
-        .font(.system(size: 15, weight: .semibold))
-        .tint(Color.appAccent)
-        .frame(minHeight: 44.0)
+        .buttonStyle(.plain)
+        // 何も入力していない状態を保存しても使い道が無いので押せなくする
+        .disabled(!message.hasContent)
         .alert("テンプレートとして保存", isPresented: $isSaveAlertPresented) {
             TextField("テンプレート名", text: $name)
             Button("保存") {
@@ -68,12 +110,8 @@ struct MessageTemplateButtons: View {
         } message: {
             Text("Ninjacord Proなら、テンプレートを無制限に保存できます（広告を見て使える機能には含まれません）")
         }
-        // iOS 26 のアラートはボタン文字に周囲の tint（TabView の AppAccent）を使い読みにくいので、システム標準の青に戻す。
-        // ボタン本体には内側の .tint(Color.appAccent) が効いたまま
+        // iOS 26 のアラートはボタン文字に周囲の tint（TabView の AppAccent）を使い読みにくいので、システム標準の青に戻す
         .tint(Color(uiColor: .systemBlue))
-        .sheet(isPresented: $isListPresented) {
-            listSheet
-        }
         .sheet(isPresented: $isPaywallPresented) {
             NavigationStack {
                 PaywallView(source: .templates)
@@ -88,27 +126,6 @@ struct MessageTemplateButtons: View {
             .environmentObject(purchaseManager)
             .limitedDynamicTypeSize()
         }
-    }
-
-    private var listSheet: some View {
-        NavigationStack {
-            MessageTemplateListView { template in
-                onApply(template)
-                isListPresented = false
-            }
-            .navigationTitle("テンプレート")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("閉じる") {
-                        isListPresented = false
-                    }
-                }
-            }
-        }
-        // シートは別の View 階層になるため、Pro 状態を明示的に渡す
-        .environmentObject(purchaseManager)
-        .limitedDynamicTypeSize()
     }
 
     private func save() {

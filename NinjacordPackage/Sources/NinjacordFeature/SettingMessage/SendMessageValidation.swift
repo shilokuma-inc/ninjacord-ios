@@ -25,7 +25,7 @@ enum SendMessageValidationError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .emptyURL:
-            return String(localized: "URLが入力されていません")
+            return String(localized: "宛先が選ばれていません")
         case .invalidURL:
             return String(localized: "URLの形式が正しくありません")
         case .emptyMessage:
@@ -42,9 +42,10 @@ enum SendMessageValidationError: LocalizedError, Equatable {
     var recoverySuggestion: String? {
         switch self {
         case .emptyURL:
-            return String(localized: "送信先のWebhook URLを入力してください")
+            // 送信画面に URL の入力欄は無く、宛先のカードから選ぶ（Issue #674）
+            return String(localized: "「宛先」をタップして、保存した宛先から選ぶか、Webhook URLを貼り付けてください")
         case .invalidURL:
-            return String(localized: "https:// から始まるWebhook URLを入力してください")
+            return String(localized: "「宛先」をタップして、Discordで「ウェブフックURLをコピー」したURLを貼り付け直してください")
         case .emptyMessage:
             return String(localized: "名前・メッセージなど、いずれかの項目を入力してください")
         case .invalidEmbed(let issue):

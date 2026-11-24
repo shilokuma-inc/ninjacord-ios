@@ -123,8 +123,8 @@ struct OnboardingPage {
         ),
         OnboardingPage(
             systemImage: "bookmark.fill",
-            title: "よく使うURLは保存",
-            message: "URL欄の横のブックマークから、保存したURLをすぐに呼び出せます"
+            title: "よく使う宛先は保存",
+            message: "送信画面の「宛先」から、保存した宛先を名前で選べます"
         )
     ]
 }

@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// 一斉送信の宛先を、保存済み Webhook URL から複数選ぶ画面
+/// 一斉送信の宛先を、保存した宛先から複数選ぶ画面。URL は出さず、名前とアイコンで見分ける（Issue #674）
 struct BroadcastTargetPickerView: View {
     @Binding var selection: [SavedWebhookURL]
 
@@ -17,7 +17,7 @@ struct BroadcastTargetPickerView: View {
                 .ignoresSafeArea(edges: [.top])
 
             if store.items.isEmpty {
-                Text("保存されたURLはありません。設定の「URL設定」か、送信画面のブックマークから保存してください")
+                Text("保存した宛先はありません。送信画面の「宛先」か、設定の「保存した宛先」から保存してください")
                     .foregroundStyle(Color.appTextSecondary)
                     .multilineTextAlignment(.center)
                     .padding()
@@ -42,23 +42,14 @@ struct BroadcastTargetPickerView: View {
         }
         .onAppear {
             store.reload()
-            // 保存済み URL が削除・編集されていたら、今の一覧に合わせる
+            // 保存した宛先が削除・編集されていたら、今の一覧に合わせる
             selection = store.items.filter { item in selection.contains { $0.id == item.id } }
         }
     }
 
     private func row(_ item: SavedWebhookURL) -> some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4.0) {
-                Text(item.name)
-                    .foregroundStyle(Color.appTextPrimary)
-                Text(item.url)
-                    .font(.caption)
-                    .foregroundStyle(Color.appTextSecondary)
-                    .lineLimit(1)
-            }
-
-            Spacer()
+            DestinationRow(item: item)
 
             Image(systemName: isSelected(item) ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(isSelected(item) ? Color.appAccent : Color.appTextSecondary)
@@ -71,7 +62,7 @@ struct BroadcastTargetPickerView: View {
         selection.contains { $0.id == item.id }
     }
 
-    /// 選んだ順ではなく、保存済み URL の並び順で送る
+    /// 選んだ順ではなく、保存した宛先の並び順で送る
     private func toggle(_ item: SavedWebhookURL) {
         if isSelected(item) {
             selection.removeAll { $0.id == item.id }

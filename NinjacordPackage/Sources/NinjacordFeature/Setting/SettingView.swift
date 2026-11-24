@@ -103,7 +103,7 @@ struct SettingView: View {
                             isURLSettingPresented = true
                         } label: {
                             HStack {
-                                Text("URL設定")
+                                Text("保存した宛先")
                                     .foregroundStyle(Color.appTextPrimary)
 
                                 Spacer()
@@ -117,7 +117,7 @@ struct SettingView: View {
                             WebhookURLSettingView()
                         }
                     }, header: {
-                        Text("送信先URL設定")
+                        Text("宛先")
                             .foregroundStyle(Color.appTextSecondary)
                     })
 

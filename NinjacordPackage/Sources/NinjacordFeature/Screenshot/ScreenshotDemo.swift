@@ -51,7 +51,7 @@ enum ScreenshotDemo {
         let urlStore = WebhookURLStore(userDefaults: userDefaults)
         urlStore.remove(at: IndexSet(urlStore.items.indices))
         for item in content.savedURLs {
-            urlStore.add(name: item.name, url: item.url)
+            urlStore.add(name: item.name, url: item.url, profile: item.profile)
         }
 
         let templateStore = MessageTemplateStore(userDefaults: userDefaults)
@@ -151,8 +151,9 @@ struct ScreenshotDemoContent {
         "https://discord.com/api/webhooks/11800000000000000\(number)/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     }
 
-    private static func savedURL(_ number: Int, _ name: String) -> SavedWebhookURL {
-        SavedWebhookURL(id: UUID(), name: name, url: dummyURL(number))
+    /// - Parameter webhookName: 一覧に出す、Discord 側の Webhook の名前（撮影モードでは取得しないので、ここで決める）
+    private static func savedURL(_ number: Int, _ name: String, webhookName: String) -> SavedWebhookURL {
+        SavedWebhookURL(id: UUID(), name: name, url: dummyURL(number), webhookName: webhookName)
     }
 
     private static func posted(
@@ -199,10 +200,10 @@ struct ScreenshotDemoContent {
             )
         ),
         savedURLs: [
-            savedURL(11, "ゲーム部 #お知らせ"),
-            savedURL(12, "ゲーム部 #レイド募集"),
-            savedURL(13, "開発チーム #デプロイ通知"),
-            savedURL(14, "家族 #連絡")
+            savedURL(11, "ゲーム部 #お知らせ", webhookName: "お知らせBot"),
+            savedURL(12, "ゲーム部 #レイド募集", webhookName: "レイド告知Bot"),
+            savedURL(13, "開発チーム #デプロイ通知", webhookName: "Release Bot"),
+            savedURL(14, "家族 #連絡", webhookName: "家族の連絡")
         ],
         templates: [
             Template(
@@ -292,10 +293,10 @@ struct ScreenshotDemoContent {
             )
         ),
         savedURLs: [
-            savedURL(11, "Gaming Club #announcements"),
-            savedURL(12, "Gaming Club #raids"),
-            savedURL(13, "Dev Team #deploys"),
-            savedURL(14, "Family #general")
+            savedURL(11, "Gaming Club #announcements", webhookName: "News Bot"),
+            savedURL(12, "Gaming Club #raids", webhookName: "Raid Bot"),
+            savedURL(13, "Dev Team #deploys", webhookName: "Release Bot"),
+            savedURL(14, "Family #general", webhookName: "Family")
         ],
         templates: [
             Template(

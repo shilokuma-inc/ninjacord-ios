@@ -63,6 +63,22 @@ struct WebhookProfileStoreTests {
         #expect(fixture.store.profile(for: "\(url.absoluteString)?thread_id=1")?.name == "レイド告知Bot")
     }
 
+    @Test("同じ URL を同時に読みに来ても、通信は 1 回にする（送信画面のカード・プレビュー・送信者の要約が同じ URL を読む）")
+    func concurrentLoadsFetchOnce() async {
+        let fixture = Fixture()
+        // 1 回目の取得が終わる前に 2 回目が来るよう、応答を遅らせる
+        let url = StubURLProtocol.makeSnowflakeURL(
+            returning: .delayed(0.3, .response(statusCode: 200, data: Self.webhookBody))
+        )
+
+        async let first: Void = fixture.store.load(for: url.absoluteString)
+        async let second: Void = fixture.store.load(for: url.absoluteString)
+        _ = await (first, second)
+
+        #expect(StubURLProtocol.requests(to: url).count == 1)
+        #expect(fixture.store.profile(for: url.absoluteString)?.name == "レイド告知Bot")
+    }
+
     @Test("URL が変わったら、前の URL の Webhook は出さない")
     func doesNotShowOtherURLProfile() async {
         let fixture = Fixture()
