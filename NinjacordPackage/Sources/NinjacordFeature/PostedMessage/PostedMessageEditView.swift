@@ -42,7 +42,8 @@ struct PostedMessageEditView: View {
                     content: content,
                     embed: embed,
                     attachment: nil,
-                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
+                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
+                    sendOptions: entry.message.sendOptions
                 )
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)

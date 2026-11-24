@@ -71,4 +71,22 @@ extension MessageSendOptions {
     var allowedMentions: [String: Any]? {
         suppressesEveryoneMentions ? ["parse": ["users", "roles"]] : nil
     }
+
+    /// 送信画面で送信オプションを閉じているときの要約。オンにしたものを並べる
+    var summary: String {
+        var labels: [String] = []
+        if suppressesNotifications {
+            labels.append(String(localized: "通知を鳴らさない"))
+        }
+        if suppressesEmbeds {
+            labels.append(String(localized: "リンクのプレビューを出さない"))
+        }
+        if suppressesEveryoneMentions {
+            labels.append(String(localized: "@everyone・@hereで通知しない"))
+        }
+        guard !labels.isEmpty else {
+            return String(localized: "すべてオフ")
+        }
+        return ListFormatter.localizedString(byJoining: labels)
+    }
 }
