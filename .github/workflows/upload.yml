@@ -78,7 +78,8 @@ jobs:
           for framework in "$frameworks"/*.framework; do
             [[ -e "$framework" ]] || continue
             bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$framework/Info.plist")
-            identifier=$(codesign -dv "$framework" 2>&1 | sed -n 's/^Identifier=//p')
+            # 署名の無いフレームワークでは codesign -dv が 0 以外で終わるので、終了の状態は見ずに出力だけを読む
+            identifier=$({ codesign -dv "$framework" 2>&1 || true; } | sed -n 's/^Identifier=//p')
             if [[ "$identifier" != "$bundle_id" ]]; then
               codesign --force --sign - --identifier "$bundle_id" "$framework"
               echo "$(basename "$framework"): 署名の識別子を ${identifier:-（署名なし）} から $bundle_id に直しました"
