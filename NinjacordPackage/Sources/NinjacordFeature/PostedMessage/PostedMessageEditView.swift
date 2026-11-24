@@ -115,14 +115,12 @@ struct PostedMessageEditView: View {
         }
     }
 
-    /// 編集後の中身。名前・アイコンは変えられないので、送ったときのまま
+    /// 編集後の中身。名前・アイコン・フォーラムの投稿のタイトルは変えられないので、送ったときのまま
     private var editedMessage: MessageEntity {
-        MessageEntity(
-            username: entry.message.username,
-            avatarURL: entry.message.avatarURL,
-            content: content,
-            messageEmbedEntity: embed
-        )
+        var message = entry.message
+        message.content = content
+        message.messageEmbedEntity = embed
+        return message
     }
 
     private var hasChanges: Bool {

@@ -62,7 +62,12 @@ final class PostedMessageListViewModel: ObservableObject {
         }
         processingMessageIDs.insert(messageID)
         return Task {
-            let result = await messageEditor.delete(webhookURL: entry.url, messageID: messageID, source: .postedList)
+            let result = await messageEditor.delete(
+                webhookURL: entry.url,
+                messageID: messageID,
+                threadID: entry.threadID,
+                source: .postedList
+            )
             processingMessageIDs.remove(messageID)
             switch result {
             case .success:
@@ -105,6 +110,7 @@ final class PostedMessageListViewModel: ObservableObject {
         let result = await messageEditor.edit(
             webhookURL: entry.url,
             messageID: messageID,
+            threadID: entry.threadID,
             message: message,
             sentAt: entry.sentAt
         )

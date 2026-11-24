@@ -338,12 +338,18 @@ extension SendMessageViewModel {
 
     /// 送信直後のトーストで「取り消す」を押したとき。送ったメッセージを Discord から削除し、送信履歴に削除済みの印を付ける。
     /// 削除は無料（Issue #666）。入力欄はそのまま残すので、直して送り直せる
+    /// - Parameter threadID: フォーラムに新しい投稿として送ったときの、作られたスレッドの ID。それ以外は nil
     /// - Returns: 削除の Task（テストで終わるのを待つため）
     @discardableResult
-    func undoSend(url: String, messageID: String) -> Task<Void, Never> {
+    func undoSend(url: String, messageID: String, threadID: String? = nil) -> Task<Void, Never> {
         let generation = sendResultGeneration
         return Task {
-            let result = await messageEditor.delete(webhookURL: url, messageID: messageID, source: .toast)
+            let result = await messageEditor.delete(
+                webhookURL: url,
+                messageID: messageID,
+                threadID: threadID,
+                source: .toast
+            )
             if case .success = result {
                 historyStore.markDeleted(messageID: messageID)
             }
@@ -393,6 +399,7 @@ extension SendMessageViewModel {
                 message: messageEntity,
                 isSuccess: (try? result.get()) != nil,
                 messageID: (try? result.get())?.id,
+                threadID: (try? result.get())?.threadID,
                 hasAttachment: pendingSend.attachment != nil
             )
             switch result {
@@ -400,7 +407,7 @@ extension SendMessageViewModel {
                 // ID を受け取れたら、誤って送ったときにすぐ消せるよう「取り消す」を出す（送信履歴が OFF でも、その場では消せる）
                 let undoAction = sentMessage.id.map { messageID in
                     Toast.Action(title: "取り消す") { [weak self] in
-                        self?.undoSend(url: url, messageID: messageID)
+                        self?.undoSend(url: url, messageID: messageID, threadID: sentMessage.threadID)
                     }
                 }
                 sendResultGeneration += 1
@@ -438,6 +445,7 @@ extension SendMessageViewModel {
                     message: messageEntity,
                     isSuccess: sentMessage != nil,
                     messageID: sentMessage?.id,
+                    threadID: sentMessage?.threadID,
                     hasAttachment: pendingSend.attachment != nil
                 )
             }
