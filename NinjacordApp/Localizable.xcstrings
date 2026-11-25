@@ -1149,6 +1149,22 @@
         }
       }
     },
+    "この宛先はフォーラム・メディアチャンネルです。ショートカットの「投稿のタイトル」を入れるか、タイトルを入れたテンプレートを選んでください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This destination is a forum or media channel. Enter a Post title in the shortcut, or choose a template that has a title."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この宛先はフォーラム・メディアチャンネルです。ショートカットの「投稿のタイトル」を入れるか、タイトルを入れたテンプレートを選んでください"
+          }
+        }
+      }
+    },
     "この宛先はフォーラム・メディアチャンネルではないため、タイトルを付けて送れません。フォーラムの設定を外したので、もう一度送信してください" : {
       "localizations" : {
         "en" : {
@@ -2089,6 +2105,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フォーラム・メディアチャンネルには、タイトルを付けて新しい投稿として送ります。「本文」の「投稿のタイトル」を入れてください"
+          }
+        }
+      }
+    },
+    "フォーラム・メディアチャンネルの宛先に送るときに使います。入れると、テンプレートのタイトルの代わりに使います" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Used when sending to a forum or media channel. If entered, this is used instead of the template's title."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーラム・メディアチャンネルの宛先に送るときに使います。入れると、テンプレートのタイトルの代わりに使います"
           }
         }
       }

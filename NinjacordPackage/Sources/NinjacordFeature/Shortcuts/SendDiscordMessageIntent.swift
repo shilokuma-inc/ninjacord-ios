@@ -25,9 +25,16 @@ public struct SendDiscordMessageIntent: AppIntent {
     @Parameter(title: "本文", description: "入れると、テンプレートの本文の代わりに送ります")
     var body: String?
 
+    @Parameter(
+        title: "投稿のタイトル",
+        description: "フォーラム・メディアチャンネルの宛先に送るときに使います。入れると、テンプレートのタイトルの代わりに使います"
+    )
+    var threadName: String?
+
     public static var parameterSummary: some ParameterSummary {
         Summary("\(\.$template)を\(\.$destination)に送信") {
             \.$body
+            \.$threadName
         }
     }
 
@@ -38,7 +45,8 @@ public struct SendDiscordMessageIntent: AppIntent {
         let request = ShortcutMessageSender.Request(
             destinationID: destination.id,
             templateID: template?.id,
-            body: body
+            body: body,
+            threadName: threadName
         )
         let isPro = await Self.isPro()
         switch await ShortcutMessageSender().send(request, isPro: isPro) {
