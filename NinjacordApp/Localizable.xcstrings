@@ -4,6 +4,25 @@
     "" : {
 
     },
+    "${template}を${destination}に送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send ${template} to ${destination}"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${template}を${destination}に送信"
+          }
+        }
+      }
+    },
+    "%@" : {
+      "shouldTranslate" : false
+    },
     "%@ / 月" : {
       "localizations" : {
         "en" : {
@@ -256,6 +275,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discordで障害が発生しています。しばらく待ってから送信してください"
+          }
+        }
+      }
+    },
+    "Discordに送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to Discord"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordに送信"
           }
         }
       }
@@ -826,6 +861,22 @@
         }
       }
     },
+    "「%@」に送信しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent to \"%@\""
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」に送信しました"
+          }
+        }
+      }
+    },
     "「宛先」をタップして、Discordで「ウェブフックURLをコピー」したURLを貼り付け直してください" : {
       "localizations" : {
         "en" : {
@@ -1046,6 +1097,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "すべて削除"
+          }
+        }
+      }
+    },
+    "どの宛先に送りますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which destination do you want to send to?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの宛先に送りますか？"
           }
         }
       }
@@ -1562,6 +1629,22 @@
         }
       }
     },
+    "テンプレートが見つかりません。アプリで削除されていないか確かめて、ショートカットでテンプレートを選び直してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The template was not found. Make sure it hasn't been deleted in the app, then choose the template again in the shortcut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートが見つかりません。アプリで削除されていないか確かめて、ショートカットでテンプレートを選び直してください"
+          }
+        }
+      }
+    },
     "テンプレートとして保存" : {
       "localizations" : {
         "en" : {
@@ -1574,6 +1657,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "テンプレートとして保存"
+          }
+        }
+      }
+    },
+    "テンプレートの埋め込みにPro限定の項目が入っています。アプリでテンプレートから消すか、Ninjacord Proにしてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The template's embed contains Ninjacord Pro features. Remove them from the template in the app, or upgrade to Ninjacord Pro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートの埋め込みにPro限定の項目が入っています。アプリでテンプレートから消すか、Ninjacord Proにしてください"
           }
         }
       }
@@ -1962,6 +2061,22 @@
         }
       }
     },
+    "メッセージのテンプレート" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message Template"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メッセージのテンプレート"
+          }
+        }
+      }
+    },
     "メッセージの本文" : {
       "localizations" : {
         "en" : {
@@ -2250,6 +2365,22 @@
         }
       }
     },
+    "使うテンプレート" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使うテンプレート"
+          }
+        }
+      }
+    },
     "保存" : {
       "localizations" : {
         "en" : {
@@ -2310,6 +2441,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存した宛先から選ぶか、Webhook URLを貼り付けます"
+          }
+        }
+      }
+    },
+    "保存した宛先に、テンプレートか本文のメッセージを送ります。アプリは開きません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sends a message from a template, or the text you enter, to a saved destination. The app doesn't open."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存した宛先に、テンプレートか本文のメッセージを送ります。アプリは開きません"
           }
         }
       }
@@ -2390,6 +2537,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "値"
+          }
+        }
+      }
+    },
+    "入れると、テンプレートの本文の代わりに送ります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If entered, this is sent instead of the template's message."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入れると、テンプレートの本文の代わりに送ります"
           }
         }
       }
@@ -2854,6 +3017,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "宛先"
+          }
+        }
+      }
+    },
+    "宛先が見つかりません。アプリで削除されていないか確かめて、ショートカットで宛先を選び直してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination was not found. Make sure it hasn't been deleted in the app, then choose the destination again in the shortcut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先が見つかりません。アプリで削除されていないか確かめて、ショートカットで宛先を選び直してください"
           }
         }
       }
@@ -3366,6 +3545,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無料プランでは%1$lld件まで保存できます（%2$lld / %3$lld）"
+          }
+        }
+      }
+    },
+    "無料プランでは、テンプレートの一覧の先頭の1件だけ使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the free plan, only the first template in your list can be used."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料プランでは、テンプレートの一覧の先頭の1件だけ使えます"
+          }
+        }
+      }
+    },
+    "無料プランでショートカットに使えるテンプレートは、一覧の先頭の1件だけです。ほかのテンプレートを使うには、Ninjacord Proにしてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the free plan, shortcuts can only use the first template in your list. Upgrade to Ninjacord Pro to use other templates."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料プランでショートカットに使えるテンプレートは、一覧の先頭の1件だけです。ほかのテンプレートを使うには、Ninjacord Proにしてください"
           }
         }
       }
@@ -3894,6 +4105,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送り先"
+          }
+        }
+      }
+    },
+    "送る内容がありません。テンプレートを選ぶか、本文を入れてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There is nothing to send. Choose a template or enter a message."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送る内容がありません。テンプレートを選ぶか、本文を入れてください"
           }
         }
       }
