@@ -1,0 +1,9 @@
+{
+  "v": 1,
+  "project": "NinjacordApp.xcodeproj",
+  "scheme": "NinjacordApp",
+  "platforms": ["iOS"],
+  "uiTests": null,
+  "swiftlint": false,
+  "unmanaged": [".swiftlint.yml"]
+}
