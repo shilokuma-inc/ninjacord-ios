@@ -120,7 +120,9 @@ struct ShortcutMessageSender {
     /// 送る前に分かる誤り。送信画面の入力チェック（`SendMessageViewModel.validate`）と同じ順で確かめる。
     /// Pro 限定の項目は、リワード広告の一時解放では使えない（画面の無い送信で、解放を使い切る場面が無いため）
     static func validate(_ message: MessageEntity, isPro: Bool) -> ShortcutSendError? {
-        if !message.hasContent {
+        // 名前・アイコンだけのテンプレートなど、本文がアプリの初期文言に置き換わるものは送らない。
+        // 送信画面なら送る前に確認が出るが、ショートカットでは誰も見ていないところで初期文言が投稿されるため
+        if !message.hasContent || !DiscordWebhookRequest(messageEntity: message).defaultedFields.isEmpty {
             return .emptyMessage
         }
         if !isPro && message.messageEmbedEntity.usesProFeatures {

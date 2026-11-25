@@ -180,6 +180,18 @@ final class ShortcutMessageSenderTests {
         #expect(analytics.events.isEmpty)
     }
 
+    @Test("名前だけのテンプレートで本文も無ければ、アプリの初期文言で送らずにエラーにする", arguments: [nil, " \n "] as [String?])
+    func nameOnlyTemplateIsNotSentWithDefaultContent(body: String?) async {
+        let destination = saveDestination()
+        let template = addTemplate("名前だけ", content: "", username: "当番Bot")
+
+        let result = await send(to: destination.item.id, template: template.id, body: body)
+
+        #expect(result.failureValue == .emptyMessage)
+        #expect(StubURLProtocol.requests(to: destination.url).isEmpty)
+        #expect(historyStore.items.isEmpty)
+    }
+
     // MARK: - 無料の制限（Discussion #376 の C-2）
 
     @Test("無料では一覧の先頭のテンプレートだけ使え、ほかを選んだら送らずに Pro の案内を返す")
