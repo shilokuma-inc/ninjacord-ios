@@ -183,6 +183,22 @@
         }
       }
     },
+    "@everyone・@hereで通知しない" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don't notify @everyone or @here"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "@everyone・@hereで通知しない"
+          }
+        }
+      }
+    },
     "App Storeで入手" : {
       "localizations" : {
         "en" : {
@@ -295,6 +311,22 @@
         }
       }
     },
+    "Discordの@silentと同じ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as @silent in Discord."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordの@silentと同じ"
+          }
+        }
+      }
+    },
     "Discordのアイコンを上書き。空ならWebhookのアイコン" : {
       "localizations" : {
         "en" : {
@@ -339,6 +371,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discordのチャンネル設定から「連携サービス」→「ウェブフック」を開き、URLをコピーします"
+          }
+        }
+      }
+    },
+    "Discordの仕様で埋め込みも出ない" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord hides embeds too."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordの仕様で埋め込みも出ない"
           }
         }
       }
@@ -1081,6 +1129,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "この宛先を保存"
+          }
+        }
+      }
+    },
+    "すべてオフ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All off"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてオフ"
           }
         }
       }
@@ -2189,6 +2253,22 @@
         }
       }
     },
+    "ユーザーとロールへのメンションは通知する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User and role mentions still notify."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザーとロールへのメンションは通知する"
+          }
+        }
+      }
+    },
     "ライセンス" : {
       "localizations" : {
         "en" : {
@@ -2249,6 +2329,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ライト"
+          }
+        }
+      }
+    },
+    "リンクのプレビューを出さない" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide link previews"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リンクのプレビューを出さない"
           }
         }
       }
@@ -4221,6 +4317,22 @@
         }
       }
     },
+    "送信オプション" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send options"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信オプション"
+          }
+        }
+      }
+    },
     "送信中…" : {
       "localizations" : {
         "en" : {
@@ -4521,6 +4633,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通信に失敗しました。ネットワーク接続を確認してください"
+          }
+        }
+      }
+    },
+    "通知を鳴らさない" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send silently"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知を鳴らさない"
           }
         }
       }

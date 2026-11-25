@@ -5,9 +5,9 @@
 
 import Foundation
 
-/// 送信画面で開閉できるもの（送信者セクション・Discordでの見え方）の開閉の状態（Discussion #586 の Q3・Q6）。
-/// 保存先は UserDefaults で、未設定なら開いた状態。
-/// 撮影モードでは撮るたびに同じ画面になるよう、保存値を読まずに開いた状態にし、開閉しても保存しない。
+/// 送信画面で開閉できるもの（送信者セクション・Discordでの見え方・送信オプション）の開閉の状態（Discussion #586 の Q3・Q6）。
+/// 保存先は UserDefaults で、未設定なら既定の状態（`isExpandedByDefault`）。
+/// 撮影モードでは撮るたびに同じ画面になるよう、保存値を読まずに既定の状態にし、開閉しても保存しない。
 /// ただし撮影する送信画面では、iPad のように縦に余裕がある画面で宛先から送信ボタンまでを 1 枚に収めるため送信者を閉じる
 struct SendMessageDisclosure {
     enum Item: CaseIterable {
@@ -15,6 +15,8 @@ struct SendMessageDisclosure {
         case sender
         /// Discordでの見え方（プレビュー）
         case preview
+        /// 送信オプション（通知を鳴らさない など。Issue #698）
+        case sendOptions
 
         /// 開いているかを保存するキー
         var userDefaultsKey: String {
@@ -23,7 +25,15 @@ struct SendMessageDisclosure {
                 return "isSendMessageSenderExpanded"
             case .preview:
                 return "isSendMessagePreviewExpanded"
+            case .sendOptions:
+                return "isSendMessageOptionsExpanded"
             }
+        }
+
+        /// 未設定のときに開いておくか。送信オプションは既定ですべてオフで、使う人も限られるので閉じておく
+        /// （閉じていても、オンにしたものは要約に出る）
+        var isExpandedByDefault: Bool {
+            self != .sendOptions
         }
     }
 
@@ -42,12 +52,12 @@ struct SendMessageDisclosure {
         self.isSendSceneScreenshot = isSendSceneScreenshot
     }
 
-    /// 開いているか。未設定なら開いた状態。撮影モードでは、送信画面の送信者だけ閉じ、ほかは開いた状態
+    /// 開いているか。未設定なら既定の状態。撮影モードでは、送信画面の送信者だけ閉じ、ほかは既定の状態
     func isExpanded(_ item: Item) -> Bool {
         guard !isScreenshotDemo else {
-            return !(item == .sender && isSendSceneScreenshot)
+            return item.isExpandedByDefault && !(item == .sender && isSendSceneScreenshot)
         }
-        return userDefaults.object(forKey: item.userDefaultsKey) as? Bool ?? true
+        return userDefaults.object(forKey: item.userDefaultsKey) as? Bool ?? item.isExpandedByDefault
     }
 
     /// 開閉の状態を保存する。撮影モードでは保存しない

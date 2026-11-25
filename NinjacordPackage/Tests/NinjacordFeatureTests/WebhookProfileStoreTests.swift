@@ -112,6 +112,43 @@ struct WebhookProfileStoreTests {
         #expect(fixture.store.profile(for: url.absoluteString) == nil)
     }
 
+    @Test("取得を始めた呼び出しがキャンセルされても通信は止めず、同じ URL を待っていた呼び出しの後に出す（プレビューを閉じたときなど）")
+    func cancellingFirstLoadKeepsFetchForOthers() async {
+        let fixture = Fixture()
+        // 取得している間にキャンセルできるよう、応答を遅らせる
+        let url = StubURLProtocol.makeSnowflakeURL(
+            returning: .delayed(0.3, .response(statusCode: 200, data: Self.webhookBody))
+        )
+        let first = Task { await fixture.store.load(for: url.absoluteString) }
+        await Self.waitUntil { !StubURLProtocol.requests(to: url).isEmpty }
+        let second = Task { await fixture.store.load(for: url.absoluteString) }
+        // もう一方が同じ URL の取得を待ち始めてから、取得を始めた呼び出しをキャンセルする
+        await Task.yield()
+        first.cancel()
+
+        await second.value
+        #expect(fixture.store.profile(for: url.absoluteString)?.name == "レイド告知Bot")
+        await first.value
+        #expect(StubURLProtocol.requests(to: url).count == 1)
+    }
+
+    @Test("待っている呼び出しがすべてキャンセルされても通信は最後まで行い、同じ URL に戻ったときは通信せずに出す")
+    func keepsFetchAfterAllLoadsCancelled() async {
+        let fixture = Fixture()
+        let url = StubURLProtocol.makeSnowflakeURL(
+            returning: .delayed(0.3, .response(statusCode: 200, data: Self.webhookBody))
+        )
+        let load = Task { await fixture.store.load(for: url.absoluteString) }
+        await Self.waitUntil { !StubURLProtocol.requests(to: url).isEmpty }
+        load.cancel()
+
+        await Self.waitUntil { fixture.store.profile(for: url.absoluteString) != nil }
+        #expect(fixture.store.profile(for: url.absoluteString)?.name == "レイド告知Bot")
+        await fixture.store.load(for: url.absoluteString)
+        #expect(fixture.sleeps.count == 1)
+        #expect(StubURLProtocol.requests(to: url).count == 1)
+    }
+
     // MARK: - 失敗
 
     @Test(
@@ -143,5 +180,16 @@ struct WebhookProfileStoreTests {
         fixture.now += 1
         await fixture.store.load(for: url.absoluteString)
         #expect(StubURLProtocol.requests(to: url).count == 2)
+    }
+
+    /// 条件を満たすまで少しずつ待つ（スタブにリクエストが届くのは通信のキューの上なので、すぐには分からない）。
+    /// 3 秒ほど待っても満たさなければ諦め、後の `#expect` で落とす
+    private static func waitUntil(_ condition: () -> Bool) async {
+        for _ in 0 ..< 300 {
+            guard !condition() else {
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(10))
+        }
     }
 }
