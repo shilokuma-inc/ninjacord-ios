@@ -24,11 +24,12 @@ enum WebhookMessageEndpoint {
 
     /// 送ったメッセージの編集・削除に使う URL（`/webhooks/{id}/{token}/messages/{message.id}`）。
     /// スレッドに送ったメッセージは、同じ `thread_id` を付けないと見つからない（404）ので、クエリはそれだけ残す。
-    /// 送信のときと同じく前後の空白・改行は除く。URL にできないか、メッセージ ID が数字でなければ nil
+    /// フォーラムに新しい投稿として送ったメッセージは、作られたスレッドの ID（`threadID`）を `thread_id` として付ける（Issue #699）。
+    /// 送信のときと同じく前後の空白・改行は除く。URL にできないか、メッセージ・スレッドの ID が数字でなければ nil
     /// https://discord.com/developers/docs/resources/webhook#edit-webhook-message
-    static func messageURL(webhookURL: String, messageID: String) -> URL? {
-        guard !messageID.isEmpty,
-              messageID.allSatisfy({ $0.isASCII && $0.isNumber }),
+    static func messageURL(webhookURL: String, messageID: String, threadID: String? = nil) -> URL? {
+        guard isSnowflake(messageID),
+              threadID.map(isSnowflake) ?? true,
               let url = URL(string: webhookURL.trimmingCharacters(in: .whitespacesAndNewlines)),
               var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return nil
@@ -38,9 +39,15 @@ enum WebhookMessageEndpoint {
             path.removeLast()
         }
         components.path = path + "/messages/" + messageID
-        let threadID = components.queryItems?.first { $0.name == "thread_id" }
-        components.queryItems = threadID.map { [$0] }
+        let threadItem = threadID.map { URLQueryItem(name: "thread_id", value: $0) }
+            ?? components.queryItems?.first { $0.name == "thread_id" }
+        components.queryItems = threadItem.map { [$0] }
         components.fragment = nil
         return components.url
+    }
+
+    /// Discord の ID（数字だけ）か。URL のパス・クエリに入れても、ほかの部分を書き換えられない
+    private static func isSnowflake(_ id: String) -> Bool {
+        !id.isEmpty && id.allSatisfy { $0.isASCII && $0.isNumber }
     }
 }

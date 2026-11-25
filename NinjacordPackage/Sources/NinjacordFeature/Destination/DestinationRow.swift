@@ -54,7 +54,23 @@ struct WebhookAvatarView: View {
 /// スレッドに送る宛先に付ける印
 struct ThreadBadge: View {
     var body: some View {
-        Text("スレッド")
+        DestinationBadge(title: "スレッド")
+    }
+}
+
+/// フォーラム・メディアチャンネルの宛先（タイトルを付けて新しい投稿として送る）に付ける印（Issue #699）
+struct ForumBadge: View {
+    var body: some View {
+        DestinationBadge(title: "フォーラム")
+    }
+}
+
+/// 宛先の名前の横に付ける、枠線だけの小さな印
+private struct DestinationBadge: View {
+    let title: LocalizedStringResource
+
+    var body: some View {
+        Text(String(localized: title))
             .font(.caption2.weight(.semibold))
             .foregroundStyle(Color.appTextSecondary)
             .padding(.horizontal, 6.0)
@@ -68,6 +84,8 @@ struct DestinationRow: View {
     let item: SavedWebhookURL
     /// 今の宛先として選んでいるか
     var isSelected = false
+    /// フォーラム・メディアチャンネルの宛先として覚えているか（`ForumDestinationStore`）
+    var isForum = false
 
     var body: some View {
         HStack(spacing: 12.0) {
@@ -80,6 +98,9 @@ struct DestinationRow: View {
                         .lineLimit(1)
                     if item.isThread {
                         ThreadBadge()
+                    }
+                    if isForum {
+                        ForumBadge()
                     }
                 }
                 Text(Self.subtitle(for: item))

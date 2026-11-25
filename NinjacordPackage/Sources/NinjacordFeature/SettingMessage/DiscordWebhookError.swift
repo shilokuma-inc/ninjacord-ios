@@ -13,6 +13,11 @@ enum DiscordWebhookError: LocalizedError, Equatable {
     case invalidToken
     /// 編集・削除しようとした、送ったメッセージが見つからない（Discord で削除された）
     case unknownMessage
+    /// フォーラム・メディアチャンネルに、タイトル（thread_name）を付けずに送った（220001）。
+    /// Webhook URL からはフォーラムか分からないので、送ってみて初めて分かる（Issue #699）
+    case forumTitleRequired
+    /// フォーラム・メディアチャンネルでない宛先に、タイトルを付けて送った（220003）
+    case notForumChannel
     /// 送信内容が Discord に受け付けられなかった（画像 URL の形式・文字数など）
     case invalidMessage
     /// 短時間に送信しすぎて制限された
@@ -30,6 +35,10 @@ enum DiscordWebhookError: LocalizedError, Equatable {
         static let unknownMessage = 10008
         static let unknownWebhook = 10015
         static let invalidWebhookToken = 50027
+        /// Webhooks posted to forum channels must have a thread_name or thread_id
+        static let forumTitleRequired = 220001
+        /// Webhooks can only create threads in forum channels
+        static let notForumChannel = 220003
     }
 
     /// HTTP ステータスコードとレスポンス本文から原因を判定する。
@@ -50,6 +59,11 @@ enum DiscordWebhookError: LocalizedError, Equatable {
         // 送ったメッセージの編集・削除では、Webhook はあってもメッセージが無いときも 404 になるので、先に見分ける
         case (_, JSONErrorCode.unknownMessage):
             self = .unknownMessage
+        // どちらも 400 で返るので、送信内容の誤り（invalidMessage）より先に見分ける
+        case (_, JSONErrorCode.forumTitleRequired):
+            self = .forumTitleRequired
+        case (_, JSONErrorCode.notForumChannel):
+            self = .notForumChannel
         case (_, JSONErrorCode.unknownWebhook), (404, _):
             self = .unknownWebhook
         case (_, JSONErrorCode.invalidWebhookToken), (401, _), (403, _):
@@ -73,6 +87,12 @@ enum DiscordWebhookError: LocalizedError, Equatable {
             return String(localized: "Webhook URLが正しくありません。Discordでコピーし直してください")
         case .unknownMessage:
             return String(localized: "メッセージが見つかりません。Discordで削除された可能性があります")
+        case .forumTitleRequired:
+            // 送信画面は、この宛先をフォーラムとして覚えてタイトルの欄を出す（SendMessageViewModel）
+            return String(localized: "この宛先はフォーラム・メディアチャンネルです。「本文」の「投稿のタイトル」を入れて、もう一度送信してください")
+        case .notForumChannel:
+            // 送信画面は、この宛先のフォーラムの設定を外す（SendMessageViewModel）
+            return String(localized: "この宛先はフォーラム・メディアチャンネルではないため、タイトルを付けて送れません。フォーラムの設定を外したので、もう一度送信してください")
         case .invalidMessage:
             return String(localized: "送信内容に誤りがあります。プロフィール画像のURLや文字数を確認してください")
         case .rateLimited:

@@ -5,6 +5,7 @@
 //  Created by 村石 拓海 on 2024/04/28.
 //
 
+import Combine
 import Foundation
 import SwiftUI
 
@@ -16,6 +17,8 @@ final class SendMessageViewModel: ObservableObject {
     @Published var inputUsername = ""
     @Published var inputAvatarURL = ""
     @Published var inputContext = ""
+    /// フォーラム・メディアチャンネルに新しい投稿として送るときのタイトル。宛先がフォーラムのときだけ欄を出して送る（Issue #699）
+    @Published var inputThreadName = ""
 
     /// 埋め込み。タイトルは送信画面で、それ以外の項目は embed エディタで入力する
     @Published var inputEmbed = MessageEmbedEntity()
@@ -40,6 +43,8 @@ final class SendMessageViewModel: ObservableObject {
     /// 送信直後のトーストの「取り消す」で、送ったメッセージを削除する
     private let messageEditor: WebhookMessageEditor
     private let historyStore: SendHistoryStore
+    /// フォーラムとして覚えた宛先。タイトルの欄を出すか・thread_name を送るかを決め、送信の結果で覚え直す
+    private let forumDestinations: ForumDestinationStore
     private let analytics: SendMessageAnalytics
     private let sendSuccessCounter: SendSuccessCounter
     private let rewardedUnlock: RewardedUnlockConsuming
@@ -51,6 +56,8 @@ final class SendMessageViewModel: ObservableObject {
 
     /// 送信の結果のトーストを出すたびに増やす。取り消しの結果を出すときに、その間に別の送信のトーストへ替わっていないかを見る
     private var sendResultGeneration = 0
+    /// フォーラムの宛先を覚え直したときに、画面を描き直す（タイトルの欄を出す・消す）
+    private var forumDestinationsChange: AnyCancellable?
 
     /// 何回目の送信成功でレビューを依頼するか
     private static let reviewRequestSendCount = 3
@@ -59,6 +66,7 @@ final class SendMessageViewModel: ObservableObject {
         self.init(
             client: DiscordWebhookClient(),
             historyStore: SendHistoryStore(),
+            forumDestinations: .shared,
             analytics: FirebaseAnalytics(),
             sendSuccessCounter: SendSuccessCounter(),
             rewardedUnlock: RewardedUnlockState.shared,
@@ -73,6 +81,7 @@ final class SendMessageViewModel: ObservableObject {
     /// - Parameters:
     ///   - client: Discord への通信
     ///   - historyStore: 送信履歴の保存先
+    ///   - forumDestinations: フォーラムとして覚えた宛先
     ///   - analytics: 送信の Analytics
     ///   - sendSuccessCounter: 送信成功回数（初回送信の計測・レビュー依頼・全画面広告の判定に使う）
     ///   - rewardedUnlock: リワード広告の一時解放
@@ -83,6 +92,7 @@ final class SendMessageViewModel: ObservableObject {
     init(
         client: DiscordWebhookClient,
         historyStore: SendHistoryStore,
+        forumDestinations: ForumDestinationStore,
         analytics: SendMessageAnalytics,
         sendSuccessCounter: SendSuccessCounter,
         rewardedUnlock: RewardedUnlockConsuming,
@@ -94,6 +104,7 @@ final class SendMessageViewModel: ObservableObject {
         self.client = client
         self.messageEditor = WebhookMessageEditor(client: client, analytics: analytics)
         self.historyStore = historyStore
+        self.forumDestinations = forumDestinations
         self.analytics = analytics
         self.sendSuccessCounter = sendSuccessCounter
         self.rewardedUnlock = rewardedUnlock
@@ -101,6 +112,10 @@ final class SendMessageViewModel: ObservableObject {
         self.haptics = haptics
         self.defaultValueConfirmationSetting = defaultValueConfirmationSetting
         self.sleep = sleep
+        // 宛先の一覧での設定や、送信の結果でフォーラムの宛先が変わったら、タイトルの欄を出し直す
+        forumDestinationsChange = forumDestinations.objectWillChange.sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }
 
         // App Store 用スクリーンショットの撮影モードでは、デモの内容を入力しておく
         guard ScreenshotDemo.isEnabled else { return }
@@ -129,7 +144,11 @@ final class SendMessageViewModel: ObservableObject {
         attachment: ImageAttachment? = nil,
         countsAsSend: Bool = true
     ) async -> Result<SentWebhookMessage, DiscordWebhookError> {
-        let webhookRequest = DiscordWebhookRequest(messageEntity: messageEntity, attachment: attachment)
+        let webhookRequest = DiscordWebhookRequest(
+            messageEntity: messageEntity,
+            attachment: attachment,
+            createsForumPost: forumDestinations.isForum(url)
+        )
         let response: DiscordWebhookClient.Response<SentWebhookMessage>
         if let endpoint = Self.webhookEndpoint(from: url) {
             response = await client.send(webhookRequest, to: endpoint)
@@ -141,6 +160,7 @@ final class SendMessageViewModel: ObservableObject {
             isSuccess: (try? response.result.get()) != nil,
             httpStatus: response.statusCode
         )
+        rememberForum(from: response.result, url: url)
         if case .success = response.result, countsAsSend {
             recordSendSuccess()
         }
@@ -189,11 +209,31 @@ extension SendMessageViewModel {
             analytics.sendFirstSendCompletedEvent()
         }
     }
+
+    /// Webhook URL からはフォーラムか分からないので、Discord が返したエラーで分かったら覚え直す（Issue #699）。
+    /// 220001 ならフォーラムとして覚えてタイトルの欄を出し、220003 ならフォーラムの設定を外す
+    private func rememberForum(from result: Result<SentWebhookMessage, DiscordWebhookError>, url: String) {
+        switch result {
+        case .failure(.forumTitleRequired):
+            forumDestinations.setForum(true, for: url)
+        case .failure(.notForumChannel):
+            forumDestinations.setForum(false, for: url)
+        default:
+            break
+        }
+    }
 }
 
 // MARK: - 送信画面の操作
 
 extension SendMessageViewModel {
+    /// 宛先がフォーラム・メディアチャンネルか。タイトルの欄を出し、タイトルを付けて新しい投稿として送る（Issue #699）。
+    /// 一斉送信では、宛先のどれかがフォーラムなら出す（タイトルはフォーラムの宛先にだけ送る）
+    var isForumDestination: Bool {
+        let urls = broadcastTargets.isEmpty ? [inputURL] : broadcastTargets.map(\.url)
+        return urls.contains { forumDestinations.isForum($0) }
+    }
+
     /// 入力欄の内容から組み立てた、送信・テンプレート保存用のメッセージ
     var currentMessage: MessageEntity {
         MessageEntity(
@@ -201,7 +241,9 @@ extension SendMessageViewModel {
             avatarURL: inputAvatarURL,
             content: inputContext,
             messageEmbedEntity: inputEmbed,
-            sendOptions: inputSendOptions
+            sendOptions: inputSendOptions,
+            // 欄を出していないタイトルは送らないので、テンプレート・送信履歴にも残さない
+            threadName: isForumDestination ? inputThreadName : ""
         )
     }
 
@@ -212,6 +254,7 @@ extension SendMessageViewModel {
         inputContext = template.message.content
         inputEmbed = template.message.messageEmbedEntity
         inputSendOptions = template.message.sendOptions
+        inputThreadName = template.message.threadName
     }
 
     /// 入力内容を検証し、問題があればダイアログを表示、なければ Webhook に送信する。
@@ -228,6 +271,7 @@ extension SendMessageViewModel {
 
         let messageEntity = currentMessage
         let hasAttachment = attachment != nil
+        let requiresThreadName = isForumDestination
         let destination: PendingSend.Destination
         let error: SendMessageValidationError?
         if !broadcastTargets.isEmpty {
@@ -236,7 +280,11 @@ extension SendMessageViewModel {
             // 宛先を選んだあとに Pro でなくなった場合は送らない
             error = ProFeatureAccess.canUse(isPro: isPro)
                 ? validate(
-                    url: urls[0], messageEntity: messageEntity, hasAttachment: hasAttachment, canUseProFeatures: true
+                    url: urls[0],
+                    messageEntity: messageEntity,
+                    hasAttachment: hasAttachment,
+                    canUseProFeatures: true,
+                    requiresThreadName: requiresThreadName
                 )
                 : .proBroadcast
         } else {
@@ -246,7 +294,8 @@ extension SendMessageViewModel {
                 url: inputURL,
                 messageEntity: messageEntity,
                 hasAttachment: hasAttachment,
-                canUseProFeatures: ProFeatureAccess.canUse(isPro: isPro)
+                canUseProFeatures: ProFeatureAccess.canUse(isPro: isPro),
+                requiresThreadName: requiresThreadName
             )
         }
         if let error {
@@ -293,12 +342,18 @@ extension SendMessageViewModel {
 
     /// 送信直後のトーストで「取り消す」を押したとき。送ったメッセージを Discord から削除し、送信履歴に削除済みの印を付ける。
     /// 削除は無料（Issue #666）。入力欄はそのまま残すので、直して送り直せる
+    /// - Parameter threadID: フォーラムに新しい投稿として送ったときの、作られたスレッドの ID。それ以外は nil
     /// - Returns: 削除の Task（テストで終わるのを待つため）
     @discardableResult
-    func undoSend(url: String, messageID: String) -> Task<Void, Never> {
+    func undoSend(url: String, messageID: String, threadID: String? = nil) -> Task<Void, Never> {
         let generation = sendResultGeneration
         return Task {
-            let result = await messageEditor.delete(webhookURL: url, messageID: messageID, source: .toast)
+            let result = await messageEditor.delete(
+                webhookURL: url,
+                messageID: messageID,
+                threadID: threadID,
+                source: .toast
+            )
             if case .success = result {
                 historyStore.markDeleted(messageID: messageID)
             }
@@ -306,7 +361,12 @@ extension SendMessageViewModel {
             guard generation == sendResultGeneration else { return }
             switch result {
             case .success:
-                toast = Toast(style: .success, message: "送信を取り消しました")
+                // フォーラムの投稿は、Webhook では最初のメッセージしか消せず、投稿（スレッド）は Discord に残る（Issue #699）
+                if threadID == nil {
+                    toast = Toast(style: .success, message: "送信を取り消しました")
+                } else {
+                    toast = Toast(style: .success, message: "送信を取り消しました。フォーラムの投稿はDiscordに残ります")
+                }
                 haptics.playNotification(isSuccess: true)
             case .failure(let error):
                 // 原因の文言は送信のときと同じものなので、取り消しに失敗したことを先に書く（メッセージは Discord に残っている）
@@ -348,6 +408,7 @@ extension SendMessageViewModel {
                 message: messageEntity,
                 isSuccess: (try? result.get()) != nil,
                 messageID: (try? result.get())?.id,
+                threadID: (try? result.get())?.threadID,
                 hasAttachment: pendingSend.attachment != nil
             )
             switch result {
@@ -355,7 +416,7 @@ extension SendMessageViewModel {
                 // ID を受け取れたら、誤って送ったときにすぐ消せるよう「取り消す」を出す（送信履歴が OFF でも、その場では消せる）
                 let undoAction = sentMessage.id.map { messageID in
                     Toast.Action(title: "取り消す") { [weak self] in
-                        self?.undoSend(url: url, messageID: messageID)
+                        self?.undoSend(url: url, messageID: messageID, threadID: sentMessage.threadID)
                     }
                 }
                 sendResultGeneration += 1
@@ -393,6 +454,7 @@ extension SendMessageViewModel {
                     message: messageEntity,
                     isSuccess: sentMessage != nil,
                     messageID: sentMessage?.id,
+                    threadID: sentMessage?.threadID,
                     hasAttachment: pendingSend.attachment != nil
                 )
             }

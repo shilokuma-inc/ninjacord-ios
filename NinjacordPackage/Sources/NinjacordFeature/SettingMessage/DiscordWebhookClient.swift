@@ -30,7 +30,10 @@ struct DiscordWebhookClient {
         }
         return await perform(request) { data in
             // 2xx なら送れている。本文を読めなくても成功にし、ID が無いので編集・削除だけできなくする
-            SentWebhookMessage(id: try? JSONDecoder().decode(MessageResponseBody.self, from: data).id)
+            let body = try? JSONDecoder().decode(MessageResponseBody.self, from: data)
+            // 新しい投稿として送ったときだけ、channel_id が作られたスレッド（投稿）の ID になる。
+            // それ以外は宛先のチャンネルの ID で、thread_id に付けると見つからないので受け取らない（Issue #699）
+            return SentWebhookMessage(id: body?.id, threadID: webhookRequest.threadName == nil ? nil : body?.channelID)
         }
     }
 
@@ -113,10 +116,25 @@ struct DiscordWebhookClient {
 struct SentWebhookMessage: Equatable {
     /// メッセージの ID。編集・削除に使う。レスポンスを読めなかったときは nil（送れてはいる）
     let id: String?
+    /// フォーラム・メディアチャンネルに新しい投稿として送ったときの、作られたスレッド（投稿）の ID。
+    /// 編集・削除のときに `thread_id` として付けないと、メッセージが見つからない。新しい投稿でなければ nil
+    let threadID: String?
+
+    init(id: String?, threadID: String? = nil) {
+        self.id = id
+        self.threadID = threadID
+    }
 }
 
 /// Execute Webhook（`wait=true`）のレスポンスのうち、使う項目だけ
 /// https://discord.com/developers/docs/resources/message#message-object
 private struct MessageResponseBody: Decodable {
     let id: String
+    /// メッセージを送ったチャンネル。新しい投稿として送ったときは、作られたスレッド
+    let channelID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case channelID = "channel_id"
+    }
 }

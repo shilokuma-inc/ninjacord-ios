@@ -27,6 +27,7 @@ final class SaveDestinationModelTests {
         SaveDestinationModel(
             initialURL: url,
             store: store,
+            forumDestinations: ForumDestinationStore(userDefaults: userDefaults),
             client: WebhookProfileClient(session: StubURLProtocol.session),
             sleep: { _ in }
         )
@@ -159,6 +160,7 @@ final class SaveDestinationModelTests {
         model = SaveDestinationModel(
             initialURL: first.absoluteString,
             store: store,
+            forumDestinations: ForumDestinationStore(userDefaults: userDefaults),
             client: WebhookProfileClient(session: StubURLProtocol.session),
             sleep: { _ in model?.url = "https://discord.com/api/webhooks/2/other" }
         )

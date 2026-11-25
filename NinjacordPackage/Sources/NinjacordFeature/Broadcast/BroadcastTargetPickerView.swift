@@ -10,6 +10,8 @@ struct BroadcastTargetPickerView: View {
     @Binding var selection: [SavedWebhookURL]
 
     @StateObject private var store = WebhookURLStore()
+    /// フォーラムの宛先に印を付ける（タイトルはフォーラムの宛先にだけ送る。Issue #699）
+    @ObservedObject private var forumDestinations = ForumDestinationStore.shared
 
     var body: some View {
         ZStack {
@@ -49,7 +51,7 @@ struct BroadcastTargetPickerView: View {
 
     private func row(_ item: SavedWebhookURL) -> some View {
         HStack {
-            DestinationRow(item: item)
+            DestinationRow(item: item, isForum: forumDestinations.isForum(item.url))
 
             Image(systemName: isSelected(item) ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(isSelected(item) ? Color.appAccent : Color.appTextSecondary)

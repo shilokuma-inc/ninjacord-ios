@@ -18,6 +18,9 @@ struct SendHistoryEntry: Codable, Identifiable, Equatable {
     /// Discord が作ったメッセージの ID。編集・削除に使う。
     /// 送れなかった・ID を受け取れなかった・ID を残す前の版で送ったときは nil
     let messageID: String?
+    /// フォーラムに新しい投稿として送ったときの、作られたスレッド（投稿）の ID。
+    /// 編集・削除のときに `thread_id` として付ける。新しい投稿でない・覚える前の版で送ったときは nil（Issue #699）
+    let threadID: String?
     /// 画像を添付して送ったか。編集で本文と埋め込みを空にしても、画像が残るので送れる
     let hasAttachment: Bool
     /// 最後にアプリから編集した日時。編集していなければ nil
@@ -32,6 +35,7 @@ struct SendHistoryEntry: Codable, Identifiable, Equatable {
         message: MessageEntity,
         isSuccess: Bool,
         messageID: String? = nil,
+        threadID: String? = nil,
         hasAttachment: Bool = false,
         editedAt: Date? = nil,
         deletedAt: Date? = nil
@@ -42,6 +46,7 @@ struct SendHistoryEntry: Codable, Identifiable, Equatable {
         self.message = message
         self.isSuccess = isSuccess
         self.messageID = messageID
+        self.threadID = threadID
         self.hasAttachment = hasAttachment
         self.editedAt = editedAt
         self.deletedAt = deletedAt
@@ -56,6 +61,8 @@ struct SendHistoryEntry: Codable, Identifiable, Equatable {
         isSuccess = try container.decode(Bool.self, forKey: .isSuccess)
         // メッセージ ID などを残す前（2.3.0 まで）に保存した履歴にはこれらの項目が無いので、編集・削除できないものとして読み込む
         messageID = try container.decodeIfPresent(String.self, forKey: .messageID)
+        // 作られたスレッドの ID を覚える前（2.5.0 まで）の履歴には無いので、今までどおり thread_id を付けずに編集・削除する
+        threadID = try container.decodeIfPresent(String.self, forKey: .threadID)
         hasAttachment = try container.decodeIfPresent(Bool.self, forKey: .hasAttachment) ?? false
         editedAt = try container.decodeIfPresent(Date.self, forKey: .editedAt)
         deletedAt = try container.decodeIfPresent(Date.self, forKey: .deletedAt)
