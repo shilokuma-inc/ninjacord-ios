@@ -1,0 +1,3 @@
+/* おすすめのショートカット（NinjacordShortcuts）のフレーズ。キーはコードに書いたフレーズで、${applicationName} はアプリの名前に置き換わる */
+"${applicationName}でDiscordに送信" = "${applicationName}でDiscordに送信";
+"${applicationName}でメッセージを送信" = "${applicationName}でメッセージを送信";
