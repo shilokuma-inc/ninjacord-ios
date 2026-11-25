@@ -20,10 +20,11 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 - **`.xcodeproj` 直**（`.xcworkspace` は無い）。ビルド対象は常に `-project NinjacordApp.xcodeproj`。
 - アプリ本体のコードは **ローカル Swift Package `NinjacordPackage`**（`NinjacordPackage/Package.swift`）に置く。`NinjacordApp` ターゲットは `@main` と各種リソース（Assets / Info.plist / xcstrings 等）だけを持つ薄いシェル。
   - `.swift` ファイルの追加・削除は `NinjacordPackage/Sources/NinjacordFeature/` 配下で行う。**`.xcodeproj` に差分は出ない**（Issue #211）。
+  - 例外: ショートカット（App Intents）の `AppShortcutsProvider`（`NinjacordApp/NinjacordShortcuts.swift`）と、そのフレーズの文言（`NinjacordApp/<言語>.lproj/AppShortcuts.strings`）だけはアプリのターゲットに置く（Issue #700）。アクション・Entity はパッケージ（`Shortcuts/`）に置いてもアプリの `Metadata.appintents` に入るが、`AppShortcutsProvider` はパッケージに置くと入らない（Xcode 26.6 で確認）。このファイルを足し・消すときは `.xcodeproj` に差分が出る。フレーズの文言は、iOS 16 が対象だと String Catalog（`AppShortcuts.xcstrings`）がビルドエラーになるので `.strings` に書き、言語を足したら `<言語>.lproj` も足す。
   - 外部依存（Firebase 等）も `Package.swift` の `dependencies` で管理する。バージョンのピンは従来どおり `NinjacordApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`。
-  - `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate` / `AppTheme`）だけ `public`。それ以外は internal のまま。
+  - `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate` / `AppTheme` / `SendDiscordMessageIntent`）だけ `public`。それ以外は internal のまま。
   - ユニットテストは `NinjacordPackage/Tests/NinjacordFeatureTests/`（`Package.swift` の `testTarget`）。`NinjacordApp` の scheme の TestAction に入れてあり、Build ワークフローの `Test` で流す。手元では `build-for-testing` の後に `xcodebuild test-without-building -project NinjacordApp.xcodeproj -scheme NinjacordApp -destination "platform=iOS Simulator,id=$(python3 Tools/select_test_simulator.py)" -parallel-testing-enabled NO`（`-derivedDataPath` はビルドと揃える）。
-  - 文言は `NinjacordApp/Localizable.xcstrings` に**自動で抽出されない**ので、`Text("…")` などを足したら手で登録する（翻訳しないブランド名は `shouldTranslate: false`）。載せ忘れは Build ワークフローの `Check localizations`（`Tools/check_localizations.py`）が落とす。手元で確かめるなら `SWIFT_EMIT_LOC_STRINGS=YES -derivedDataPath build/DerivedData` を付けてビルドし、`python3 Tools/check_localizations.py --derived-data build/DerivedData`。
+  - 文言は `NinjacordApp/Localizable.xcstrings` に**自動で抽出されない**ので、`Text("…")` などを足したら手で登録する（翻訳しないブランド名は `shouldTranslate: false`）。載せ忘れは Build ワークフローの `Check localizations`（`Tools/check_localizations.py`）が落とす。ショートカットのアクション名・引数名・パラメータの要約（`ParameterSummary`）も同じカタログに登録する（要約は `${引数名}` を含むキーになる）。おすすめのショートカットのフレーズは `AppShortcuts.strings` に書き、このチェックの対象外。手元で確かめるなら `SWIFT_EMIT_LOC_STRINGS=YES -derivedDataPath build/DerivedData` を付けてビルドし、`python3 Tools/check_localizations.py --derived-data build/DerivedData`。
 - Scheme は3つ:
   - `NinjacordApp` … 本番
   - `NinjacordApp-STG` … STG（開発確認はこちらを優先）
@@ -35,11 +36,12 @@ Discord に Webhook 経由でメッセージを送信できる iOS アプリ。b
 
 ## ディレクトリ
 
-- `NinjacordApp/` … アプリターゲット（`@main` の `NinjacordApp.swift` とリソース: Assets / Info.plist / Localizable.xcstrings / entitlements 等）
+- `NinjacordApp/` … アプリターゲット（`@main` の `NinjacordApp.swift` とリソース: Assets / Info.plist / Localizable.xcstrings / entitlements 等。例外としておすすめのショートカットの `NinjacordShortcuts.swift` と `<言語>.lproj/AppShortcuts.strings`）
 - `NinjacordPackage/` … ローカル Swift Package（アプリ本体のコード）
   - `Package.swift` … ターゲット定義と外部依存
   - `Sources/NinjacordFeature/` … SwiftUI View / ViewModel
     - `SettingMessage/` … メッセージ送信画面
+    - `Shortcuts/` … ショートカット（App Intents）のアクション「Discordに送信」、宛先・テンプレートの Entity、バックグラウンドでの送信
     - `Setting/` … 設定・ライセンス・プライバシー
     - `AdMob/` … 広告
     - `Extension/`, `Common/` … 共通部品
@@ -188,7 +190,7 @@ Claude のセルフレビュー（`swiftui-reviewer`）と CodeRabbit の PR レ
 3. **State 管理**: 状態を持つクラスは `ObservableObject` にする。生成する側は `@StateObject`、受け取る側は `@ObservedObject` を使う。`@State` には値型だけを入れる。子 View で `@StateObject` を作り直さない。
 4. **Concurrency**: UI を更新するクラスには `@MainActor` を付ける。View のライフサイクルに連動する非同期処理は `Task { }` より `.task { }` を優先する。
 5. **SwiftUI の作法**: 画面遷移は `NavigationStack`（`NavigationView` は使わない）。Preview は `#Preview` マクロで書く。
-6. **アクセス修飾子**: `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate` / `AppTheme`）以外は internal のままにする。
+6. **アクセス修飾子**: `NinjacordApp` ターゲットから参照する型（`MainView` / `AppDelegate` / `AppTheme` / `SendDiscordMessageIntent`）以外は internal のままにする。
 7. **スタイル**: 既存コードとの一貫性、SwiftLint 違反。
 
 ## AskHub での開発
