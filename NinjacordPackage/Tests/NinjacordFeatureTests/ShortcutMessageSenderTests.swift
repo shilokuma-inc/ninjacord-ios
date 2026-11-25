@@ -304,7 +304,6 @@ final class ShortcutMessageSenderTests {
     func recordsAnalyticsWithoutCountingSuccess() async {
         let destination = saveDestination()
         let failed = saveDestination("障害中", returning: .response(statusCode: 500, data: Data()))
-        let countBefore = SendSuccessCounter().count
 
         _ = await send(to: destination.item.id, body: "こんにちは")
         _ = await send(to: failed.item.id, body: "こんにちは")
@@ -313,8 +312,8 @@ final class ShortcutMessageSenderTests {
             ShortcutAnalyticsSpy.Event(isSuccess: true, httpStatus: 200, source: "shortcut"),
             ShortcutAnalyticsSpy.Event(isSuccess: false, httpStatus: 500, source: "shortcut")
         ])
-        // 送信成功の回数（ATT の要求・レビュー依頼に使う。保存先は UserDefaults.standard）は変えない
-        #expect(SendSuccessCounter().count == countBefore)
+        // 送信成功の回数（ATT の要求・レビュー依頼に使う）は、ショートカットでは数えない。
+        // 送信側は回数を持たないので、数えるように変えたときに気付けるよう、テストの UserDefaults が 0 のままかを見る
         #expect(SendSuccessCounter(userDefaults: userDefaults).count == 0)
     }
 }
