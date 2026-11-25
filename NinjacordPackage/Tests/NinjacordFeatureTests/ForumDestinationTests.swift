@@ -147,7 +147,7 @@ final class ForumDestinationTests {
         #expect(try #require(historyStore.items.first).threadID == nil)
     }
 
-    @Test("新しい投稿の「取り消す」は、作られたスレッドの thread_id を付けて削除する")
+    @Test("新しい投稿の「取り消す」は、作られたスレッドの thread_id を付けて削除し、投稿そのものは残ることを知らせる")
     func undoForumPost() async throws {
         let url = forumURL(returning: Self.sentMessage(id: "789", channelID: "456"))
         let messageURL = try #require(URL(string: url.absoluteString + "/messages/789"))
@@ -161,7 +161,8 @@ final class ForumDestinationTests {
         undo.handler()
         await waitForUndo()
 
-        #expect(viewModel.toast?.message.testString == "送信を取り消しました")
+        // Webhook では投稿の最初のメッセージしか消せず、投稿（スレッド）は Discord に残る
+        #expect(viewModel.toast?.message.testString == "送信を取り消しました。フォーラムの投稿はDiscordに残ります")
         let received = try #require(StubURLProtocol.requests(to: messageURL).first)
         #expect(received.request.httpMethod == "DELETE")
         #expect(received.request.url?.query == "thread_id=456")
