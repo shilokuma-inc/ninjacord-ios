@@ -197,8 +197,21 @@ struct DestinationCard: View {
         .background(Color.appSurfaceSecondary, in: RoundedRectangle(cornerRadius: 16.0, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: 16.0, style: .continuous))
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text("宛先") + Text(verbatim: ", ") + Text(display.title))
+        .accessibilityLabel(accessibilityLabel)
         // ラベルで上書きすると 2 行目（Webhook の名前・形式の誤り）が読まれないので、値として読ませる
         .accessibilityValue(Text(display.subtitle ?? ""))
+    }
+
+    /// 読み上げる名前。ラベルで上書きすると名前の横の印も読まれないので、ここに含める。
+    /// フォーラムかどうかで本文の入力欄（投稿のタイトル）が変わるため、印も伝える（Issue #699）
+    private var accessibilityLabel: Text {
+        var label = Text("宛先") + Text(verbatim: ", ") + Text(display.title)
+        if display.isThread {
+            label = label + Text(verbatim: ", ") + Text("スレッド")
+        }
+        if isForum {
+            label = label + Text(verbatim: ", ") + Text("フォーラム")
+        }
+        return label
     }
 }

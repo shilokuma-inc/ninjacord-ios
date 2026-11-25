@@ -344,7 +344,7 @@ extension SendMessageView {
             // フォーラムでない宛先には送れない（220003）ので、宛先がフォーラムのときだけ出す（Issue #699）
             if viewModel.isForumDestination {
                 ClearableIconTextField(
-                    icon: Image(systemName: "text.bubble"),
+                    icon: Image(systemName: "text.bubble").accessibilityHidden(true),
                     placeholder: "投稿のタイトルを入れてください",
                     text: $viewModel.inputThreadName,
                     title: "投稿のタイトル",
