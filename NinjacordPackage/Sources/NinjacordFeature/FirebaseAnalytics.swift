@@ -17,17 +17,27 @@ final class FirebaseAnalytics {
         )
     }
 
-    /// メッセージ送信の完了（成功・失敗とも）を記録する。送信本文などの入力内容は送らない
+    /// 送信画面からのメッセージ送信の完了（成功・失敗とも）を記録する。送信本文などの入力内容は送らない
     /// - Parameters:
     ///   - isSuccess: 送信に成功したか
     ///   - httpStatus: Discord が返した HTTP ステータスコード。レスポンスが無い通信エラーは nil
     func sendMessageSendEvent(isSuccess: Bool, httpStatus: Int?) {
+        sendMessageSendEvent(isSuccess: isSuccess, httpStatus: httpStatus, source: MessageSendSource.app.rawValue)
+    }
+
+    /// メッセージ送信の完了（成功・失敗とも）を、送った場所と一緒に記録する。送信本文などの入力内容は送らない
+    /// - Parameters:
+    ///   - isSuccess: 送信に成功したか
+    ///   - httpStatus: Discord が返した HTTP ステータスコード。レスポンスが無い通信エラーは nil
+    ///   - source: 送った場所（`MessageSendSource`）
+    func sendMessageSendEvent(isSuccess: Bool, httpStatus: Int?, source: String) {
         Analytics.logEvent(
             "message_send",
             parameters: [
                 "result": isSuccess ? "success" : "failure",
                 // レスポンスが無い場合も集計で区別できるよう 0 を入れる
-                "http_status": httpStatus ?? 0
+                "http_status": httpStatus ?? 0,
+                "source": source
             ]
         )
     }
@@ -89,4 +99,12 @@ final class FirebaseAnalytics {
     func sendPaywallRestoreEvent(source: String, result: String) {
         Analytics.logEvent("paywall_restore", parameters: ["source": source, "result": result])
     }
+}
+
+/// メッセージを送った場所。Analytics の `message_send` の `source` で区別する（Issue #700）
+enum MessageSendSource: String {
+    /// アプリの送信画面（一斉送信を含む）
+    case app
+    /// ショートカット（App Intents）。アプリを開かずにバックグラウンドで送る
+    case shortcut
 }
