@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// 送信画面のひとまとまり（宛先・送信者・本文・埋め込み・添付）。見出しと中身を 1 枚の面にまとめる（Discussion #586 の Q1）。
+/// 送信画面のひとまとまり（宛先・送信者・本文・埋め込み・添付・送信オプション）。見出しと中身を 1 枚の面にまとめる（Discussion #586 の Q1）。
 /// 入力欄（`appSurfaceSecondary`）と見分けられるよう、面は一段明るい `appSurface` で塗る。
 /// `isExpanded` を渡すと見出しで開閉でき、閉じている間は中身の代わりに `collapsedSummary` を出す（Q6）。
 /// 開閉しない見出しには、右端に `accessory`（宛先の「Webhook URLの取得方法」など）を置ける

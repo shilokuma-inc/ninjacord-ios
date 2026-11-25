@@ -42,7 +42,8 @@ struct PostedMessageEditView: View {
                     content: content,
                     embed: embed,
                     attachment: nil,
-                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
+                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
+                    sendOptions: entry.message.sendOptions
                 )
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
@@ -115,13 +116,15 @@ struct PostedMessageEditView: View {
         }
     }
 
-    /// 編集後の中身。名前・アイコンは変えられないので、送ったときのまま
+    /// 編集後の中身。名前・アイコンは変えられないので、送ったときのまま。
+    /// 送信オプションも送ったときのままにし、リンクのプレビューと @everyone・@here の扱いを変えない（Issue #698）
     private var editedMessage: MessageEntity {
         MessageEntity(
             username: entry.message.username,
             avatarURL: entry.message.avatarURL,
             content: content,
-            messageEmbedEntity: embed
+            messageEmbedEntity: embed,
+            sendOptions: entry.message.sendOptions
         )
     }
 

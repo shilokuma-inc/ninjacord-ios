@@ -13,6 +13,8 @@ struct SendMessageView: View {
     /// 送信者セクションと Discordでの見え方の開閉。前回の状態で始め、開閉したら覚える（撮影モードでは常に開いて始める）
     @State private var isSenderExpanded = SendMessageDisclosure().isExpanded(.sender)
     @State private var isPreviewExpanded = SendMessageDisclosure().isExpanded(.preview)
+    /// 送信オプションの開閉。前回の状態で始め、未設定なら閉じて始める（撮影モードでも閉じて始める）
+    @State private var isSendOptionsExpanded = SendMessageDisclosure().isExpanded(.sendOptions)
     @Environment(\.requestReview) private var requestReview
     @EnvironmentObject private var sceneDelegate: MySceneDelegate
     @ObservedObject private var adConsent = AdConsentManager.shared
@@ -89,6 +91,10 @@ struct SendMessageView: View {
                         contentSection
                         embedSection
                         attachmentSection
+                        // 撮影する送信画面では、プレビューの下に添付・送信ボタンが写る構図を保つため出さない
+                        if ScreenshotDemo.scene != .send {
+                            sendOptionsSection
+                        }
                     }
                     .padding(.horizontal)
                     // iPad では入力欄が画面幅いっぱいに伸びて間延びするため、最大幅を設けて中央に寄せる
@@ -159,6 +165,9 @@ struct SendMessageView: View {
         }
         .onChange(of: isPreviewExpanded) { isExpanded in
             SendMessageDisclosure().setExpanded(isExpanded, for: .preview)
+        }
+        .onChange(of: isSendOptionsExpanded) { isExpanded in
+            SendMessageDisclosure().setExpanded(isExpanded, for: .sendOptions)
         }
         .onChange(of: adConsent.canRequestAds) { _ in
             // 起動直後は同意の取得を待ってから読み込む
@@ -231,7 +240,8 @@ extension SendMessageView {
                 avatarLoader: ScreenshotDemo.isEnabled
                     ? AvatarImageLoader(fixedImage: ScreenshotDemo.avatarImage)
                     : AvatarImageLoader(),
-                attachmentMaxSize: Self.previewAttachmentMaxSize
+                attachmentMaxSize: Self.previewAttachmentMaxSize,
+                sendOptions: viewModel.inputSendOptions
             )
             // プレビューを開いている間は、URL の入力が止まったら Webhook の名前とアイコンを取得する
             .task(id: webhookProfileInput) {
@@ -370,6 +380,19 @@ extension SendMessageView {
                     viewModel.toast = Toast(style: .failure, message: "画像を添付できませんでした。10MBまでの画像を選んでください")
                 }
             }
+        }
+    }
+
+    /// 送信オプション: 通知・リンクのプレビュー・@everyone と @here の扱い（Issue #698）。
+    /// 中身ではなく届き方を決めるので、中身のセクションのあと・送信ボタンの手前に置く。
+    /// 既定では閉じ、閉じている間はオンにしたものを要約に出す
+    private var sendOptionsSection: some View {
+        SendMessageSection(
+            title: "送信オプション",
+            isExpanded: $isSendOptionsExpanded,
+            collapsedSummary: viewModel.inputSendOptions.summary
+        ) {
+            MessageSendOptionsToggles(options: $viewModel.inputSendOptions)
         }
     }
 }

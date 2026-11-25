@@ -59,4 +59,29 @@ struct MessagePreviewTests {
         #expect(!showsEmbed(embed))
         #expect(defaultsContent(embed))
     }
+
+    /// SUPPRESS_EMBEDS を立てると、Discord は送った埋め込みも出さない（Issue #698）
+    @Test("リンクのプレビューを出さないなら、内容があっても埋め込みを出さない")
+    func hidesEmbedWhenSuppressed() {
+        let embed = MessageEmbedEntity(title: "お知らせ")
+        let suppressed = MessagePreview(
+            username: "",
+            avatarURL: "",
+            content: "",
+            embed: embed,
+            attachment: nil,
+            sendOptions: MessageSendOptions(suppressesEmbeds: true)
+        )
+        #expect(!suppressed.showsEmbed)
+
+        let silent = MessagePreview(
+            username: "",
+            avatarURL: "",
+            content: "",
+            embed: embed,
+            attachment: nil,
+            sendOptions: MessageSendOptions(suppressesNotifications: true, suppressesEveryoneMentions: true)
+        )
+        #expect(silent.showsEmbed)
+    }
 }

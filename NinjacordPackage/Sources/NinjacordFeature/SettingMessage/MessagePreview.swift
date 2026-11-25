@@ -19,6 +19,8 @@ struct MessagePreview: View {
     var avatarLoader = AvatarImageLoader()
     /// 添付画像を表示する最大の幅・高さ
     var attachmentMaxSize: CGFloat = 280.0
+    /// 送信オプション。リンクのプレビューを出さないなら、Discord と同じく埋め込みも出さない（Issue #698）
+    var sendOptions = MessageSendOptions()
 
     /// `displayAvatarURL` から読み込んだプロフィール画像。無ければ既定のアイコンを出す
     @State private var avatarImage: Image?
@@ -94,9 +96,10 @@ struct MessagePreview: View {
     }
 
     /// 埋め込みのプレビューを出すか。空のフィールド行だけのときなど、Discord 上で表示される中身が無ければ枠も出さない。
-    /// 要約（`EmbedSummary`）・送る中身（`DiscordWebhookRequest`）と同じ `hasContent` で判定する
+    /// 要約（`EmbedSummary`）・送る中身（`DiscordWebhookRequest`）と同じ `hasContent` で判定する。
+    /// リンクのプレビューを出さない（`SUPPRESS_EMBEDS`）ときは、埋め込みを送っても Discord に表示されないので出さない
     var showsEmbed: Bool {
-        embed.hasContent
+        embed.hasContent && !sendOptions.suppressesEmbeds
     }
 
     /// 出す名前。Webhook の名前が分からなければ nil
