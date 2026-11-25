@@ -25,6 +25,13 @@
 - その `ScrollView` はステータスバーの裏まで伸びるので、中身が inset の View より上まで来ると、ステータスバーの位置に出る。中身が画面より低いと、下端までスクロールしたときに中身の先頭がそこに残る（先頭の位置 ≒ 画面の高さ − 下端の inset − 中身の高さ。送信画面で送信者を閉じると 6.3 inch で起きた）。inset の View を透かしたままステータスバーの裏だけを覆うには、inset の View の `.background(alignment: .top)` に、高さ 0 の View に `.background(Color.appBackground, ignoresSafeAreaEdges: .top)` を付けたものを置く。高さ 0 の `Color.appBackground` に `.ignoresSafeArea(edges: .top)` を付けるだけでは、ステータスバーの裏まで伸びなかった（iOS 26.5 の Simulator、Issue #623）。
 - `.xcodeproj` の `INFOPLIST_KEY_UIUserInterfaceStyle = Light` があると、`overrideUserInterfaceStyle = .unspecified` でも端末の外観に関係なくライトになる。テーマの「自動」を確かめるときは、ビルドした `.app` の `Info.plist` にこのキーが無いことも見る（Issue #615）。
 
+## App Intents（ショートカット）
+
+- Xcode 26.6 は、静的にリンクするパッケージ（`NinjacordFeature`）の App Intents も抽出し、アプリの `Metadata.appintents/extract.actionsdata` にまとめる（`actions`・`entities`・`queries` は入る）。ただし `AppShortcutsProvider` は、パッケージに置くとパッケージ側の `NinjacordFeature.appintents` には入るが、アプリにまとめた結果の `autoShortcuts` は空になる。アプリのターゲットに置けば、パッケージの public な Intent を参照して入る（Issue #700）。
+- Deployment Target が iOS 16 のアプリに `AppShortcuts.xcstrings` を置くと、「iOS 17.0 以上のみ。それより前は AppShortcuts.strings を使う」のビルドエラーになる。フレーズは `<言語>.lproj/AppShortcuts.strings`（キーはコードに書いたフレーズで、`\(.applicationName)` は `${applicationName}`）。
+- `ParameterSummary` の文言は、ソースごとの `.stringsdata` ではなく `ExtractedAppShortcutsMetadata.stringsdata` の `Localizable` テーブルに `${引数名}` を含むキーで出る（同じファイルの `AppShortcuts` テーブルはフレーズ）。`Tools/check_localizations.py` は `Localizable` のほうだけを確かめる。
+- Simulator でシステムがアクションを登録したかは、インストールしたあとに `xcrun simctl spawn <端末> log show --last 3m --predicate 'process == "linkd"'` で `Found static metadata file`・`Interpolating AppShortcuts` が出るかで分かる。Simulator には iOS 16 のランタイムが無く（26.5 / 27.1 だけ）、iOS 16 での動作は手元で確かめられなかった。
+
 ## ローカライズチェック（Tools/check_localizations.py）
 
 - Xcode 既定の DerivedData（`~/Library/Developer/Xcode/DerivedData/NinjacordApp-*`）を `--derived-data` に渡すと、別の Configuration の古いビルドや、コードがまだ `NinjacordApp` ターゲットにあった頃の `.stringsdata` まで拾い、今は無い文言（`埋め込みタイトルを入れてください` など）を未登録と報告する。手元で確かめるときは、そのビルドで書き出された `Debug-iphonesimulator` の `.stringsdata`（`NinjacordFeature.build` のものと、アプリターゲットは `NinjacordApp.stringsdata` だけ）を別のディレクトリに同じ階層で集めて渡す。CI は毎回新しい DerivedData なので起きない（Issue #620）。
