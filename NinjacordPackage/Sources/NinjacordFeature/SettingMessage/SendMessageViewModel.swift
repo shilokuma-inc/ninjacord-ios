@@ -357,7 +357,12 @@ extension SendMessageViewModel {
             guard generation == sendResultGeneration else { return }
             switch result {
             case .success:
-                toast = Toast(style: .success, message: "送信を取り消しました")
+                // フォーラムの投稿は、Webhook では最初のメッセージしか消せず、投稿（スレッド）は Discord に残る（Issue #699）
+                if threadID == nil {
+                    toast = Toast(style: .success, message: "送信を取り消しました")
+                } else {
+                    toast = Toast(style: .success, message: "送信を取り消しました。フォーラムの投稿はDiscordに残ります")
+                }
                 haptics.playNotification(isSuccess: true)
             case .failure(let error):
                 // 原因の文言は送信のときと同じものなので、取り消しに失敗したことを先に書く（メッセージは Discord に残っている）

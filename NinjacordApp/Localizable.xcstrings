@@ -180,6 +180,22 @@
         }
       }
     },
+    "Discordからメッセージが削除されます。フォーラムの投稿そのものは残ります。元に戻せません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The message will be deleted from Discord, but the forum post itself will remain. This can't be undone."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discordからメッセージが削除されます。フォーラムの投稿そのものは残ります。元に戻せません"
+          }
+        }
+      }
+    },
     "Discordで、メッセージを送りたいチャンネルの「チャンネルの編集」（歯車アイコン）を開きます" : {
       "localizations" : {
         "en" : {
@@ -4182,6 +4198,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "送信を取り消しました"
+          }
+        }
+      }
+    },
+    "送信を取り消しました。フォーラムの投稿はDiscordに残ります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message unsent. The forum post stays on Discord."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信を取り消しました。フォーラムの投稿はDiscordに残ります"
           }
         }
       }
