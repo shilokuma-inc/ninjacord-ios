@@ -30,7 +30,7 @@
 - Xcode 26.6 は、静的にリンクするパッケージ（`NinjacordFeature`）の App Intents も抽出し、アプリの `Metadata.appintents/extract.actionsdata` にまとめる（`actions`・`entities`・`queries` は入る）。ただし `AppShortcutsProvider` は、パッケージに置くとパッケージ側の `NinjacordFeature.appintents` には入るが、アプリにまとめた結果の `autoShortcuts` は空になる。アプリのターゲットに置けば、パッケージの public な Intent を参照して入る（Issue #700）。
 - Deployment Target が iOS 16 のアプリに `AppShortcuts.xcstrings` を置くと、「iOS 17.0 以上のみ。それより前は AppShortcuts.strings を使う」のビルドエラーになる。フレーズは `<言語>.lproj/AppShortcuts.strings`（キーはコードに書いたフレーズで、`\(.applicationName)` は `${applicationName}`）。
 - `ParameterSummary` の文言は、ソースごとの `.stringsdata` ではなく `ExtractedAppShortcutsMetadata.stringsdata` の `Localizable` テーブルに `${引数名}` を含むキーで出る（同じファイルの `AppShortcuts` テーブルはフレーズ）。`Tools/check_localizations.py` は `Localizable` のほうだけを確かめる。
-- Simulator でシステムがアクションを登録したかは、インストールしたあとに `xcrun simctl spawn <端末> log show --last 3m --predicate 'process == "linkd"'` で `Found static metadata file`・`Interpolating AppShortcuts` が出るかで分かる。Simulator には iOS 16 のランタイムが無く（26.5 / 27.1 だけ）、iOS 16 での動作は手元で確かめられなかった。
+- Simulator でシステムがアクションを登録したかは、インストールしたあとに `xcrun simctl spawn <端末> log show --last 3m --predicate 'process == "linkd"'` で `Found static metadata file`・`Interpolating AppShortcuts` が出るかで分かる。
 
 ## ローカライズチェック（Tools/check_localizations.py）
 
