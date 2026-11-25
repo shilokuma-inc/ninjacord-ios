@@ -22,6 +22,8 @@ final class SendMessageViewModel: ObservableObject {
 
     /// 埋め込み。タイトルは送信画面で、それ以外の項目は embed エディタで入力する
     @Published var inputEmbed = MessageEmbedEntity()
+    /// 送信オプション（通知を鳴らさない など）。一斉送信でも同じ設定で送る（Issue #698）
+    @Published var inputSendOptions = MessageSendOptions()
 
     @Published private(set) var validationError: SendMessageValidationError?
     @Published var isValidationAlertPresented: Bool = false
@@ -239,6 +241,7 @@ extension SendMessageViewModel {
             avatarURL: inputAvatarURL,
             content: inputContext,
             messageEmbedEntity: inputEmbed,
+            sendOptions: inputSendOptions,
             // 欄を出していないタイトルは送らないので、テンプレート・送信履歴にも残さない
             threadName: isForumDestination ? inputThreadName : ""
         )
@@ -250,6 +253,7 @@ extension SendMessageViewModel {
         inputAvatarURL = template.message.avatarURL
         inputContext = template.message.content
         inputEmbed = template.message.messageEmbedEntity
+        inputSendOptions = template.message.sendOptions
         inputThreadName = template.message.threadName
     }
 

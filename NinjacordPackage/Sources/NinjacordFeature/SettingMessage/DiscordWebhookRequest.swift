@@ -103,6 +103,13 @@ struct DiscordWebhookRequest {
         if messageEntity.messageEmbedEntity.hasContent {
             param["embeds"] = [embedParameters(messageEntity.messageEmbedEntity)]
         }
+        // 送信オプション。オフなら flags・allowed_mentions のキーを送らず、今までと同じ送り方にする（Issue #698）
+        if let flags = messageEntity.sendOptions.messageFlags {
+            param["flags"] = flags
+        }
+        if let allowedMentions = messageEntity.sendOptions.allowedMentions {
+            param["allowed_mentions"] = allowedMentions
+        }
         if let threadName {
             param["thread_name"] = threadName
         }
@@ -117,13 +124,22 @@ struct DiscordWebhookRequest {
     /// 送ったメッセージを書き換える（Edit Webhook Message）ときの JSON パラメータ。
     /// 名前・アイコンは Discord の仕様で変えられないので送らない。添付した画像は `attachments` を送らなければそのまま残る。
     /// 消した本文・埋め込みが Discord でも消えるよう、空の本文は null、埋め込みが無ければ空の配列で送る。
-    /// 送るときと違い、空の本文をアプリの初期文言に置き換えない（空にできるかは呼び出し側で確かめる）
+    /// 送るときと違い、空の本文をアプリの初期文言に置き換えない（空にできるかは呼び出し側で確かめる）。
+    /// 送信オプションは、送ったときと同じ扱いになるよう、リンクのプレビューと @everyone・@here の設定だけを送る
+    /// （通知は送ったときに済んでいて、`flags` に立てられない）。オフなら今までの編集と同じくキーを送らない
     /// https://discord.com/developers/docs/resources/webhook#edit-webhook-message-jsonform-params
     var editParameters: [String: Any] {
         let content: Any = messageEntity.content.isEmpty ? NSNull() : messageEntity.content
         let embed = messageEntity.messageEmbedEntity
         let embeds: [[String: Any]] = embed.hasContent ? [embedParameters(embed)] : []
-        return ["content": content, "embeds": embeds]
+        var param: [String: Any] = ["content": content, "embeds": embeds]
+        if let flags = messageEntity.sendOptions.editableMessageFlags {
+            param["flags"] = flags
+        }
+        if let allowedMentions = messageEntity.sendOptions.allowedMentions {
+            param["allowed_mentions"] = allowedMentions
+        }
+        return param
     }
 
     /// 送ったメッセージを書き換えるときの JSON の本文。パラメータを JSON にできなければ nil

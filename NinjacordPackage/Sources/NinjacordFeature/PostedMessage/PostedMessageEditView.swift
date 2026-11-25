@@ -42,7 +42,8 @@ struct PostedMessageEditView: View {
                     content: content,
                     embed: embed,
                     attachment: nil,
-                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput)
+                    webhookProfile: webhookProfileStore.profile(for: webhookProfileInput),
+                    sendOptions: entry.message.sendOptions
                 )
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
@@ -115,7 +116,8 @@ struct PostedMessageEditView: View {
         }
     }
 
-    /// 編集後の中身。名前・アイコン・フォーラムの投稿のタイトルは変えられないので、送ったときのまま
+    /// 編集後の中身。名前・アイコン・フォーラムの投稿のタイトルは変えられないので、送ったときのまま。
+    /// 送信オプションも送ったときのままにし、リンクのプレビューと @everyone・@here の扱いを変えない（Issue #698）
     private var editedMessage: MessageEntity {
         var message = entry.message
         message.content = content

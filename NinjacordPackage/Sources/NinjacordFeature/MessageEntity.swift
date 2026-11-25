@@ -13,13 +13,16 @@ struct MessageEntity: Codable, Equatable {
     var avatarURL: String
     var content: String
     var messageEmbedEntity: MessageEmbedEntity
+    /// 送信オプション（通知を鳴らさない など）。メッセージの一部として、テンプレート・送信履歴にも残す（Issue #698）
+    var sendOptions = MessageSendOptions()
     /// フォーラム・メディアチャンネルに新しい投稿として送るときのタイトル（thread_name）。
     /// テンプレート・送信履歴にも残すが、フォーラムでない宛先には送らない（Issue #699）
     var threadName = ""
 }
 
 extension MessageEntity {
-    /// タイトルを足す前（2.5.0 まで）に保存したテンプレート・送信履歴には無いので、空として読み込む。
+    /// 送信オプション・タイトルを足す前に保存したテンプレート・送信履歴には無いので、
+    /// 送信オプションはすべてオフ、タイトルは空として読み込む。
     /// 自動で作られる memberwise init を残すため、extension に書く
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -27,6 +30,8 @@ extension MessageEntity {
         avatarURL = try container.decode(String.self, forKey: .avatarURL)
         content = try container.decode(String.self, forKey: .content)
         messageEmbedEntity = try container.decode(MessageEmbedEntity.self, forKey: .messageEmbedEntity)
+        sendOptions = try container.decodeIfPresent(MessageSendOptions.self, forKey: .sendOptions)
+            ?? MessageSendOptions()
         threadName = try container.decodeIfPresent(String.self, forKey: .threadName) ?? ""
     }
 }
