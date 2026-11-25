@@ -16,6 +16,7 @@ final class ShortcutMessageSenderTests {
     private let urlStore: WebhookURLStore
     private let templateStore: MessageTemplateStore
     private let historyStore: SendHistoryStore
+    private let forumDestinations: ForumDestinationStore
     private let analytics = ShortcutAnalyticsSpy()
     private let sender: ShortcutMessageSender
 
@@ -32,11 +33,13 @@ final class ShortcutMessageSenderTests {
         urlStore = WebhookURLStore(userDefaults: userDefaults)
         templateStore = MessageTemplateStore(userDefaults: userDefaults)
         historyStore = SendHistoryStore(userDefaults: userDefaults)
+        forumDestinations = ForumDestinationStore(userDefaults: userDefaults)
         sender = ShortcutMessageSender(
             client: DiscordWebhookClient(session: StubURLProtocol.session),
             urlStore: urlStore,
             templateStore: templateStore,
             historyStore: historyStore,
+            forumDestinations: forumDestinations,
             analytics: analytics
         )
     }
@@ -71,9 +74,15 @@ final class ShortcutMessageSenderTests {
         to destinationID: SavedWebhookURL.ID,
         template templateID: MessageTemplate.ID? = nil,
         body: String? = nil,
+        threadName: String? = nil,
         isPro: Bool = false
     ) async -> Result<ShortcutSendSuccess, ShortcutSendError> {
-        let request = ShortcutMessageSender.Request(destinationID: destinationID, templateID: templateID, body: body)
+        let request = ShortcutMessageSender.Request(
+            destinationID: destinationID,
+            templateID: templateID,
+            body: body,
+            threadName: threadName
+        )
         return await sender.send(request, isPro: isPro)
     }
 
@@ -318,6 +327,108 @@ final class ShortcutMessageSenderTests {
     }
 }
 
+// MARK: - フォーラム・メディアチャンネル（Issue #699）
+
+extension ShortcutMessageSenderTests {
+    /// 新しい投稿として送ったときに Discord が返す、作られたメッセージ。`channel_id` は作られたスレッド（投稿）の ID
+    private nonisolated static let createdPost = StubURLProtocol.Stub.response(
+        statusCode: 200,
+        data: Data(#"{"id": "789", "channel_id": "456"}"#.utf8)
+    )
+
+    private nonisolated static func discordError(code: Int) -> StubURLProtocol.Stub {
+        .response(statusCode: 400, data: Data(#"{"message": "", "code": \#(code)}"#.utf8))
+    }
+
+    /// フォーラムとして覚えた宛先を保存する
+    private func saveForumDestination(
+        returning stub: StubURLProtocol.Stub = createdPost
+    ) -> (item: SavedWebhookURL, url: URL) {
+        let destination = saveDestination("フォーラム", returning: stub)
+        forumDestinations.setForum(true, for: destination.url.absoluteString)
+        return destination
+    }
+
+    @Test("フォーラムの宛先には、指定したタイトルを付けて新しい投稿として送り、作られたスレッドの ID を送信履歴に残す")
+    func sendsForumPostWithTitle() async throws {
+        let destination = saveForumDestination()
+
+        let result = await send(to: destination.item.id, body: "今週の進捗です", threadName: " 週報 11/25 ")
+
+        #expect(result.isSuccess)
+        let parameters = try sentParameters(to: destination.url)
+        #expect(parameters["thread_name"] as? String == "週報 11/25")
+        #expect(parameters["content"] as? String == "今週の進捗です")
+        let entry = try #require(historyStore.items.first)
+        #expect(entry.messageID == "789")
+        #expect(entry.threadID == "456")
+    }
+
+    @Test("タイトルを指定しなければ、テンプレートのタイトルで送る")
+    func sendsForumPostWithTemplateTitle() async throws {
+        let destination = saveForumDestination()
+        let template = templateStore.add(
+            name: "週報",
+            message: MessageEntity(
+                username: "",
+                avatarURL: "",
+                content: "今週の進捗です",
+                messageEmbedEntity: MessageEmbedEntity(),
+                threadName: "週報"
+            )
+        )
+
+        let result = await send(to: destination.item.id, template: template.id, threadName: " ")
+
+        #expect(result.isSuccess)
+        #expect(try sentParameters(to: destination.url)["thread_name"] as? String == "週報")
+    }
+
+    @Test("フォーラムの宛先でタイトルが無ければ、送らずにタイトルを入れるよう案内する", arguments: [nil, " \n "] as [String?])
+    func forumTitleRequiredBeforeSending(threadName: String?) async {
+        let destination = saveForumDestination()
+
+        let result = await send(to: destination.item.id, body: "こんにちは", threadName: threadName)
+
+        #expect(result.failureValue == .forumTitleRequired)
+        #expect(StubURLProtocol.requests(to: destination.url).isEmpty)
+        #expect(historyStore.items.isEmpty)
+    }
+
+    @Test("フォーラムでない宛先には、タイトルを指定しても送らず、送信履歴にも残さない")
+    func titleIsNotSentToNonForumDestination() async throws {
+        let destination = saveDestination()
+
+        let result = await send(to: destination.item.id, body: "こんにちは", threadName: "週報")
+
+        #expect(result.isSuccess)
+        #expect(try sentParameters(to: destination.url)["thread_name"] == nil)
+        let entry = try #require(historyStore.items.first)
+        #expect(entry.message.threadName.isEmpty)
+        #expect(entry.threadID == nil)
+    }
+
+    @Test("Discord が 220001 を返したら、その宛先をフォーラムとして覚え、タイトルを入れるよう案内する")
+    func remembersForumOnTitleRequired() async {
+        let destination = saveDestination(returning: Self.discordError(code: 220001))
+
+        let result = await send(to: destination.item.id, body: "こんにちは")
+
+        #expect(result.failureValue == .forumTitleRequired)
+        #expect(forumDestinations.isForum(destination.url.absoluteString))
+    }
+
+    @Test("Discord が 220003 を返したら、フォーラムの設定を外す")
+    func forgetsForumOnNotForumChannel() async {
+        let destination = saveForumDestination(returning: Self.discordError(code: 220003))
+
+        let result = await send(to: destination.item.id, body: "こんにちは", threadName: "週報")
+
+        #expect(result.failureValue == .discord(.notForumChannel))
+        #expect(!forumDestinations.isForum(destination.url.absoluteString))
+    }
+}
+
 // MARK: - Webhook URL を出さない
 
 extension ShortcutMessageSenderTests {
@@ -326,7 +437,8 @@ extension ShortcutMessageSenderTests {
         let destination = saveDestination()
         let errors: [ShortcutSendError] = [
             .destinationNotFound, .templateNotFound, .emptyMessage, .proTemplateRequired, .proEmbedFeatures,
-            .invalidEmbed(.titleTooLong), .discord(.unknownWebhook), .discord(.invalidToken), .discord(.network)
+            .forumTitleRequired, .invalidEmbed(.titleTooLong), .discord(.unknownWebhook), .discord(.invalidToken),
+            .discord(.network), .discord(.notForumChannel)
         ]
         let messages = [ShortcutSendSuccess(destinationName: destination.item.name).message]
             + errors.map(\.message)
