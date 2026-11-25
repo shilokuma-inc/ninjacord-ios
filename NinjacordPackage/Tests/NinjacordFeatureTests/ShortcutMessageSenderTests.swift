@@ -290,6 +290,16 @@ final class ShortcutMessageSenderTests {
         #expect(entry.messageID == nil)
     }
 
+    @Test("保存した宛先が http / https の URL でなければ、通信せずに Webhook URL の誤りにする")
+    func invalidSavedURLIsNotSent() async {
+        let destination = urlStore.add(name: "古い宛先", url: "discord.com/api/webhooks/123/abc")
+
+        let result = await send(to: destination.id, body: "こんにちは")
+
+        #expect(result.failureValue == .discord(.invalidToken))
+        #expect(analytics.events == [ShortcutAnalyticsSpy.Event(isSuccess: false, httpStatus: nil, source: "shortcut")])
+    }
+
     @Test("Analytics には送信元をショートカットとして記録し、送信成功の回数には数えない")
     func recordsAnalyticsWithoutCountingSuccess() async {
         let destination = saveDestination()

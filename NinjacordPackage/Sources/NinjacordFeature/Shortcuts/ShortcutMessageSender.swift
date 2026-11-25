@@ -135,13 +135,16 @@ struct ShortcutMessageSender {
     }
 
     /// Webhook に送り、送信元をショートカットとして Analytics に記録する。
-    /// URL にできなければ、送信画面と同じく通信せずに invalidToken にする
+    /// 送信画面の入力チェックと同じく http / https とホストを持つ URL でなければ、通信せずに invalidToken にする
+    /// （スキームの無い古い保存データで、通信のエラーという的外れな案内にしないため）
     private func post(
         _ message: MessageEntity,
         to url: String
     ) async -> Result<SentWebhookMessage, DiscordWebhookError> {
         let response: DiscordWebhookClient.Response<SentWebhookMessage>
-        if let endpoint = SendMessageViewModel.webhookEndpoint(from: url) {
+        let trimmedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
+        if SendMessageViewModel.isSendableURL(trimmedURL),
+           let endpoint = SendMessageViewModel.webhookEndpoint(from: trimmedURL) {
             response = await client.send(DiscordWebhookRequest(messageEntity: message), to: endpoint)
         } else {
             response = DiscordWebhookClient.Response(statusCode: nil, result: .failure(.invalidToken))
