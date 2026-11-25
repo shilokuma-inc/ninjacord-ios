@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		6E1A2B3C4D5E6F708192A3B1 /* NinjacordFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 6E1A2B3C4D5E6F708192A3B2 /* NinjacordFeature */; };
 		4F5072B82BCF901E0005D352 /* NinjacordApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5072B72BCF901E0005D352 /* NinjacordApp.swift */; };
+		4F9B45B512CB39212090900E /* NinjacordShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 850DCF60BFDE65F0152BE04F /* NinjacordShortcuts.swift */; };
 		4F5072BC2BCF901F0005D352 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4F5072BB2BCF901F0005D352 /* Assets.xcassets */; };
 		4F5072C02BCF901F0005D352 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4F5072BF2BCF901F0005D352 /* Preview Assets.xcassets */; };
 		4F6755562BE0123900F2629B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4F6755552BE0123900F2629B /* GoogleService-Info.plist */; };
 		4F6F9FB22BEBDEE40033AFB7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */; };
 		4F7A1C0A2E9B0D1000A1B2C3 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4F7A1C0B2E9B0D1000A1B2C3 /* InfoPlist.xcstrings */; };
+		03CC8FD77582E9E9713E4C10 /* AppShortcuts.strings in Resources */ = {isa = PBXBuildFile; fileRef = D1770061A5EAA2E3CEEA240E /* AppShortcuts.strings */; };
 		4FAB6FF22BE1923F00B2F33A /* swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 4FAB6FF12BE1923F00B2F33A /* swiftlint.yml */; };
 		4FD55D4D2BE6FCB800581F34 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FD55D4C2BE6FCB800581F34 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -23,6 +25,7 @@
 		4F2CDC502BD31B4A000DF626 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4F5072B42BCF901E0005D352 /* NinjacordApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NinjacordApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F5072B72BCF901E0005D352 /* NinjacordApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NinjacordApp.swift; sourceTree = "<group>"; };
+		850DCF60BFDE65F0152BE04F /* NinjacordShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NinjacordShortcuts.swift; sourceTree = "<group>"; };
 		4F5072BB2BCF901F0005D352 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4F5072BD2BCF901F0005D352 /* NinjacordApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NinjacordApp.entitlements; sourceTree = "<group>"; };
 		4F5072BF2BCF901F0005D352 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -30,6 +33,8 @@
 		4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		4F7A1C0C2E9B0D1000A1B2C3 /* NinjacordPro.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = NinjacordPro.storekit; sourceTree = "<group>"; };
 		4F7A1C0B2E9B0D1000A1B2C3 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		06D9452C8303B3518A8E3A69 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
+		06CAFFAFC6AF2F0C3E56A501 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
 		4FAB6FF12BE1923F00B2F33A /* swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftlint.yml; sourceTree = "<group>"; };
 		4FAB6FF72BE1A04D00B2F33A /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
 		4FD55D4C2BE6FCB800581F34 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -69,9 +74,11 @@
 			isa = PBXGroup;
 			children = (
 				4F5072B72BCF901E0005D352 /* NinjacordApp.swift */,
+				850DCF60BFDE65F0152BE04F /* NinjacordShortcuts.swift */,
 				4F5072BB2BCF901F0005D352 /* Assets.xcassets */,
 				4F6F9FB12BEBDEE40033AFB7 /* Localizable.xcstrings */,
 				4F7A1C0B2E9B0D1000A1B2C3 /* InfoPlist.xcstrings */,
+				D1770061A5EAA2E3CEEA240E /* AppShortcuts.strings */,
 				4F5072BD2BCF901F0005D352 /* NinjacordApp.entitlements */,
 				4F2CDC502BD31B4A000DF626 /* Info.plist */,
 				4F7A1C0C2E9B0D1000A1B2C3 /* NinjacordPro.storekit */,
@@ -179,6 +186,7 @@
 				4F5072C02BCF901F0005D352 /* Preview Assets.xcassets in Resources */,
 				4F6F9FB22BEBDEE40033AFB7 /* Localizable.xcstrings in Resources */,
 				4F7A1C0A2E9B0D1000A1B2C3 /* InfoPlist.xcstrings in Resources */,
+				03CC8FD77582E9E9713E4C10 /* AppShortcuts.strings in Resources */,
 				4F5072BC2BCF901F0005D352 /* Assets.xcassets in Resources */,
 				4FD55D4D2BE6FCB800581F34 /* PrivacyInfo.xcprivacy in Resources */,
 				4F6755562BE0123900F2629B /* GoogleService-Info.plist in Resources */,
@@ -237,10 +245,23 @@
 			buildActionMask = 2147483647;
 			files = (
 				4F5072B82BCF901E0005D352 /* NinjacordApp.swift in Sources */,
+				4F9B45B512CB39212090900E /* NinjacordShortcuts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		D1770061A5EAA2E3CEEA240E /* AppShortcuts.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				06D9452C8303B3518A8E3A69 /* en */,
+				06CAFFAFC6AF2F0C3E56A501 /* ja */,
+			);
+			name = AppShortcuts.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		4F5072C12BCF901F0005D352 /* Debug */ = {

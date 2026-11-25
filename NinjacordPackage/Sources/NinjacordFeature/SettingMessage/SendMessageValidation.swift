@@ -81,7 +81,7 @@ extension SendMessageViewModel {
         if trimmedURL.isEmpty {
             return .emptyURL
         }
-        if !isValidURL(trimmedURL) {
+        if !Self.isSendableURL(trimmedURL) {
             return .invalidURL
         }
         // 空のままフォーラムに送ると Discord が 220001 で受け付けないので、送る前に止める。
@@ -102,8 +102,8 @@ extension SendMessageViewModel {
         return nil
     }
 
-    /// http / https のスキームとホストを持ち、送信先の URL にできるかどうか
-    private func isValidURL(_ string: String) -> Bool {
+    /// http / https のスキームとホストを持ち、送信先の URL にできるかどうか。ショートカットからの送信でも使う
+    static func isSendableURL(_ string: String) -> Bool {
         guard let components = URLComponents(string: string),
               let scheme = components.scheme?.lowercased(),
               ["http", "https"].contains(scheme),
