@@ -14,6 +14,8 @@ import UIKit
 final class SendMessageViewModelFixture {
     let userDefaults: UserDefaults
     let historyStore: SendHistoryStore
+    /// フォーラムとして覚えた宛先
+    let forumDestinations: ForumDestinationStore
     let sendSuccessCounter: SendSuccessCounter
     let analytics: AnalyticsSpy
     /// 送信後の流れ（リワード解放の消費・レビュー依頼・待ち・全画面広告）で起きたこと
@@ -33,6 +35,7 @@ final class SendMessageViewModelFixture {
         // 既定はオンだが、名前を空にして送るテストが多いので切っておく。確認ダイアログのテストではオンにする
         userDefaults.set(false, forKey: DefaultValueConfirmationSetting.isEnabledKey)
         historyStore = SendHistoryStore(userDefaults: userDefaults)
+        forumDestinations = ForumDestinationStore(userDefaults: userDefaults)
         sendSuccessCounter = SendSuccessCounter(userDefaults: userDefaults)
         let analytics = AnalyticsSpy()
         self.analytics = analytics
@@ -44,6 +47,7 @@ final class SendMessageViewModelFixture {
         viewModel = SendMessageViewModel(
             client: DiscordWebhookClient(session: StubURLProtocol.session),
             historyStore: historyStore,
+            forumDestinations: forumDestinations,
             analytics: analytics,
             sendSuccessCounter: sendSuccessCounter,
             rewardedUnlock: RewardedUnlockSpy(recorder: recorder),

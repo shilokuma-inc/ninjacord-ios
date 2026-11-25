@@ -41,11 +41,31 @@ struct DiscordWebhookRequest {
     let attachment: ImageAttachment?
     /// 埋め込みの送信日時（timestamp）として送る日時
     let sentAt: Date
+    /// フォーラム・メディアチャンネルに、タイトル（thread_name）を付けて新しい投稿として送るか（Issue #699）。
+    /// フォーラムでない宛先に thread_name を送ると 220003、`?thread_id=` と一緒に送ると 220002 で失敗するので、
+    /// 宛先をフォーラムとして覚えていて、`?thread_id=` が付いていないときだけ true にする（`ForumDestinationStore.isForum`）
+    let createsForumPost: Bool
 
-    init(messageEntity: MessageEntity, attachment: ImageAttachment? = nil, sentAt: Date = Date()) {
+    init(
+        messageEntity: MessageEntity,
+        attachment: ImageAttachment? = nil,
+        sentAt: Date = Date(),
+        createsForumPost: Bool = false
+    ) {
         self.messageEntity = messageEntity
         self.attachment = attachment
         self.sentAt = sentAt
+        self.createsForumPost = createsForumPost
+    }
+
+    /// 送るタイトル（thread_name）。新しい投稿として送らないとき・タイトルが空白だけのときは nil で、送らない。
+    /// 空のままフォーラムに送ると 220001 で失敗するので、送る前の入力チェックで止める（`SendMessageValidationError.emptyThreadName`）
+    var threadName: String? {
+        guard createsForumPost else {
+            return nil
+        }
+        let trimmed = messageEntity.threadName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     /// アプリの初期文言に置き換えて送る項目。送る中身（`parameters`）はこれに従って組み立てる。
@@ -89,6 +109,9 @@ struct DiscordWebhookRequest {
         }
         if let allowedMentions = messageEntity.sendOptions.allowedMentions {
             param["allowed_mentions"] = allowedMentions
+        }
+        if let threadName {
+            param["thread_name"] = threadName
         }
         return param
     }

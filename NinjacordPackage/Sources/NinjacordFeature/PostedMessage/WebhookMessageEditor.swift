@@ -33,12 +33,18 @@ struct WebhookMessageEditor {
     }
 
     /// 送ったメッセージを削除する。Discord で先に消されていたときも、消すという目的は果たせているので成功にする
+    /// - Parameter threadID: フォーラムに新しい投稿として送ったときの、作られたスレッドの ID。それ以外は nil
     func delete(
         webhookURL: String,
         messageID: String,
+        threadID: String? = nil,
         source: DeleteSource
     ) async -> Result<Void, DiscordWebhookError> {
-        guard let url = WebhookMessageEndpoint.messageURL(webhookURL: webhookURL, messageID: messageID) else {
+        guard let url = WebhookMessageEndpoint.messageURL(
+            webhookURL: webhookURL,
+            messageID: messageID,
+            threadID: threadID
+        ) else {
             // 送れた URL と受け取った ID から作るので通常は通らない
             return .failure(.invalidToken)
         }
@@ -55,14 +61,21 @@ struct WebhookMessageEditor {
     }
 
     /// 送ったメッセージの本文と埋め込みを書き換える
-    /// - Parameter sentAt: 最初に送った日時。埋め込みの送信日時（timestamp）を送ったときのままにする
+    /// - Parameters:
+    ///   - threadID: フォーラムに新しい投稿として送ったときの、作られたスレッドの ID。それ以外は nil
+    ///   - sentAt: 最初に送った日時。埋め込みの送信日時（timestamp）を送ったときのままにする
     func edit(
         webhookURL: String,
         messageID: String,
+        threadID: String? = nil,
         message: MessageEntity,
         sentAt: Date
     ) async -> Result<Void, DiscordWebhookError> {
-        guard let url = WebhookMessageEndpoint.messageURL(webhookURL: webhookURL, messageID: messageID) else {
+        guard let url = WebhookMessageEndpoint.messageURL(
+            webhookURL: webhookURL,
+            messageID: messageID,
+            threadID: threadID
+        ) else {
             return .failure(.invalidToken)
         }
         let response = await client.edit(DiscordWebhookRequest(messageEntity: message, sentAt: sentAt), messageURL: url)

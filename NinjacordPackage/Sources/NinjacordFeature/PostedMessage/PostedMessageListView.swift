@@ -53,8 +53,13 @@ struct PostedMessageListView: View {
             Button("削除", role: .destructive) {
                 viewModel.delete(entry)
             }
-        } message: { _ in
-            Text("Discordのチャンネルからも削除されます。元に戻せません")
+        } message: { entry in
+            // フォーラムの投稿は、Webhook では最初のメッセージしか消せず、投稿（スレッド）は Discord に残る（Issue #699）
+            if entry.threadID == nil {
+                Text("Discordのチャンネルからも削除されます。元に戻せません")
+            } else {
+                Text("Discordからメッセージが削除されます。フォーラムの投稿そのものは残ります。元に戻せません")
+            }
         }
         .alert(
             "メッセージの編集はNinjacord Pro限定です",

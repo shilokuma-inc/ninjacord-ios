@@ -21,6 +21,8 @@ struct SavedDestinationListView: View {
 
     @StateObject private var store = WebhookURLStore()
     @StateObject private var adModel = InlineBannerAdModel()
+    /// フォーラムの宛先の印と設定。送信画面と同じものを使い、ここで変えたらすぐにタイトルの欄に反映する（Issue #699）
+    @ObservedObject private var forumDestinations = ForumDestinationStore.shared
     @State private var isSavePresented = false
     /// 名前を変えている宛先
     @State private var renamingItem: SavedWebhookURL?
@@ -147,7 +149,7 @@ struct SavedDestinationListView: View {
             Text("保存した宛先")
         } footer: {
             if !store.items.isEmpty {
-                Text("左にスワイプすると、名前の変更と削除ができます")
+                Text("左にスワイプすると、名前の変更・フォーラムの設定・削除ができます")
             }
         }
     }
@@ -159,15 +161,16 @@ struct SavedDestinationListView: View {
     }
 
     private func row(_ item: SavedWebhookURL, isSelected: Bool) -> some View {
-        Group {
+        let isForum = forumDestinations.isForum(item.url)
+        return Group {
             if case .select(_, let onSelect) = mode {
                 Button {
                     onSelect(item.url)
                 } label: {
-                    DestinationRow(item: item, isSelected: isSelected)
+                    DestinationRow(item: item, isSelected: isSelected, isForum: isForum)
                 }
             } else {
-                DestinationRow(item: item)
+                DestinationRow(item: item, isForum: isForum)
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -182,6 +185,7 @@ struct SavedDestinationListView: View {
                 Label("名前を変更", systemImage: "pencil")
             }
             .tint(Color.appAccent)
+            forumButton(item, isForum: isForum)
         }
         .contextMenu {
             Button {
@@ -189,11 +193,31 @@ struct SavedDestinationListView: View {
             } label: {
                 Label("名前を変更", systemImage: "pencil")
             }
+            forumButton(item, isForum: isForum)
             Button(role: .destructive) {
                 store.remove(id: item.id)
             } label: {
                 Label("削除", systemImage: "trash")
             }
+        }
+    }
+
+    /// フォーラム・メディアチャンネルの宛先にする・やめるボタン（Issue #699）。
+    /// Webhook URL からはフォーラムか分からないので、自分で設定できるようにする。
+    /// `?thread_id=` が付いた宛先は既存のスレッドに送るのでタイトルを付けず、出さない
+    @ViewBuilder
+    private func forumButton(_ item: SavedWebhookURL, isForum: Bool) -> some View {
+        if ForumDestinationStore.canBeForum(item.url) {
+            Button {
+                forumDestinations.setForum(!isForum, for: item.url)
+            } label: {
+                if isForum {
+                    Label("フォーラムを解除", systemImage: "bubble.left.and.bubble.right")
+                } else {
+                    Label("フォーラムに設定", systemImage: "bubble.left.and.bubble.right")
+                }
+            }
+            .tint(.indigo)
         }
     }
 

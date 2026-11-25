@@ -48,12 +48,14 @@ final class SendHistoryStore: ObservableObject {
     /// 送信を記録する。設定が OFF なら何もしない。最大件数を超えた古いものは捨てる
     /// - Parameters:
     ///   - messageID: Discord が作ったメッセージの ID。編集・削除に使う。送れなかった・受け取れなかったときは nil
+    ///   - threadID: フォーラムに新しい投稿として送ったときの、作られたスレッドの ID。編集・削除に使う
     ///   - hasAttachment: 画像を添付して送ったか
     func record(
         url: String,
         message: MessageEntity,
         isSuccess: Bool,
         messageID: String? = nil,
+        threadID: String? = nil,
         hasAttachment: Bool = false,
         at date: Date = Date()
     ) {
@@ -66,6 +68,7 @@ final class SendHistoryStore: ObservableObject {
             message: message,
             isSuccess: isSuccess,
             messageID: messageID,
+            threadID: threadID,
             hasAttachment: hasAttachment
         )
         items = Array(([entry] + items).prefix(Self.maxCount))

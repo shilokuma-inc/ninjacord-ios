@@ -6,7 +6,8 @@
 import Foundation
 
 /// 宛先を保存する画面の状態。入力された Webhook URL をその場で取得して確かめ、
-/// Webhook の名前を名前の欄に入れておく。同じ宛先を二重に保存させない（Issue #674）
+/// Webhook の名前を名前の欄に入れておく。同じ宛先を二重に保存させない（Issue #674）。
+/// フォーラム・メディアチャンネルの宛先かも設定できる（Issue #699）
 @MainActor
 final class SaveDestinationModel: ObservableObject {
     /// 入力された URL を確かめた結果
@@ -35,30 +36,42 @@ final class SaveDestinationModel: ObservableObject {
             // 確かめ直すまでの間に、前の URL の結果（確認できた・保存できる）が残らないようにする
             guard url != oldValue else { return }
             check = trimmedURL.isEmpty ? .empty : .checking
+            // 別の Webhook に替えたら、フォーラムの設定をその Webhook で覚えているものにし直す
+            if WebhookDestinationKey(urlString: url) != WebhookDestinationKey(urlString: oldValue) {
+                isForum = forumDestinations.isForum(url)
+            }
         }
     }
     @Published private(set) var name = ""
     @Published private(set) var check: Check = .empty
+    /// フォーラム・メディアチャンネルの宛先か。保存したときに `ForumDestinationStore` に覚える。
+    /// 送信して 220001 が返り、フォーラムとして覚えている URL なら、最初からオンにしておく
+    @Published var isForum: Bool
 
     /// 名前を自分で入れたか。入れていなければ、取得した Webhook の名前で置き換える
     private var isNameEdited = false
     private let store: WebhookURLStore
+    private let forumDestinations: ForumDestinationStore
     private let client: WebhookProfileClient
     private let sleep: @MainActor (Duration) async throws -> Void
 
     /// - Parameters:
     ///   - initialURL: 最初に入れておく URL（送信画面で使っている、保存していない URL など）
     ///   - store: 保存先。二重に保存しないかの判定にも使う
+    ///   - forumDestinations: フォーラムの宛先として覚えた Webhook。保存したときにフォーラムの設定を覚える
     ///   - client: Webhook の取得。テストでは URLProtocol のスタブを入れたものを渡す
     ///   - sleep: 取得の前の待ち。テストでは待たない
     init(
         initialURL: String,
         store: WebhookURLStore,
+        forumDestinations: ForumDestinationStore,
         client: WebhookProfileClient = WebhookProfileClient(),
         sleep: @escaping @MainActor (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
     ) {
         self.url = initialURL
         self.store = store
+        self.forumDestinations = forumDestinations
+        self.isForum = forumDestinations.isForum(initialURL)
         self.client = client
         self.sleep = sleep
     }
@@ -75,6 +88,11 @@ final class SaveDestinationModel: ObservableObject {
 
     var trimmedName: String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// フォーラムの設定を出すか。Webhook URL の形で、`?thread_id=` が付いていない（既存のスレッドに送らない）こと
+    var canBeForum: Bool {
+        ForumDestinationStore.canBeForum(trimmedURL)
     }
 
     /// 同じ宛先（Webhook とスレッドが同じ）を保存済みなら、そのもの
@@ -146,6 +164,9 @@ final class SaveDestinationModel: ObservableObject {
         if case .valid(let fetched) = check {
             profile = fetched
         }
-        return store.add(name: trimmedName, url: trimmedURL, profile: profile)
+        let saved = store.add(name: trimmedName, url: trimmedURL, profile: profile)
+        // フォーラムは保存した宛先ではなく Webhook の ID で覚える（保存していない URL で覚えたものも同じ）
+        forumDestinations.setForum(isForum, for: trimmedURL)
+        return saved
     }
 }
