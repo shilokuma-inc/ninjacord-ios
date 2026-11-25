@@ -56,9 +56,10 @@ struct ShortcutMessageSender {
         self.analytics = analytics
     }
 
-    /// 宛先・テンプレートを ID から探し、中身を確かめてから送る。
+    /// 宛先・テンプレートを ID から探し、無料の制限と中身を確かめてから送る。
     /// 確かめた時点で送れないと分かったときは、通信せず、送信履歴にも残さない
-    func send(_ request: Request) async -> Result<ShortcutSendSuccess, ShortcutSendError> {
+    /// - Parameter isPro: Pro を購読中か。無料では、ショートカットで使えるテンプレートは一覧の先頭の 1 件だけ
+    func send(_ request: Request, isPro: Bool) async -> Result<ShortcutSendSuccess, ShortcutSendError> {
         // アプリで宛先・テンプレートを変えたあとでも、最新の内容で送る
         urlStore.reload()
         templateStore.reload()
@@ -70,12 +71,15 @@ struct ShortcutMessageSender {
             guard let found = templateStore.items.first(where: { $0.id == templateID }) else {
                 return .failure(.templateNotFound)
             }
+            guard isPro || found.id == templateStore.shortcutFreeTemplateID else {
+                return .failure(.proTemplateRequired)
+            }
             template = found
         }
         guard let message = Self.makeMessage(template: template, body: request.body) else {
             return .failure(.emptyMessage)
         }
-        if let error = Self.validate(message) {
+        if let error = Self.validate(message, isPro: isPro) {
             return .failure(error)
         }
         let result = await post(message, to: destination.url)
@@ -113,10 +117,14 @@ struct ShortcutMessageSender {
         return message
     }
 
-    /// 送る前に分かる誤り。送信画面の入力チェック（`SendMessageViewModel.validate`）と同じ順で確かめる
-    static func validate(_ message: MessageEntity) -> ShortcutSendError? {
+    /// 送る前に分かる誤り。送信画面の入力チェック（`SendMessageViewModel.validate`）と同じ順で確かめる。
+    /// Pro 限定の項目は、リワード広告の一時解放では使えない（画面の無い送信で、解放を使い切る場面が無いため）
+    static func validate(_ message: MessageEntity, isPro: Bool) -> ShortcutSendError? {
         if !message.hasContent {
             return .emptyMessage
+        }
+        if !isPro && message.messageEmbedEntity.usesProFeatures {
+            return .proEmbedFeatures
         }
         if let issue = message.messageEmbedEntity.validationIssues().first {
             return .invalidEmbed(issue)
@@ -145,6 +153,14 @@ struct ShortcutMessageSender {
     }
 }
 
+extension MessageTemplateStore {
+    /// 無料のときにショートカットで使えるテンプレート（Discussion #376 の C-2）。一覧の先頭の 1 件。
+    /// 一覧は利用者が並べ替え・ピン留めできるので、どれを使うかを利用者が選べる。テンプレートが無ければ nil
+    var shortcutFreeTemplateID: MessageTemplate.ID? {
+        items.first?.id
+    }
+}
+
 /// ショートカットからの送信に成功したときの結果。ショートカットのアプリに短い文言で返す
 struct ShortcutSendSuccess: Equatable {
     /// 送った宛先に付けた名前。Webhook URL は出さない
@@ -164,6 +180,10 @@ enum ShortcutSendError: LocalizedError, Equatable {
     case templateNotFound
     /// テンプレートも本文も無い・送る中身が無い
     case emptyMessage
+    /// 無料では使えないテンプレート（一覧の先頭以外）を選んだ
+    case proTemplateRequired
+    /// Pro でないのに、テンプレートの埋め込みに Pro 限定の項目が入っている
+    case proEmbedFeatures
     /// 埋め込みが Discord の上限を超えているなど
     case invalidEmbed(EmbedValidationIssue)
     /// Discord への送信に失敗した
@@ -177,6 +197,10 @@ enum ShortcutSendError: LocalizedError, Equatable {
             return String(localized: "テンプレートが見つかりません。アプリで削除されていないか確かめて、ショートカットでテンプレートを選び直してください")
         case .emptyMessage:
             return String(localized: "送る内容がありません。テンプレートを選ぶか、本文を入れてください")
+        case .proTemplateRequired:
+            return String(localized: "無料プランでショートカットに使えるテンプレートは、一覧の先頭の1件だけです。ほかのテンプレートを使うには、Ninjacord Proにしてください")
+        case .proEmbedFeatures:
+            return String(localized: "テンプレートの埋め込みにPro限定の項目が入っています。アプリでテンプレートから消すか、Ninjacord Proにしてください")
         case .invalidEmbed(let issue):
             return issue.message
         case .discord(let error):

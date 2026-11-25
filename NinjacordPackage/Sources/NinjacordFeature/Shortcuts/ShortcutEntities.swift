@@ -74,7 +74,7 @@ struct ShortcutTemplateEntity: AppEntity {
     }
 }
 
-/// テンプレートを、アプリと同じ並び順（ピン留めが先頭）で出す
+/// テンプレートを、アプリと同じ並び順（ピン留めが先頭）で出す。無料で使えるのは先頭の 1 件（`shortcutFreeTemplateID`）
 struct ShortcutTemplateQuery: EntityStringQuery {
     @MainActor
     func entities(for identifiers: [ShortcutTemplateEntity.ID]) async throws -> [ShortcutTemplateEntity] {

@@ -17,7 +17,7 @@ public struct SendDiscordMessageIntent: AppIntent {
     @Parameter(title: "宛先", requestValueDialog: "どの宛先に送りますか？")
     var destination: ShortcutDestinationEntity
 
-    @Parameter(title: "使うテンプレート")
+    @Parameter(title: "使うテンプレート", description: "無料プランでは、テンプレートの一覧の先頭の1件だけ使えます")
     var template: ShortcutTemplateEntity?
 
     // 入力の設定（inputOptions）は付けない。キーボードの種類の既定が ASCII のみで、
@@ -40,12 +40,21 @@ public struct SendDiscordMessageIntent: AppIntent {
             templateID: template?.id,
             body: body
         )
-        switch await ShortcutMessageSender().send(request) {
+        let isPro = await Self.isPro()
+        switch await ShortcutMessageSender().send(request, isPro: isPro) {
         case .success(let success):
             return .result(dialog: IntentDialog("\(success.message)"))
         case .failure(let error):
             throw error
         }
+    }
+
+    /// Pro を購読中か。アプリを開かずに動き、前回アプリを開いたあとに購読が切れた・別の端末で購入したこともあるので、
+    /// 保存しておいた前回の値ではなく、端末にある App Store の購入情報（`Transaction.currentEntitlements`）から集計し直す
+    @MainActor
+    private static func isPro() async -> Bool {
+        await PurchaseManager.shared.refreshPurchasedProducts()
+        return PurchaseManager.shared.isPro
     }
 }
 
