@@ -91,7 +91,10 @@ struct SendMessageView: View {
                         contentSection
                         embedSection
                         attachmentSection
-                        sendOptionsSection
+                        // 撮影する送信画面では、プレビューの下に添付・送信ボタンが写る構図を保つため出さない
+                        if ScreenshotDemo.scene != .send {
+                            sendOptionsSection
+                        }
                     }
                     .padding(.horizontal)
                     // iPad では入力欄が画面幅いっぱいに伸びて間延びするため、最大幅を設けて中央に寄せる
