@@ -36,8 +36,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 #: 文言を集めるターゲット。`<名前>.build` / `<名前>-t.build` の下の `.stringsdata` を読む
 TARGETS = ("NinjacordFeature", "NinjacordApp")
 
-#: App Intents 用に Xcode が書き出すもので、ソースの文言ではない
-IGNORED_STRINGSDATA = {"ExtractedAppShortcutsMetadata.stringsdata"}
+#: App Intents 用に Xcode が書き出す `.stringsdata` で見ないテーブル。ショートカットのパラメータの要約
+#: （`ParameterSummary`）の文言は `Localizable` に入るので確かめる。おすすめのショートカットのフレーズ
+#: （`AppShortcuts`）は、iOS 16 では String Catalog を使えないので `NinjacordApp/<言語>.lproj/AppShortcuts.strings`
+#: に書いていて、ここでは見ない（Issue #700）
+IGNORED_TABLES = {"ExtractedAppShortcutsMetadata.stringsdata": {"AppShortcuts"}}
 
 #: String Catalog を置いているディレクトリ。テーブル名 = ファイル名
 CATALOG_DIR = REPO_ROOT / "NinjacordApp"
@@ -69,7 +72,7 @@ def find_stringsdata(derived_data: Path) -> dict[str, list[Path]]:
         target_files: list[Path] = []
         for build_dir in ("{}.build", "{}-t.build"):
             target_files += intermediates.glob(f"**/{build_dir.format(target)}/**/*.stringsdata")
-        files[target] = sorted(f for f in set(target_files) if f.name not in IGNORED_STRINGSDATA)
+        files[target] = sorted(set(target_files))
     return files
 
 
@@ -80,6 +83,8 @@ def collect_keys(files: list[Path]) -> dict[str, dict[str, set[Location]]]:
         data = json.loads(file.read_text(encoding="utf-8"))
         source = relative(data.get("source", str(file)))
         for table, entries in data.get("tables", {}).items():
+            if table in IGNORED_TABLES.get(file.name, set()):
+                continue
             keys = tables.setdefault(table, {})
             for entry in entries:
                 location = entry.get("location", {})
